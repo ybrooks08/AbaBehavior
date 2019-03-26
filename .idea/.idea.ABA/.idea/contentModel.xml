@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="/app" t="IncludeRecursive" />
+    <e p="/feddb887" t="IncludeRecursive" />
+    <e p="$PROJECT_DIR$" t="IncludeFlat">
+      <e p="AbaFrontEnd/node_modules/@fortawesome/fontawesome-free" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/@vue/cli-plugin-babel" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/@vue/cli-plugin-eslint" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/@vue/cli-service" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/axios" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/highcharts" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/highcharts-vue" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/v-calendar" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vee-validate" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue-axios" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue-izitoast" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue-lodash" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue-moment" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue-router" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vue-template-compiler" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vuetify" t="IncludeRecursive" />
+      <e p="AbaFrontEnd/node_modules/vuex" t="IncludeRecursive" />
+    </e>
+    <e p="$USER_HOME$/Library/Caches/Rider2018.2/extResources" t="IncludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/Rider2018.2/resharper-host/local/Transient/ReSharperHost/v182/SolutionCaches/_ABA.-1336860268.00" t="ExcludeRecursive" />
+    <e p="$APPLICATION_CONFIG_DIR$/consoles/db" t="IncludeRecursive" />
+    <e p="$APPLICATION_CONFIG_DIR$/extensions" t="IncludeRecursive" />
+    <e p="$APPLICATION_CONFIG_DIR$/scratches" t="IncludeRecursive" />
+  </component>
+</project>

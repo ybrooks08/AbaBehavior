@@ -1,0 +1,565 @@
+﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using System.Threading.Tasks;
+using AbaBackend.DataModel;
+using AbaBackend.Infrastructure.Security;
+using AbaBackend.Infrastructure.Utils;
+using AbaBackend.Model.MasterTables;
+using AbaBackend.Model.User;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+
+namespace AbaBackend.Controllers
+{
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [Route("api/users")]
+  public class UserController : Controller
+  {
+    private readonly AbaDbContext _dbContext;
+    private IPasswordHasher _passwordHasher;
+    private IUtils _utils;
+
+    public UserController(AbaDbContext context, IPasswordHasher passwordHasher, IUtils utils)
+    {
+      _dbContext = context;
+      _passwordHasher = passwordHasher;
+      _utils = utils;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetUsers()
+    {
+      try
+      {
+        var users = await _dbContext.Users
+                                    .Select(u => new
+                                    {
+                                      u.UserId,
+                                      u.Username,
+                                      u.RolId,
+                                      rolname = u.Rol.RolName.ToString(),
+                                      u.Firstname,
+                                      u.Lastname,
+                                      u.Active,
+                                      u.Created,
+                                      u.Email
+                                    })
+                                    .ToListAsync();
+        return Ok(users);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(int id)
+    {
+      try
+      {
+        var user = await _dbContext.Users
+                                   .Where(w => w.UserId.Equals(id))
+                                   .Select(u => new
+                                   {
+                                     u.UserId,
+                                     u.Username,
+                                     u.RolId,
+                                     rolname = u.Rol.RolName.ToString(),
+                                     u.Firstname,
+                                     u.Lastname,
+                                     u.Active,
+                                     u.Created,
+                                     u.Email,
+                                     u.Npi,
+                                     u.Mpi,
+                                     u.LicenseNo,
+                                     u.SocialSecurity,
+                                     u.Phone,
+                                     u.Address,
+                                     u.Apt,
+                                     u.City,
+                                     u.State,
+                                     u.Zipcode,
+                                     u.BankName,
+                                     u.BankAddress,
+                                     u.BankRoutingNumber,
+                                     u.BankAccountNumber,
+                                     u.PayRate
+                                   })
+                                   .FirstOrDefaultAsync();
+        if (user == null) return BadRequest("User not found");
+        return Ok(user);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("get-user-full/{id}")]
+    public async Task<IActionResult> GetUserFull(int id)
+    {
+      try
+      {
+        var user = await _dbContext.Users
+                                   .Where(w => w.UserId.Equals(id))
+                                   .Include(i => i.Rol)
+                                   .Include(i => i.Documents).ThenInclude(i => i.Document)
+                                   .Include(i => i.UserSign)
+                                   .FirstOrDefaultAsync();
+        if (user == null) return BadRequest("User not found");
+        return Ok(user);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("get-document-groups")]
+    public async Task<IActionResult> GetDocumentGroups()
+    {
+      try
+      {
+        var groups = await _dbContext.DocumentGroups
+                                     .OrderBy(o => o.DocumentGroupId)
+                                     .ToListAsync();
+        return Ok(groups);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("change-status")]
+    public async Task<IActionResult> ChangeUserStatus([FromBody] ModChangeUserStatus newStatus)
+    {
+      try
+      {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(w => w.UserId.Equals(newStatus.UserId));
+        if (user == null) return BadRequest("User not found");
+        user.Active = newStatus.Status;
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangeUserPassword([FromBody] ModChangeUserPassword password)
+    {
+      try
+      {
+        if (!ModelState.IsValid) return BadRequest(ModelState.Values.SelectMany(e => e.Errors.Select(s => s.ErrorMessage)).FirstOrDefault());
+        var user = await _dbContext.Users.FirstOrDefaultAsync(w => w.UserId.Equals(password.userId));
+        if (user == null) return BadRequest("User not found");
+        var salt = Guid.NewGuid().ToByteArray();
+        var hash = new PasswordHasher();
+        user.Salt = salt;
+        user.Hash = hash.Hash(password.Password, salt);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("add-edit")]
+    public async Task<IActionResult> AddEditUser([FromBody] AddEditUser user)
+    {
+      using (var transaction = await _dbContext.Database.BeginTransactionAsync())
+      {
+        try
+        {
+          if (!ModelState.IsValid) return BadRequest(ModelState.Values.SelectMany(e => e.Errors.Select(s => s.ErrorMessage)).FirstOrDefault());
+          var userProcess = user.UserId == 0 ? new User() : await _dbContext.Users.FirstOrDefaultAsync(w => w.UserId.Equals(user.UserId));
+          if (userProcess == null) return BadRequest("User not found");
+          if (user.UserId == 0)
+          {
+            var salt = Guid.NewGuid().ToByteArray();
+            var hash = new PasswordHasher();
+            userProcess.Salt = salt;
+            userProcess.Hash = hash.Hash(user.Password, salt);
+            userProcess.Username = user.Username;
+          }
+
+          userProcess.Email = user.Email;
+          userProcess.Firstname = user.Firstname;
+          userProcess.Lastname = user.Lastname;
+          userProcess.RolId = user.RolId;
+
+          userProcess.Npi = user.Npi;
+          userProcess.Mpi = user.Mpi;
+          userProcess.LicenseNo = user.LicenseNo;
+          userProcess.SocialSecurity = user.SocialSecurity;
+          userProcess.Phone = user.Phone;
+          userProcess.Address = user.Address;
+          userProcess.Apt = user.Apt;
+          userProcess.City = user.City;
+          userProcess.State = user.State;
+          userProcess.Zipcode = user.Zipcode;
+          userProcess.BankName = user.BankName;
+          userProcess.BankAddress = user.BankAddress;
+          userProcess.BankRoutingNumber = user.BankRoutingNumber;
+          userProcess.BankAccountNumber = user.BankAccountNumber;
+          userProcess.PayRate = user.PayRate;
+
+          if (user.UserId == 0) await _dbContext.Users.AddAsync(userProcess);
+          await _dbContext.SaveChangesAsync();
+
+          //if user is new check for documents
+          if (user.UserId == 0 && (await _dbContext.Roles.FirstOrDefaultAsync(w => w.RolId.Equals(userProcess.RolId))).HasDocuments)
+          {
+            var documents = await _dbContext.Documents.OrderBy(o => o.DocumentId).ToListAsync();
+            foreach (var document in documents)
+              _dbContext.DocumentsUsers.Add(new DocumentUser
+              {
+                DocumentId = document.DocumentId,
+                UserId = userProcess.UserId,
+                Active = false,
+                Expires = null,
+              });
+          }
+
+          await _dbContext.SaveChangesAsync();
+          transaction.Commit();
+          return Ok();
+        }
+        catch (Exception e)
+        {
+          return BadRequest(e.InnerException?.Message ?? e.Message);
+        }
+      }
+    }
+
+    [HttpGet("get-roles")]
+    public async Task<IActionResult> GetRoles(int id)
+    {
+      try
+      {
+        var roles = await _dbContext.Roles.OrderBy(r => r.RolId).ToListAsync();
+        return Ok(roles);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("get-users-can-create-session")]
+    public async Task<IActionResult> GetUsersCanCreateSession()
+    {
+      try
+      {
+        var users = await _dbContext.Users
+                                    .Where(w => w.Rol.CanCreateSession)
+                                    .Select(u => new
+                                    {
+                                      u.UserId,
+                                      u.Username,
+                                      u.RolId,
+                                      rolname = u.Rol.RolName.ToString(),
+                                      u.Firstname,
+                                      u.Lastname,
+                                      fullname = $"{u.Firstname} {u.Lastname} ({u.Rol.RolName.ToString()})",
+                                      u.Active,
+                                      u.Created,
+                                      u.Email
+                                    })
+                                    .OrderByDescending(o => o.Active).ThenBy(t => t.fullname)
+                                    .ToListAsync();
+        return Ok(users);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("change-user-document-status")]
+    public async Task<IActionResult> ChangeUserDocumentStatus([FromBody] ChangeStatus newStatus)
+    {
+      try
+      {
+        var document = await _dbContext.DocumentsUsers.FirstOrDefaultAsync(w => w.Id.Equals(newStatus.Id));
+        if (document == null) return BadRequest("Document not found");
+        document.Active = newStatus.Status;
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("change-user-document-date")]
+    public async Task<IActionResult> ChangeUserDocumentDate([FromBody] ChangeDateNull model)
+    {
+      try
+      {
+        if (model == null) throw new Exception("Bad date format.");
+        var document = await _dbContext.DocumentsUsers.FirstOrDefaultAsync(w => w.Id.Equals(model.Id));
+        if (document == null) return BadRequest("Document not found");
+        document.Expires = model.Date;
+        document.Active = true;
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("get-expiring-documents/{current?}")]
+    public async Task<IActionResult> GetExpiringDocuments(bool current = false)
+    {
+      var currentUser = current ? await _utils.GetCurrentUser() : null;
+      try
+      {
+        var assignments = await _dbContext
+                                .DocumentsUsers
+                                .Where(w => EF.Functions.DateDiffDay(DateTime.Today, w.Expires != null ? Convert.ToDateTime(w.Expires).Date : new DateTime(2999, 1, 1).Date) <= 60 && w.Active)
+                                .Where(w => w.User.Active)
+                                .Where(w => !current || w.UserId.Equals(currentUser.UserId))
+                                .Select(s => new
+                                {
+                                  s.Id,
+                                  s.DocumentId,
+                                  s.UserId,
+                                  UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+                                  s.User.Rol.RolName,
+                                  s.Document.DocumentName,
+                                  s.Document.DocumentGroup.GroupName,
+                                  s.Expires,
+                                  Days = EF.Functions.DateDiffDay(DateTime.Today, Convert.ToDateTime(s.Expires).Date)
+                                })
+                                .OrderBy(o => o.Days)
+                                .ToListAsync();
+        return Ok(assignments);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("add-missing-documents/{id}")]
+    public async Task<IActionResult> AddMissingDocuments(int id)
+    {
+      try
+      {
+        var allDocuments = await _dbContext.Documents.Select(s => s.DocumentId).ToListAsync();
+        var allUserDocuments = await _dbContext.DocumentsUsers.Where(u => u.UserId.Equals(id)).Select(s => s.DocumentId).ToListAsync();
+        var missing = allDocuments.Except(allUserDocuments).ToList();
+        if (missing.Count == 0) return Ok(0);
+        foreach (var documentId in missing)
+        {
+          await _dbContext.DocumentsUsers.AddAsync(new DocumentUser
+          {
+            DocumentId = documentId,
+            UserId = id,
+            Active = false
+          });
+        }
+        await _dbContext.SaveChangesAsync();
+        return Ok(missing.Count);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("get-clients-for-user")]
+    public async Task<IActionResult> GetClientsForUser()
+    {
+      try
+      {
+        var user = await _utils.GetCurrentUser();
+        var clients = await _dbContext.Assignments
+                                      .Where(w => w.UserId.Equals(user.UserId))
+                                      .Select(s => new
+                                      {
+                                        s.AssignmentId,
+                                        s.Active,
+                                        s.ClientId,
+                                        s.Client.Dob,
+                                        ClientName = $"{s.Client.Firstname} {s.Client.Lastname}",
+                                        ClientCode = s.Client.Code,
+                                        ClientActive = s.Client.Active,
+                                        s.Client.Gender
+                                      })
+                                      .OrderBy(o => o.ClientName)
+                                      .ToListAsync();
+
+        if (user.RolId == 1)
+          clients = await _dbContext.Clients
+                                    .Where(w => w.Active)
+                                    .Select(s => new
+                                    {
+                                      AssignmentId = 0,
+                                      s.Active,
+                                      s.ClientId,
+                                      s.Dob,
+                                      ClientName = $"{s.Firstname} {s.Lastname}",
+                                      ClientCode = s.Code,
+                                      ClientActive = s.Active,
+                                      s.Gender
+                                    })
+                                    .OrderBy(o => o.ClientName)
+                                    .ToListAsync();
+        return Ok(clients);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("get-current-autorizations-for-current-user")]
+    public async Task<IActionResult> GetCurrentAuthorizationsForCurrentUser()
+    {
+      var user = await _utils.GetCurrentUser();
+      var today = DateTime.Today;
+      var autorizations = await _dbContext.Assessments
+                                .AsNoTracking()
+                                .Include(i => i.Client)
+                                .Where(w => w.Client.Assignments.Any(a => a.UserId == user.UserId && a.Active))
+                                .Where(w => w.BehaviorAnalysisCodeId.Equals(user.Rol.BehaviorAnalysisCodeId))
+                                .Where(w => today >= w.StartDate && today <= w.EndDate)
+                                .ToListAsync();
+      var result = autorizations
+                   .Select(s => new
+                   {
+                     s.AssessmentId,
+                     clientFirstName = s.Client.Firstname,
+                     clientLastName = s.Client.Lastname,
+                     clientCode = s.Client.Code,
+                     s.PaNumber,
+                     s.StartDate,
+                     s.EndDate,
+                     s.TotalUnits,
+                     AvailableUnits = _utils.GetUnitsAvailable(today, s.ClientId, user).Result
+                   }).OrderByDescending(s => s.EndDate);
+      return Ok(result);
+    }
+
+    [HttpGet("get-last7-session-for-current-user")]
+    public async Task<IActionResult> GetLast7SessionsForCurrentUser()
+    {
+      var user = await _utils.GetCurrentUser();
+      var today = DateTime.Today;
+      var Last7 = today.AddDays(-6);
+      var sessions = await _dbContext.Sessions
+                           .AsNoTracking()
+                           .Where(w => w.UserId.Equals(user.UserId))
+                           .Where(w => w.SessionStart.Date >= Last7 && w.SessionStart.Date <= today)
+                           .Select(s => new
+                           {
+                             s.SessionId,
+                             s.SessionStart,
+                             s.SessionEnd,
+                             ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+                             CLientCode = s.Client.Code,
+                             s.TotalUnits,
+                             SessionType = Enum.GetName(typeof(SessionType), s.SessionType).Replace("_", " "),
+                             Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " ")
+                           })
+                           .OrderByDescending(o => o.SessionStart)
+                           .ThenBy(o => o.ClientFullname)
+                           .ToListAsync();
+      return Ok(sessions);
+    }
+
+    [HttpGet("[action]/{userId}")]
+    public async Task<IActionResult> GetUserSignature(int userId)
+    {
+      try
+      {
+        var sign = await _dbContext.UserSigns.FirstOrDefaultAsync(a => a.UserId == userId);
+        return Ok(sign);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> SaveUserSignature([FromBody] UserSign sign)
+    {
+      try
+      {
+        _dbContext.Update(sign);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{days}/{showClosed}")]
+    public async Task<IActionResult> GetSessionList(int days, bool showClosed)
+    {
+      var today = DateTime.Today;
+      var firstDay = today.AddDays(-days);
+      var sessions = await _dbContext.Sessions
+                                     .AsNoTracking()
+                                     .Where(w => days == 0 || w.SessionStart.Date >= firstDay && w.SessionStart.Date <= today)
+                                     .Where(w => showClosed || w.SessionStatus != SessionStatus.Checked)
+                                     .Select(s => new
+                                     {
+                                       s.SessionId,
+                                       SessionStart = s.SessionStart.ToString("u"),
+                                       SessionEnd = s.SessionEnd.ToString("u"),
+                                       UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+                                       UserRol = s.User.Rol.RolShortName,
+                                       s.ClientId,
+                                       s.UserId,
+                                       ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+                                       CLientCode = s.Client.Code,
+                                       s.TotalUnits,
+                                       SessionType = Enum.GetName(typeof(SessionType), s.SessionType).Replace("_", " "),
+                                       Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
+                                       EnumStatus = s.SessionStatus,
+                                       SessionStatus = s.SessionStatus.ToString(),
+                                       SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
+                                     })
+                                     .OrderByDescending(o => o.SessionStart)
+                                     .ThenBy(o => o.ClientFullname)
+                                     .ToListAsync();
+
+      var user = await _utils.GetCurrentUser();
+      //if (user.Rol.RolShortName == "admin") return Ok(sessions);
+      if (user.Rol.RolShortName == "tech") sessions = sessions.Where(s => s.UserId == user.UserId).ToList();
+      if (user.Rol.RolShortName == "assistant")
+      {
+        var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId).Select(s => s.ClientId).ToListAsync();
+        sessions = sessions.Where(s => myClients.Contains(s.ClientId) && s.UserRol != "analyst").ToList();
+      }
+
+      if (user.Rol.RolShortName == "analyst")
+      {
+        var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId && w.Active).Select(s => s.ClientId).ToListAsync();
+        sessions = sessions.Where(s => myClients.Contains(s.ClientId)).ToList();
+      }
+
+      return Ok(sessions);
+    }
+  }
+}

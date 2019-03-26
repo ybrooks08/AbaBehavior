@@ -1,0 +1,114 @@
+<template>
+  <v-layout row wrap>
+    <v-flex xs12 class="no-print">
+      <v-card>
+        <v-toolbar dark class="secondary" fluid dense>
+          <v-toolbar-title>Client</v-toolbar-title>
+        </v-toolbar>
+        <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
+        <v-card-text>
+          <v-form ref="form" autocomplete="off" v-model="validForm">
+            <v-layout row wrap>
+              <v-flex md12>
+                <v-autocomplete box hid :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]" required @change="clientChanged">
+                  <template slot="item" slot-scope="{ item }">
+                    <v-list-tile-avatar>
+                      <img :style="!item.active ? 'opacity: 0.5': ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`">
+                    </v-list-tile-avatar>
+                    <v-list-tile-content>
+                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.clientName}}</v-list-tile-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment('utc', 'MM/DD/YYYY')}} | Code: {{item.clientCode || 'N/A' }}</v-list-tile-sub-title>
+                    </v-list-tile-content>
+                  </template>
+                </v-autocomplete>
+              </v-flex>
+            </v-layout>
+          </v-form>
+        </v-card-text>
+      </v-card>
+    </v-flex>
+    <v-flex xs12 v-if="activeClientId != 0">
+      <v-card>
+        <v-toolbar dark class="secondary" fluid dense>
+          <v-toolbar-title>Client progress</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-menu class="mr-0" bottom left :disabled="loading">
+            <v-btn slot="activator" icon :disabled="loading">
+              <v-icon>fa-ellipsis-v</v-icon>
+            </v-btn>
+            <v-list>
+              <v-list-tile to="/clients/add_edit_chart_note">
+                <v-list-tile-action>
+                  <v-icon medium>fa-sticky-note</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-content>
+                  <v-list-tile-title>New quick note</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
+            </v-list>
+            <v-divider></v-divider>
+          </v-menu>
+        </v-toolbar>
+        <v-card-text class="pa-1">
+          <v-subheader inset class="red--text">Problem behaviors</v-subheader>
+          <client-progress-behavior></client-progress-behavior>
+          <v-divider></v-divider>
+          <v-subheader inset class="blue--text">Replacements program</v-subheader>
+          <client-progress-replacement></client-progress-replacement>
+        </v-card-text>
+      </v-card>
+    </v-flex>
+  </v-layout>
+</template>
+
+<script>
+import userApi from '@/services/api/UserServices';
+import ClientProgressBehavior from '@/components/sessions/ProgressBehavior';
+import ClientProgressReplacement from '@/components/sessions/ProgressReplacement';
+
+export default {
+  data() {
+    return {
+      loading: false,
+      required: (value) => !!value || 'This field is required.',
+      validForm: false,
+      clients: [],
+      clientId: null,
+    };
+  },
+
+  components: {
+    ClientProgressBehavior,
+    ClientProgressReplacement,
+  },
+
+  computed: {
+    activeClientId() {
+      return this.$store.getters.activeClientId;
+    },
+  },
+
+  mounted() {
+    this.$store.commit('SET_ACTIVE_CLIENT', 0);
+    this.loadUserClients();
+  },
+
+  methods: {
+    async loadUserClients() {
+      this.clients = [];
+      this.loading = true;
+      try {
+        this.clients = await userApi.loadUserClients();
+      } catch (error) {
+        this.$toast.error(error);
+      } finally { this.loading = false; }
+    },
+
+    clientChanged(clientId) {
+      this.$store.commit('SET_ACTIVE_CLIENT', clientId);
+    },
+
+  },
+
+};
+</script>

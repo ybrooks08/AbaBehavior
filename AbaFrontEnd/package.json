@@ -1,0 +1,64 @@
+{
+  "name": "aba",
+  "version": "1.0.0",
+  "author": "Yuri Morales",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "file-saver": "^2.0.1",
+    "highcharts": "^7.0.3",
+    "highcharts-vue": "^1.2.0",
+    "jspdf": "^1.5.3",
+    "moment": "^2.24.0",
+    "signature_pad": "^3.0.0-beta.3",
+    "trim-canvas": "^0.1.2",
+    "v-calendar": "^0.9.7",
+    "vee-validate": "^2.2.0",
+    "vue": "^2.6.10",
+    "vue-axios": "^2.1.4",
+    "vue-ins-progress-bar": "^1.0.0",
+    "vue-izitoast": "^1.1.2",
+    "vue-moment": "^4.0.0",
+    "vue-router": "^3.0.2",
+    "vuetify": "^1.5.7",
+    "vuex": "^3.1.0"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.8.1",
+    "@vue/cli-plugin-babel": "^3.5.1",
+    "@vue/cli-plugin-eslint": "^3.5.1",
+    "@vue/cli-service": "^3.5.1",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {
+      "no-console": 0
+    },
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
