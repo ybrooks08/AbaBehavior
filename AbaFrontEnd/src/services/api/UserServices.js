@@ -145,4 +145,44 @@ export default {
         .catch(error => reject(error.response.data || error.message));
     });
   },
+
+  deleteDocuments(id) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.delete(`api/users/DeleteDocuments/${id}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  addEditDocumentGroup(groupData) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/users/addEditDocumentGroup', groupData)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  deleteDocument(document) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/users/DeleteDocument', document)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  addEditDocument(document) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/users/AddEditDocument', document)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  deleteDocumentGroup(document) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/users/DeleteDocumentGroup', document)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
 };

@@ -22,6 +22,8 @@
                     <v-flex xs8>{{user.username || 'N/A'}}</v-flex>
                     <v-flex class="body-2" xs4>Email:</v-flex>
                     <v-flex xs8>{{user.email || 'N/A'}}</v-flex>
+                    <v-flex class="body-2" xs4>Phone:</v-flex>
+                    <v-flex xs8>{{user.phone | phone}}</v-flex>
                     <v-flex class="body-2" xs4>Created:</v-flex>
                     <v-flex xs8>{{user.created || new Date() | moment('MMM Do, YYYY')}}</v-flex>
                     <v-flex class="body-2" xs4>Actived:</v-flex>
@@ -89,11 +91,19 @@
                     <v-list-tile-title>Add missing documents</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
+                <v-list-tile @click="deleteDocuments()">
+                  <v-list-tile-action>
+                    <v-icon medium>fa-trash-alt</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title>Delete all documents</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
               </v-list>
             </v-menu>
           </v-toolbar>
           <v-card-text>
-            <v-expansion-panel>
+            <v-expansion-panel v-if="user.documents.length > 0">
               <v-expansion-panel-content v-for="group in groups" :key="group.documentGroupId">
                 <div slot="header">{{group.groupName}}</div>
                 <table class="v-datatable v-table theme--light">
@@ -111,6 +121,7 @@
                 </table>
               </v-expansion-panel-content>
             </v-expansion-panel>
+            <v-alert type="info" :value="true" v-else>This user haven't any document yet.</v-alert>
           </v-card-text>
         </v-card>
       </v-flex>
@@ -132,7 +143,7 @@ export default {
   data() {
     return {
       groups: [],
-      user: {},
+      user: { documents: [] },
       loadingBasicInfo: false,
       loadingDocuments: false
     }
@@ -203,7 +214,23 @@ export default {
       } catch (error) {
         this.$toast.error(error);
       } finally { this.loadingDocuments = false }
-    }
+    },
+
+    async deleteDocuments() {
+      this.loadingDocuments = true;
+      try {
+        this.$confirm('Do you want to delete all documents?')
+          .then(async res => {
+            if (res) {
+              await userApi.deleteDocuments(this.id);
+              this.$toast.success(`Delete all documents successful`);
+              this.loadBasicInfo();
+            }
+          })
+      } catch (error) {
+        this.$toast.error(error);
+      } finally { this.loadingDocuments = false; }
+    },
   }
 }
 </script>

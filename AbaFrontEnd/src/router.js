@@ -190,6 +190,12 @@ export default new Router({
           component: () => import(/* webpackChunkName: "SessionPrint" */ '@/components/sessions/SessionPrint'),
           meta: { rol: ['assistant', 'tech', 'analyst', 'admin'] },
         },
+        {
+          path: '/documents_setup',
+          name: 'Documents',
+          component: () => import(/* webpackChunkName: "Documents" */ '@/views/Documents'),
+          meta: { rol: ['admin', 'hr'] },
+        },
       ],
     },
     { path: '*', redirect: '/' },

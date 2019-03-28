@@ -127,6 +127,7 @@ namespace AbaBackend.Controllers
       try
       {
         var groups = await _dbContext.DocumentGroups
+                                     .Include(i => i.Documents)
                                      .OrderBy(o => o.DocumentGroupId)
                                      .ToListAsync();
         return Ok(groups);
@@ -560,6 +561,82 @@ namespace AbaBackend.Controllers
       }
 
       return Ok(sessions);
+    }
+
+    [HttpDelete("[action]/{userId}")]
+    public async Task<IActionResult> DeleteDocuments(int userId)
+    {
+      try
+      {
+        var entries = await _dbContext.DocumentsUsers.Where(w => w.UserId == userId).ToListAsync();
+        _dbContext.RemoveRange(entries);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> addEditDocumentGroup([FromBody] DocumentGroup group)
+    {
+      try
+      {
+        _dbContext.Update(group);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> DeleteDocument([FromBody] Document document)
+    {
+      try
+      {
+        _dbContext.Remove(document);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> AddEditDocument([FromBody] Document document)
+    {
+      try
+      {
+        _dbContext.Update(document);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> DeleteDocumentGroup([FromBody] DocumentGroup group)
+    {
+      try
+      {
+        _dbContext.Remove(group);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
     }
   }
 }

@@ -649,7 +649,15 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        var topAssessments = await _dbContext.Assessments
+                                   .Where(w => w.Client.Active)
+                                   .GroupBy(x => new { x.BehaviorAnalysisCodeId, x.ClientId })
+                                   .Select(s => s.OrderByDescending(o => o.StartDate).First())
+                                   .Select(s => s.AssessmentId)
+                                  .ToListAsync();
+
         var assignments = await _dbContext.Assessments
+                                          .Where(w => topAssessments.Contains(w.AssessmentId))
                                           .Where(w => (EF.Functions.DateDiffDay(DateTime.Today, w.EndDate.Date) <= 60 || w.TotalUnits <= 10) && w.BehaviorAnalysisCode.Checkable)
                                           .Where(w => w.Client.Active)
                                           .Select(s => new
