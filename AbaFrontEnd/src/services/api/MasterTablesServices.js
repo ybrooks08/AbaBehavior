@@ -138,4 +138,12 @@ export default {
     });
   },
 
+  getSystemLogs() {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/master-tables/GetSystemLogs')
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message))
+    });
+  },
+
 }

@@ -267,5 +267,32 @@ namespace AbaBackend.Controllers
       return Ok(pos);
     }
 
+    [HttpGet("[action]")]
+    public async Task<IActionResult> GetSystemLogs()
+    {
+      try
+      {
+        var start = DateTime.Today.AddDays(-30);
+        var end = DateTime.Today.AddDays(1).AddTicks(-1);
+        var logs = await _dbContext.SystemLogs.Where(w => w.Entry.Date >= start && w.Entry.Date <= end)
+        .Select(s => new
+        {
+          s.SystemLogId,
+          SystemLogType = s.SystemLogType.ToString(),
+          Module = s.Module.ToString(),
+          s.Entry,
+          s.Title,
+          s.Description,
+          s.User,
+          s.ModuleValue
+        }).OrderByDescending(o => o.Entry).Take(1000).ToListAsync();
+        return Ok(logs);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
   }
 }

@@ -107,6 +107,7 @@ namespace AbaBackend.Controllers
         if (client == null) return BadRequest("Client not found");
         client.Active = newStatus.Status;
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, newStatus.UserId, "Status changed", $"Client changed status to {newStatus.Status}");
         return Ok();
       }
       catch (Exception e)
@@ -153,6 +154,9 @@ namespace AbaBackend.Controllers
 
         if (client.ClientId == 0) await _dbContext.Clients.AddAsync(client2Process);
         await _dbContext.SaveChangesAsync();
+        if (client.ClientId == 0) await _utils.NewSystemLog(SystemLogType.Info, Module.Client, client2Process.ClientId, "Created", $"Client created");
+        else await _utils.NewSystemLog(SystemLogType.Info, Module.Client, client2Process.ClientId, "Edited", $"Client edited");
+
         return Ok();
       }
       catch (Exception e)
@@ -339,6 +343,9 @@ namespace AbaBackend.Controllers
         caregiver2Process.CaregiverTypeId = caregiver.CaregiverTypeId;
 
         if (caregiver.CaregiverId == 0) await _dbContext.Caregivers.AddAsync(caregiver2Process);
+        if (caregiver.CaregiverId == 0) await _utils.NewSystemLog(SystemLogType.Info, Module.Client, caregiver2Process.ClientId, "Created caregiver", $"A caregiver was created");
+        else await _utils.NewSystemLog(SystemLogType.Info, Module.Client, caregiver2Process.ClientId, "Edited caregiver", $"A caregiver was edited");
+
         await _dbContext.SaveChangesAsync();
         return Ok(caregiver2Process.CaregiverId);
       }
@@ -357,6 +364,8 @@ namespace AbaBackend.Controllers
         if (caregiver2Process == null) return BadRequest("Caregiver not found.");
         _dbContext.Caregivers.Remove(caregiver2Process);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, caregiver2Process.ClientId, "Caregiver deleted", $"A caregiver was deleted");
+
         return Ok();
       }
       catch (Exception e)
@@ -390,6 +399,9 @@ namespace AbaBackend.Controllers
 
         if (referral.ReferralId == 0) await _dbContext.Referrals.AddAsync(referral2Process);
         await _dbContext.SaveChangesAsync();
+        if (referral.ReferralId == 0) await _utils.NewSystemLog(SystemLogType.Info, Module.Client, referral2Process.ClientId, "Created referral", $"A referral was created");
+        else await _utils.NewSystemLog(SystemLogType.Info, Module.Client, referral2Process.ClientId, "Edited referral", $"A referral was edited");
+
         return Ok(referral2Process);
       }
       catch (Exception e)
@@ -407,6 +419,8 @@ namespace AbaBackend.Controllers
         if (referral2Process == null) return BadRequest("Referral not found.");
         _dbContext.Referrals.Remove(referral2Process);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, referral2Process.ClientId, "Deleted referral", $"A referral was deleted");
+
         return Ok();
       }
       catch (Exception e)
@@ -424,6 +438,8 @@ namespace AbaBackend.Controllers
         if (referral == null) return BadRequest("Referral not found");
         referral.Active = newStatus.Status;
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, referral.ClientId, "Referral status", $"A referral status was changed to {newStatus.Status}");
+
         return Ok();
       }
       catch (Exception e)
@@ -447,6 +463,8 @@ namespace AbaBackend.Controllers
         };
         await _dbContext.Assignments.AddAsync(assignment2Process);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, assignment.ClientId, "Staff assigned", $"A user was assigned to client");
+
         return Ok(assignment2Process);
       }
       catch (Exception e)
@@ -483,6 +501,8 @@ namespace AbaBackend.Controllers
         if (assignment2Process == null) return BadRequest("Assignment not found.");
         _dbContext.Assignments.Remove(assignment2Process);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, assignment.ClientId, "Staff removed", $"A user was removed for the client");
+
         return Ok();
       }
       catch (Exception e)
@@ -500,6 +520,8 @@ namespace AbaBackend.Controllers
         if (assignment == null) return BadRequest("Assignment not found");
         assignment.Active = newStatus.Status;
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, assignment.ClientId, "Staff status", $"A user assigned status was changed to {newStatus.Status}");
+
         return Ok();
       }
       catch (Exception e)
@@ -522,6 +544,8 @@ namespace AbaBackend.Controllers
         };
         await _dbContext.AddAsync(diag);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, model.ClientId, "Diagnostic added", $"A diagnostic was added ({refer.Code})");
+
         return Ok(diag);
       }
       catch (DbUpdateException)
@@ -543,6 +567,8 @@ namespace AbaBackend.Controllers
         if (clientDiagnosis2Process == null) return BadRequest("Diagnosis in the client not found.");
         _dbContext.ClientDiagnostics.Remove(clientDiagnosis2Process);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, clientDiagnosis2Process.ClientId, "Diagnostic deleted", $"A diagnostic was deleted");
+
         return Ok();
       }
       catch (Exception e)
@@ -601,6 +627,8 @@ namespace AbaBackend.Controllers
         };
         _dbContext.Assessments.Update(newAssessment);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, newAssessment.ClientId, "Auth added", $"A authorization was added ({assessment.TotalUnits} units)");
+
         return Ok(newAssessment);
       }
       catch (Exception e)
@@ -636,6 +664,8 @@ namespace AbaBackend.Controllers
         if (assessment2Delete == null) return BadRequest("Authorization not found.");
         _dbContext.Assessments.Remove(assessment2Delete);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, assessment.ClientId, "Auth deleted", $"A authorization was deleted");
+
         return Ok();
       }
       catch (Exception e)
@@ -735,6 +765,8 @@ namespace AbaBackend.Controllers
       {
         _dbContext.Update(problem);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, problem.ClientId, "Behavior", $"Behavior added or updated");
+
         return Ok();
       }
       catch (Exception e)
@@ -818,6 +850,8 @@ namespace AbaBackend.Controllers
         var entry = await _dbContext.ClientProblems.FirstOrDefaultAsync(w => w.ClientProblemId == clientProblemId);
         _dbContext.Remove(entry);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, entry.ClientId, "Behavior", $"Behavior deleted for client");
+
         return Ok();
       }
       catch (Exception e)
@@ -853,6 +887,8 @@ namespace AbaBackend.Controllers
       {
         _dbContext.Update(replacement);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, replacement.ClientId, "Replacement", $"Replacement added or updated");
+
         return Ok();
       }
       catch (Exception e)
@@ -935,6 +971,8 @@ namespace AbaBackend.Controllers
         var entry = await _dbContext.ClientReplacements.FirstOrDefaultAsync(w => w.ClientReplacementId == clientReplacementId);
         _dbContext.Remove(entry);
         await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Warning, Module.Client, entry.ClientId, "Replacement", $"Replacement removed for client");
+
         return Ok();
       }
       catch (Exception e)

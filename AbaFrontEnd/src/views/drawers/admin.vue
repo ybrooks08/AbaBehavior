@@ -99,6 +99,15 @@
           <v-list-tile-title>Client progress</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-subheader>Tools</v-subheader>
+      <v-list-tile to="/system_logs">
+        <v-list-tile-action>
+          <v-icon>fa-list-alt</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>System Logs</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
   </div>
 </template>

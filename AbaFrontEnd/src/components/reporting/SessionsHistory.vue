@@ -201,7 +201,7 @@ export default {
       this.$store.commit('SET_ACTIVE_DATE', session.sessionStart);
       this.$store.commit('SET_ACTIVE_CLIENT', session.clientId);
       this.$store.commit('SET_ACTIVE_SESSION', session.sessionId);
-      let routeData = this.$router.resolve('/clients/session_collect_data');
+      let routeData = this.$router.resolve('/session/session_collect_data');
       window.open(routeData.href, '_blank');
       //this.$router.push('/session/session_collect_data');
     },

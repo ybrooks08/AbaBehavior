@@ -196,6 +196,12 @@ export default new Router({
           component: () => import(/* webpackChunkName: "Documents" */ '@/views/Documents'),
           meta: { rol: ['admin', 'hr'] },
         },
+        {
+          path: '/system_logs',
+          name: 'SystemLogs',
+          component: () => import(/* webpackChunkName: "SystemLogs" */ '@/views/SystemLogs'),
+          meta: { rol: ['admin'] },
+        },
       ],
     },
     { path: '*', redirect: '/' },

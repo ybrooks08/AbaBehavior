@@ -428,7 +428,7 @@ namespace AbaBackend.Controllers
       foreach (var problem in problemsUnique)
       {
         var baseLine = await _dbContext.ClientProblems
-                                       .Where(w => w.ProblemId == problem.ProblemId)
+                                       .Where(w => w.ProblemId == problem.ProblemId && w.ClientId == clientId)
                                        .Select(s => s.BaselineCount)
                                        .FirstOrDefaultAsync();
 
@@ -524,7 +524,7 @@ namespace AbaBackend.Controllers
       foreach (var replacement in replacementUnique)
       {
         var baseLine = await _dbContext.ClientReplacements
-                                       .Where(w => w.ReplacementId == replacement.ReplacementId)
+                                       .Where(w => w.ReplacementId == replacement.ReplacementId && w.ClientId == clientId)
                                        .Select(s => s.BaselinePercent)
                                        .FirstOrDefaultAsync();
 

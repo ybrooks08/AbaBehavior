@@ -330,8 +330,9 @@ namespace AbaBackend.Controllers
       var currentUser = current ? await _utils.GetCurrentUser() : null;
       try
       {
-        var assignments = await _dbContext
+        var expiring = await _dbContext
                                 .DocumentsUsers
+                                .Where(w => w.Document.DocumentExpires)
                                 .Where(w => EF.Functions.DateDiffDay(DateTime.Today, w.Expires != null ? Convert.ToDateTime(w.Expires).Date : new DateTime(2999, 1, 1).Date) <= 60 && w.Active)
                                 .Where(w => w.User.Active)
                                 .Where(w => !current || w.UserId.Equals(currentUser.UserId))
@@ -347,9 +348,9 @@ namespace AbaBackend.Controllers
                                   s.Expires,
                                   Days = EF.Functions.DateDiffDay(DateTime.Today, Convert.ToDateTime(s.Expires).Date)
                                 })
-                                .OrderBy(o => o.Days)
+                                .OrderBy(o => o.UserFullname).ThenBy(o => o.Days)
                                 .ToListAsync();
-        return Ok(assignments);
+        return Ok(expiring);
       }
       catch (Exception e)
       {

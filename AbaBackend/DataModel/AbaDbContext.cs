@@ -64,20 +64,11 @@ namespace AbaBackend.DataModel
                   .HasForeignKey(s => s.UserId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-      // modelBuilder.Entity<MetricSessionProblem>()
-      //             .HasKey(x => new { x.SessionId, x.ProblemId });
-
-      // modelBuilder.Entity<MetricSessionReplacement>()
-      //             .HasKey(x => new { x.SessionId, x.ReplacementId });
-
-
-      // modelBuilder.Entity<ServiceLog>()
-      //             .HasOne(p => p.Client)
-      //             .WithMany()
-      //             .OnDelete(DeleteBehavior.Restrict);
-
-
-
+      modelBuilder.Entity<SystemLog>()
+                  .HasOne(s => s.User)
+                  .WithMany()
+                  .HasForeignKey(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
 
       //Seed
       var salt = Encoding.ASCII.GetBytes("INITIAL-SALT-HERE");//Guid.NewGuid().ToByteArray();
@@ -328,6 +319,7 @@ namespace AbaBackend.DataModel
     public DbSet<ClientProblemSto> ClientProblemSTOs { get; set; }
     public DbSet<ClientReplacementSto> ClientReplacementSTOs { get; set; }
     public DbSet<SessionLog> SessionLogs { get; set; }
+    public DbSet<SystemLog> SystemLogs { get; set; }
 
   }
 }

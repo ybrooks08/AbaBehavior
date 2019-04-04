@@ -369,6 +369,7 @@ namespace AbaBackend.Infrastructure.Utils
       userId = userId == 0 ? (await GetCurrentUser()).UserId : userId;
       var count = await _dbContext
                         .DocumentsUsers
+                        .Where(w => w.Document.DocumentExpires)
                         .Where(w => w.Expires < DateTime.Today)
                         .Where(w => w.UserId == userId)
                         .CountAsync();
@@ -540,6 +541,43 @@ namespace AbaBackend.Infrastructure.Utils
         }
       ).Value;
       return a;
+    }
+
+    public async Task NewSystemLog(SystemLogType logType, Module module, int moduleId, string title, string description)
+    {
+      var user = await GetCurrentUser();
+      var who = await GetFullDataForSystemLog(module, moduleId);
+      await _dbContext.AddAsync(new SystemLog
+      {
+        UserId = user.UserId,
+        Title = title,
+        Module = module,
+        ModuleValue = who,
+        Description = description,
+        SystemLogType = logType,
+        Entry = DateTimeOffset.UtcNow
+      });
+      await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<string> GetFullDataForSystemLog(Module who, int valueId)
+    {
+      var name = "";
+      switch (who)
+      {
+        case Module.Client:
+          var client = await _dbContext.Clients.FirstOrDefaultAsync(w => w.ClientId == valueId);
+          name = $"{client.Firstname} {client.Lastname}";
+          break;
+        case Module.User:
+          var user = await _dbContext.Users.FirstOrDefaultAsync(w => w.UserId == valueId);
+          name = $"{user.Firstname} {user.Lastname}";
+          break;
+        default:
+          name = "N/A";
+          break;
+      }
+      return name;
     }
   }
 }
