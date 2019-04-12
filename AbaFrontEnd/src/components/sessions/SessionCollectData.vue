@@ -5,6 +5,13 @@
         <v-card>
           <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>Collect behavior data {{activeDate | moment('l')}}</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn flat @click="goToNotes">
+                <v-icon left>fa-file-medical</v-icon>
+                VIEW NOTES
+              </v-btn>
+            </v-toolbar-items>
           </v-toolbar>
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-card-text class="pa-1">
@@ -61,6 +68,14 @@
         <v-card>
           <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>Collect replacement data {{activeDate | moment('l')}}</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn flat @click="goToNotes">
+                <v-icon left>fa-file-medical</v-icon>
+                VIEW NOTES
+              </v-btn>
+            </v-toolbar-items>
+
           </v-toolbar>
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-card-text class="pa-1">
@@ -197,248 +212,252 @@
 </template>
 
 <script>
-import sessionServicesApi from '@/services/api/SessionServices';
+  import sessionServicesApi from '@/services/api/SessionServices';
 
-export default {
-  computed: {
-    activeSessionId() {
-      return this.$store.getters.activeSessionId;
-    },
-    activeClientId() {
-      return this.$store.getters.activeClientId;
-    },
-    activeDate() {
-      return this.$store.getters.activeDate;
-    },
-    isMobile() {
-      return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
-    },
-  },
-
-  data() {
-    return {
-      loading: false,
-      validNewBehaviorForm: false,
-      openNewBehaviorDialog: false,
-      clientBehaviors: [],
-      collectBehaviors: {
-        dataDetails: [],
-        dataSummary: [],
+  export default {
+    computed: {
+      activeSessionId() {
+        return this.$store.getters.activeSessionId;
       },
-      formNewBehaviorTitle: null,
-      formNewBehaviorId: null,
-      showBehaviorDetails: [],
-      addNewBehavior: {
-        noTime: false,
-        entry: null,
-        duration: 0,
-        notes: null,
+      activeClientId() {
+        return this.$store.getters.activeClientId;
+      },
+      activeDate() {
+        return this.$store.getters.activeDate;
+      },
+      isMobile() {
+        return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
+      },
+    },
+
+    data() {
+      return {
+        loading: false,
+        validNewBehaviorForm: false,
+        openNewBehaviorDialog: false,
+        clientBehaviors: [],
+        collectBehaviors: {
+          dataDetails: [],
+          dataSummary: [],
+        },
+        formNewBehaviorTitle: null,
+        formNewBehaviorId: null,
+        showBehaviorDetails: [],
+        addNewBehavior: {
+          noTime: false,
+          entry: null,
+          duration: 0,
+          notes: null,
+        },
+
+        validNewReplacementForm: false,
+        openNewReplacementDialog: false,
+        formNewReplacementTitle: null,
+        clientReplacements: [],
+        showReplacementDetails: [],
+        collectReplacements: {
+          dataDetails: [],
+          dataSummary: [],
+        },
+        addNewReplacement: {
+          noTime: false,
+          entry: null,
+          completed: false,
+          notes: null,
+        },
+      };
+    },
+
+    mounted() {
+      if (!this.activeSessionId) this.close();
+      this.loadGlobalData();
+      this.loadCollectBehaviors();
+      this.loadCollectReplacements();
+    },
+
+    methods: {
+      async loadGlobalData() {
+        try {
+          this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId);
+          this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId);
+          this.clientBehaviors.forEach(() => { this.showBehaviorDetails.push(false); });
+          this.clientReplacements.forEach(() => { this.showBehaviorDetails.push(false); });
+        } catch (error) {
+          this.$toast.error(error.message || error);
+        }
       },
 
-      validNewReplacementForm: false,
-      openNewReplacementDialog: false,
-      formNewReplacementTitle: null,
-      clientReplacements: [],
-      showReplacementDetails: [],
-      collectReplacements: {
-        dataDetails: [],
-        dataSummary: [],
+      async loadCollectBehaviors() {
+        try {
+          this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
+        } catch (error) {
+          this.$toast.error(error.message || error);
+        }
       },
-      addNewReplacement: {
-        noTime: false,
-        entry: null,
-        completed: false,
-        notes: null,
+
+      async loadCollectReplacements() {
+        try {
+          this.collectReplacements = await sessionServicesApi.getCollectReplacements(this.activeSessionId);
+        } catch (error) {
+          this.$toast.error(error.message || error);
+        }
       },
-    };
-  },
 
-  mounted() {
-    if (!this.activeSessionId) this.close();
-    this.loadGlobalData();
-    this.loadCollectBehaviors();
-    this.loadCollectReplacements();
-  },
+      addNewBehaviorFormShow(b) {
+        this.formNewBehaviorTitle = b.problemBehavior.problemBehaviorDescription;
+        this.formNewBehaviorId = b.problemBehavior.problemId;
+        this.addNewBehavior.duration = 0;
+        this.addNewBehavior.entry = this.$moment().format('HH:mm');
+        this.openNewBehaviorDialog = true;
+      },
 
-  methods: {
-    async loadGlobalData() {
-      try {
-        this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId);
-        this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId);
-        this.clientBehaviors.forEach(() => { this.showBehaviorDetails.push(false); });
-        this.clientReplacements.forEach(() => { this.showBehaviorDetails.push(false); });
-      } catch (error) {
-        this.$toast.error(error.message || error);
-      }
+      addNewBehaviorQuickEntry(b) {
+        this.formNewBehaviorId = b.problemBehavior.problemId;
+        this.addNewBehavior.duration = 0;
+        this.addNewBehavior.noTime = true;
+        this.addNewBehaviorEvent();
+      },
+
+      cancelNewBehavior() {
+        this.openNewBehaviorDialog = false;
+        this.$refs.newBehaviorForm.reset();
+      },
+
+      async addNewBehaviorEvent() {
+        try {
+          this.loading = true;
+          let s = this.$moment(`${this.activeDate.format('MM/DD/YYYY')} ${this.addNewBehavior.noTime ? '00:00:00' : this.addNewBehavior.entry}`);
+          let data = {
+            sessionId: this.activeSessionId,
+            clientId: this.activeClientId,
+            problemId: this.formNewBehaviorId,
+            notes: this.addNewBehavior.notes,
+            duration: this.addNewBehavior.duration,
+            entry: s,
+          };
+          await sessionServicesApi.saveSessionCollectBehavior(data);
+          await this.loadCollectBehaviors();
+          this.cancelNewBehavior();
+        } catch (error) {
+          this.$toast.error(error.message || error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      getTotalBehaviors(problemId) {
+        let c = this.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
+        return c ? c.count : 0;
+      },
+
+      showBehaviorDetailsEvent(i) {
+        this.$set(this.showBehaviorDetails, i, !this.showBehaviorDetails[i]);
+      },
+
+      getTimelineBehavior(problemId) {
+        let arr = this.collectBehaviors.dataDetails.filter(p => p.problemId == problemId);
+        return arr;
+      },
+
+      deleteBehaviorEntry(t) {
+        this.$confirm('Do you want to delete this entry?')
+            .then(async res => {
+              if (res) {
+                this.loading = true;
+                try {
+                  await sessionServicesApi.deleteSessionCollectBehavior(t.sessionCollectBehaviorId);
+                  this.loadCollectBehaviors();
+                } catch (error) {
+                  this.$toast.error(error);
+                } finally {
+                  this.loading = false;
+                }
+              }
+            });
+      },
+
+      //replacements
+      addNewReplacementFormShow(b) {
+        this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
+        this.formNewReplacementId = b.replacement.replacementId;
+        this.addNewReplacement.completed = false;
+        this.addNewReplacement.entry = this.$moment().format('HH:mm');
+        this.openNewReplacementDialog = true;
+      },
+
+      addNewReplacementQuickEntry(b, complete) {
+        this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
+        this.formNewReplacementId = b.replacement.replacementId;
+        this.addNewReplacement.completed = complete;
+        this.addNewReplacement.noTime = true;
+        this.addNewReplacementEvent();
+      },
+
+      cancelNewReplacement() {
+        this.openNewReplacementDialog = false;
+        this.$refs.newReplacementForm.reset();
+      },
+
+      async addNewReplacementEvent() {
+        try {
+          this.loading = true;
+          let s = this.$moment(`${this.activeDate.format('MM/DD/YYYY')} ${this.addNewReplacement.noTime ? '00:00' : this.addNewReplacement.entry}`);
+          let data = {
+            sessionId: this.activeSessionId,
+            clientId: this.activeClientId,
+            replacementId: this.formNewReplacementId,
+            notes: this.addNewReplacement.notes,
+            completed: this.addNewReplacement.completed,
+            entry: s,
+          };
+          await sessionServicesApi.saveSessionCollectReplacement(data);
+          await this.loadCollectReplacements();
+          this.cancelNewReplacement();
+        } catch (error) {
+          this.$toast.error(error.message || error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      getTotalReplacement(replacementId) {
+        let c = this.collectReplacements.dataSummary.find(s => s.replacementId === replacementId);
+        let total = c ? c.count : 0;
+        let completed = c ? c.completed : 0;
+        let percent = total == 0 ? 0 : completed / total * 100;
+        return `Trials: ${total} | Completed: ${completed} | Percent: ${percent.toFixed(0)}%`;
+      },
+
+      showReplacementDetailsEvent(i) {
+        this.$set(this.showReplacementDetails, i, !this.showReplacementDetails[i]);
+      },
+
+      getTimelineReplacement(replacementId) {
+        let arr = this.collectReplacements.dataDetails.filter(p => p.replacementId == replacementId);
+        return arr;
+      },
+
+      deleteReplacementEntry(t) {
+        this.$confirm('Do you want to delete this trial?')
+            .then(async res => {
+              if (res) {
+                this.loading = true;
+                try {
+                  await sessionServicesApi.deleteSessionCollectReplacement(t.sessionCollectReplacementId);
+                  this.loadCollectReplacements();
+                } catch (error) {
+                  this.$toast.error(error);
+                } finally {
+                  this.loading = false;
+                }
+              }
+            });
+      },
+
+      goToNotes() {
+        this.$router.push('/clients/session_notes');
+      },
+
     },
-
-    async loadCollectBehaviors() {
-      try {
-        this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
-      } catch (error) {
-        this.$toast.error(error.message || error);
-      }
-    },
-
-    async loadCollectReplacements() {
-      try {
-        this.collectReplacements = await sessionServicesApi.getCollectReplacements(this.activeSessionId);
-      } catch (error) {
-        this.$toast.error(error.message || error);
-      }
-    },
-
-    addNewBehaviorFormShow(b) {
-      this.formNewBehaviorTitle = b.problemBehavior.problemBehaviorDescription;
-      this.formNewBehaviorId = b.problemBehavior.problemId;
-      this.addNewBehavior.duration = 0;
-      this.addNewBehavior.entry = this.$moment().format('HH:mm');
-      this.openNewBehaviorDialog = true;
-    },
-
-    addNewBehaviorQuickEntry(b) {
-      this.formNewBehaviorId = b.problemBehavior.problemId;
-      this.addNewBehavior.duration = 0;
-      this.addNewBehavior.noTime = true;
-      this.addNewBehaviorEvent();
-    },
-
-    cancelNewBehavior() {
-      this.openNewBehaviorDialog = false;
-      this.$refs.newBehaviorForm.reset();
-    },
-
-    async addNewBehaviorEvent() {
-      try {
-        this.loading = true;
-        let s = this.$moment(`${this.activeDate.format('MM/DD/YYYY')} ${this.addNewBehavior.noTime ? '00:00:00' : this.addNewBehavior.entry}`);
-        let data = {
-          sessionId: this.activeSessionId,
-          clientId: this.activeClientId,
-          problemId: this.formNewBehaviorId,
-          notes: this.addNewBehavior.notes,
-          duration: this.addNewBehavior.duration,
-          entry: s,
-        };
-        await sessionServicesApi.saveSessionCollectBehavior(data);
-        await this.loadCollectBehaviors();
-        this.cancelNewBehavior();
-      } catch (error) {
-        this.$toast.error(error.message || error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    getTotalBehaviors(problemId) {
-      let c = this.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
-      return c ? c.count : 0;
-    },
-
-    showBehaviorDetailsEvent(i) {
-      this.$set(this.showBehaviorDetails, i, !this.showBehaviorDetails[i]);
-    },
-
-    getTimelineBehavior(problemId) {
-      let arr = this.collectBehaviors.dataDetails.filter(p => p.problemId == problemId);
-      return arr;
-    },
-
-    deleteBehaviorEntry(t) {
-      this.$confirm('Do you want to delete this entry?')
-        .then(async res => {
-          if (res) {
-            this.loading = true;
-            try {
-              await sessionServicesApi.deleteSessionCollectBehavior(t.sessionCollectBehaviorId);
-              this.loadCollectBehaviors();
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loading = false;
-            }
-          }
-        });
-    },
-
-    //replacements
-    addNewReplacementFormShow(b) {
-      this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
-      this.formNewReplacementId = b.replacement.replacementId;
-      this.addNewReplacement.completed = false;
-      this.addNewReplacement.entry = this.$moment().format('HH:mm');
-      this.openNewReplacementDialog = true;
-    },
-
-    addNewReplacementQuickEntry(b, complete) {
-      this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
-      this.formNewReplacementId = b.replacement.replacementId;
-      this.addNewReplacement.completed = complete;
-      this.addNewReplacement.noTime = true;
-      this.addNewReplacementEvent();
-    },
-
-    cancelNewReplacement() {
-      this.openNewReplacementDialog = false;
-      this.$refs.newReplacementForm.reset();
-    },
-
-    async addNewReplacementEvent() {
-      try {
-        this.loading = true;
-        let s = this.$moment(`${this.activeDate.format('MM/DD/YYYY')} ${this.addNewReplacement.noTime ? '00:00' : this.addNewReplacement.entry}`);
-        let data = {
-          sessionId: this.activeSessionId,
-          clientId: this.activeClientId,
-          replacementId: this.formNewReplacementId,
-          notes: this.addNewReplacement.notes,
-          completed: this.addNewReplacement.completed,
-          entry: s,
-        };
-        await sessionServicesApi.saveSessionCollectReplacement(data);
-        await this.loadCollectReplacements();
-        this.cancelNewReplacement();
-      } catch (error) {
-        this.$toast.error(error.message || error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    getTotalReplacement(replacementId) {
-      let c = this.collectReplacements.dataSummary.find(s => s.replacementId === replacementId);
-      let total = c ? c.count : 0;
-      let completed = c ? c.completed : 0;
-      let percent = total == 0 ? 0 : completed / total * 100;
-      return `Trials: ${total} | Completed: ${completed} | Percent: ${percent.toFixed(0)}%`;
-    },
-
-    showReplacementDetailsEvent(i) {
-      this.$set(this.showReplacementDetails, i, !this.showReplacementDetails[i]);
-    },
-
-    getTimelineReplacement(replacementId) {
-      let arr = this.collectReplacements.dataDetails.filter(p => p.replacementId == replacementId);
-      return arr;
-    },
-
-    deleteReplacementEntry(t) {
-      this.$confirm('Do you want to delete this trial?')
-        .then(async res => {
-          if (res) {
-            this.loading = true;
-            try {
-              await sessionServicesApi.deleteSessionCollectReplacement(t.sessionCollectReplacementId);
-              this.loadCollectReplacements();
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loading = false;
-            }
-          }
-        });
-    },
-
-  },
-};
+  };
 </script>
