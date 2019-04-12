@@ -26,6 +26,14 @@
           <v-list-tile-title>Billing by User</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/reporting/time-sheet" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-calendar-week</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Time sheet</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
   </div>
 </template>

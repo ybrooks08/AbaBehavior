@@ -18,8 +18,7 @@
               <v-layout row wrap>
                 <v-flex sm12>
                   <v-subheader>{{activeDate | moment('LL')}}</v-subheader>
-                  <!-- <v-text-field box required label="Session date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" data-vv-name="dateSelected" :rules="errors.collect('dateSelected')" v-validate="'required|date_format:MM/DD/YYYY'"/> -->
-                  <v-text-field box required label="Session date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" :rules="[required]"/>
+                  <v-text-field box required label="Session date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" data-vv-name="dateSelected" :rules="errors.collect('dateSelected')" v-validate="'required|date_format:MM/dd/yyyy'"/>
                 </v-flex>
                 <v-flex sm12>
                   <v-select box :disabled="loading" label="Pos" v-model="session.pos" required :items="posEnum" prepend-icon="fa-map-marker-alt" :rules="[required]">

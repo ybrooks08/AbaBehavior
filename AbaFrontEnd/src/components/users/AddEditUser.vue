@@ -87,14 +87,17 @@
                   </v-flex>
                 </v-layout>
                 <v-layout row wrap>
-                  <v-flex sm12 md4>
+                  <v-flex sm12 md3>
                     <v-text-field box :disabled="loading" label="Route number" v-model="bankRoutingNumber" prepend-icon="fa-route"></v-text-field>
                   </v-flex>
-                  <v-flex sm12 md4>
+                  <v-flex sm12 md3>
                     <v-text-field box :disabled="loading" label="Account number" v-model="bankAccountNumber" prepend-icon="fa-file-invoice-dollar"></v-text-field>
                   </v-flex>
-                  <v-flex sm12 md4>
+                  <v-flex sm12 md3>
                     <v-text-field box :disabled="loading" label="Pay rate" v-model="payRate" prepend-icon="fa-dollar-sign" type="number"></v-text-field>
+                  </v-flex>
+                  <v-flex sm12 md3>
+                    <v-text-field box :disabled="loading" label="Drive Time Pay rate" v-model="driveTimePayRate" prepend-icon="fa-dollar-sign" type="number"></v-text-field>
                   </v-flex>
                 </v-layout>
               </template>
@@ -151,7 +154,8 @@ export default {
       bankAddress: null,
       bankRoutingNumber: null,
       bankAccountNumber: null,
-      payRate: null
+      payRate: null,
+      driveTimePayRate: null
     };
   },
 
@@ -202,6 +206,7 @@ export default {
         this.bankRoutingNumber = user.bankRoutingNumber;
         this.bankAccountNumber = user.bankAccountNumber;
         this.payRate = user.payRate;
+        this.driveTimePayRate = user.driveTimePayRate;
       } catch (error) {
         this.$toast.error(error);
       } finally { this.loading = false; }
@@ -231,7 +236,8 @@ export default {
         bankAddress: this.bankAddress,
         bankRoutingNumber: this.bankRoutingNumber,
         bankAccountNumber: this.bankAccountNumber,
-        payRate: this.payRate
+        payRate: this.payRate,
+        driveTimePayRate: this.driveTimePayRate
       };
 
       this.loading = true;

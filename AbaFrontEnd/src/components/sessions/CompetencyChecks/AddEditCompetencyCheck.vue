@@ -11,8 +11,7 @@
             <v-select box hide-details prepend-icon="fa-user-check" :items="competencyCheckTypeEnum" v-model="comp.competencyCheckType" label="Competency type"></v-select>
           </v-flex>
           <v-flex sm6>
-            <!-- <v-text-field box prepend-icon="fa-calendar" v-model="comp.date" label="Date" mask="##/##/####" return-masked-value :rules="[required]" data-vv-name="notedate" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/DD/YYYY'"></v-text-field> -->
-            <v-text-field box prepend-icon="fa-calendar" v-model="comp.date" label="Date" mask="##/##/####" return-masked-value :rules="[required]"></v-text-field>
+            <v-text-field box prepend-icon="fa-calendar" v-model="comp.date" label="Date" mask="##/##/####" return-masked-value :rules="[required]" data-vv-name="notedate" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
           </v-flex>
           <v-flex sm6>
             <v-text-field box prepend-icon="fa-clock" v-model="comp.totalDuration" label="Duration" mask="##" suffix="hours" data-vv-name="totalduration" :rules="[required]" :error-messages="errors.collect('totalduration')" v-validate="'required'"></v-text-field>

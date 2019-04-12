@@ -66,10 +66,10 @@
                     <v-text-field solo hide-details v-model="clientProblem.baselineCount" placeholder="Base" clearable></v-text-field>
                   </v-flex>
                   <v-flex md3>
-                    <v-text-field solo hide-details v-model="clientProblem.baselineFrom" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/DD/YYYY'" clearable></v-text-field>
+                    <v-text-field solo hide-details v-model="clientProblem.baselineFrom" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/dd/yyyy'" clearable></v-text-field>
                   </v-flex>
                   <v-flex md3>
-                    <v-text-field solo hide-details v-model="clientProblem.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/DD/YYYY'" clearable></v-text-field>
+                    <v-text-field solo hide-details v-model="clientProblem.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/dd/yyyy'" clearable></v-text-field>
                   </v-flex>
                 </v-layout>
                 <div class="text-xs-right">
@@ -144,10 +144,10 @@
                     <v-text-field solo hide-details v-model="clientReplacement.baselinePercent" placeholder="Base" clearable append-icon="fa-percent fa-sm"></v-text-field>
                   </v-flex>
                   <v-flex md3>
-                    <v-text-field solo hide-details v-model="clientReplacement.baselineFrom" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/DD/YYYY'" clearable></v-text-field>
+                    <v-text-field solo hide-details v-model="clientReplacement.baselineFrom" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodStart" :rules="errors.collect('periodStart')" v-validate="'date_format:MM/dd/yyyy'" clearable></v-text-field>
                   </v-flex>
                   <v-flex md3>
-                    <v-text-field solo hide-details v-model="clientReplacement.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/DD/YYYY'" clearable></v-text-field>
+                    <v-text-field solo hide-details v-model="clientReplacement.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/dd/yyyy'" clearable></v-text-field>
                   </v-flex>
                 </v-layout>
                 <div class="text-xs-right">

@@ -335,7 +335,7 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var allSessionsOverlapping = await _dbContext.Sessions
                                                    .Where(w => w.UserId.Equals(userId))
-                                                   .Where(w => w.SessionStart < dateEnd && dateStart < w.SessionEnd)
+                                                   .Where(w => w.SessionStart < dateEnd.ToUniversalTime() && dateStart.ToUniversalTime() < w.SessionEnd)
                                                    .ToListAsync();
       if (allSessionsOverlapping.Any()) return "You cannot overlap sessions";
       return "ok";
@@ -345,7 +345,7 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var allSessionsOverlapping = await _dbContext.Sessions
                                                    .Where(w => w.ClientId.Equals(clientId))
-                                                   .Where(w => w.SessionStart < dateEnd && dateStart < w.SessionEnd)
+                                                   .Where(w => w.SessionStart < dateEnd.ToUniversalTime() && dateStart.ToUniversalTime() < w.SessionEnd)
                                                    .ToListAsync();
       if (allSessionsOverlapping.Any()) return "You cannot overlap sessions with same client";
       return "ok";
@@ -578,6 +578,16 @@ namespace AbaBackend.Infrastructure.Utils
           break;
       }
       return name;
+    }
+
+    public async Task<User> GetUserById(int userId)
+    {
+      var user = await _dbContext.Users
+                .Include(i => i.Rol)
+                .ThenInclude(t => t.BehaviorAnalysisCode)
+                .Include(i => i.UserSign)
+                .FirstOrDefaultAsync(w => w.UserId.Equals(userId));
+      return user;
     }
   }
 }

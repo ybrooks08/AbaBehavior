@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using AbaBackend.Infrastructure.Utils.Static;
 
 namespace AbaBackend.Controllers
 {
@@ -239,6 +241,75 @@ namespace AbaBackend.Controllers
                                        .ToListAsync();
 
         return Ok(sessions);
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{start}/{end}/{userId}")]
+    public async Task<IActionResult> GetTimeSheet(DateTime start, DateTime end, int userId)
+    {
+      try
+      {
+        var user = await _utils.GetUserById(userId);
+        if (!user.Rol.CanCreateSession) throw new Exception("You must select a valid user");
+
+        var sessions = await _dbContext.Sessions
+                      .Include(i => i.Client)
+                      .Where(w => w.SessionStart.Date >= start && w.SessionStart.Date <= end)
+                      .Where(w => w.SessionType == SessionType.BA_Service || w.SessionType == SessionType.Supervision_BCABA)
+                      .Where(w => w.SessionStatus == SessionStatus.Checked)
+                      .Where(w => w.UserId.Equals(userId))
+                      .OrderBy(o => o.SessionStart)
+                      .ToListAsync();
+
+        var rows = new List<Object>();
+        var totalHours = 0m;
+        foreach (var session in sessions)
+        {
+          var sessionHours = session.TotalUnits / (decimal)4;
+          var sessionDriveTime = session.DriveTime;
+
+          var regularHours = 0m;
+          var regularDrive = 0m;
+          var extraHours = 0m;
+          var extraDrive = 0m;
+
+
+          var serviceHours = StaticUtils.CalculateWageHour(totalHours, sessionHours);
+          totalHours += sessionHours;
+          regularHours = serviceHours.regular;
+          extraHours = serviceHours.extra;
+
+          var driveHours = StaticUtils.CalculateWageHour(totalHours, sessionDriveTime);
+          totalHours += sessionDriveTime;
+          regularDrive = driveHours.regular;
+          extraDrive = driveHours.extra;
+
+          rows.Add(new OkObjectResult(
+          new
+          {
+            sessionId = session.SessionId,
+            date = session.SessionStart,
+            sessionIn = session.SessionStart,
+            sessionOut = session.SessionEnd,
+            client = $"{session.Client.Firstname} {session.Client.Lastname[0]}.",
+            sessionHours,
+            sessionDriveTime,
+            regularHours,
+            regularDrive,
+            extraHours,
+            extraDrive
+          }).Value);
+        }
+
+        return Ok(new
+        {
+          rows,
+          user
+        });
       }
       catch (System.Exception e)
       {

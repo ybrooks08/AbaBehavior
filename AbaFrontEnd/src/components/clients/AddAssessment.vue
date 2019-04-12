@@ -49,12 +49,10 @@
                   </v-layout>
                   <v-layout row wrap>
                     <v-flex sm12 md6>
-                      <!-- <v-text-field box :disabled="loading" label="Start date" v-model="data.startDate" prepend-icon="fa-calendar-plus" required return-masked-value mask="##/##/####" data-vv-name="startdate" :rules="errors.collect('startdate')" v-validate="'required|date_format:MM/DD/YYYY'"></v-text-field> -->
-                      <v-text-field box :disabled="loading" label="Start date" v-model="data.startDate" prepend-icon="fa-calendar-plus" required return-masked-value mask="##/##/####" :rules="[required]"></v-text-field>
+                      <v-text-field box :disabled="loading" label="Start date" v-model="data.startDate" prepend-icon="fa-calendar-plus" required return-masked-value mask="##/##/####" data-vv-name="startdate" :rules="errors.collect('startdate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
                     </v-flex>
                     <v-flex sm12 md6>
-                      <!-- <v-text-field box :disabled="loading" label="End date" v-model="data.endDate" prepend-icon="fa-calendar-minus" required return-masked-value mask="##/##/####" data-vv-name="enddate" :rules="errors.collect('enddate')" v-validate="'required|date_format:MM/DD/YYYY'"></v-text-field> -->
-                      <v-text-field box :disabled="loading" label="End date" v-model="data.endDate" prepend-icon="fa-calendar-minus" required return-masked-value mask="##/##/####" :rules="[required]"></v-text-field>
+                      <v-text-field box :disabled="loading" label="End date" v-model="data.endDate" prepend-icon="fa-calendar-minus" required return-masked-value mask="##/##/####" data-vv-name="enddate" :rules="errors.collect('enddate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
                     </v-flex>
                   </v-layout>
                 </v-layout>

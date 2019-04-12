@@ -3,7 +3,7 @@
     <v-flex xs12 class="no-print">
       <v-card>
         <v-toolbar dark class="secondary" fluid dense>
-          <v-toolbar-title>RBT/Assistant Service Log</v-toolbar-title>
+          <v-toolbar-title>Service Log</v-toolbar-title>
         </v-toolbar>
         <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
         <v-card-text class="pa-1">
@@ -53,7 +53,7 @@
                 <img style="object-fit: contain;" src="images/logo.jpg" width="100">
               </v-flex>
               <v-flex xs10>
-                <h4>BEHAVIOR ASSISTANT (BA) / BEHAVIOR TECHNICIAN (RBT) SERVICE LOG</h4>
+                <h4>SERVICE LOG</h4>
                 <v-divider></v-divider>
                 <span>
                   FROM:

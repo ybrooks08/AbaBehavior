@@ -19,8 +19,7 @@
               </v-layout>
               <v-layout row wrap>
                 <v-flex sm12 md4>
-                  <!-- <v-text-field box required label="Date of birth" v-model="client.dob" return-masked-value prepend-icon="fa-birthday-cake" mask="##/##/####" data-vv-name="dob" :rules="errors.collect('dob')" v-validate="'required|date_format:MM/DD/YYYY'"/> -->
-                  <v-text-field box required label="Date of birth" v-model="client.dob" return-masked-value prepend-icon="fa-birthday-cake" mask="##/##/####" :rules="[required]"/>
+                  <v-text-field box required label="Date of birth" v-model="client.dob" return-masked-value prepend-icon="fa-birthday-cake" mask="##/##/####" data-vv-name="dob" :rules="errors.collect('dob')" v-validate="'required|date_format:MM/dd/yyyy'"/>
                 </v-flex>
                 <v-flex sm12 md4>
                   <v-text-field box :disabled="loading" label="Nickname" v-model="client.nickname" prepend-icon="fa-grin-hearts"></v-text-field>

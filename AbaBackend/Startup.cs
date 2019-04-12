@@ -42,7 +42,9 @@ namespace AbaBackend
       services.AddCors(options =>
       {
         options.AddPolicy("CorsPolicy",
-          builder => builder.AllowAnyOrigin()
+          builder => builder
+          //.AllowAnyOrigin()
+                            .SetIsOriginAllowed(isOriginAllowed: _ => true)
                             .AllowAnyMethod()
                             .AllowAnyHeader()
                             .AllowCredentials());

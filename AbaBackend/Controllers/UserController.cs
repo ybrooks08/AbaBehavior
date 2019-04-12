@@ -89,7 +89,8 @@ namespace AbaBackend.Controllers
                                      u.BankAddress,
                                      u.BankRoutingNumber,
                                      u.BankAccountNumber,
-                                     u.PayRate
+                                     u.PayRate,
+                                     u.DriveTimePayRate
                                    })
                                    .FirstOrDefaultAsync();
         if (user == null) return BadRequest("User not found");
@@ -215,6 +216,7 @@ namespace AbaBackend.Controllers
           userProcess.BankRoutingNumber = user.BankRoutingNumber;
           userProcess.BankAccountNumber = user.BankAccountNumber;
           userProcess.PayRate = user.PayRate;
+          userProcess.DriveTimePayRate = user.DriveTimePayRate;
 
           if (user.UserId == 0) await _dbContext.Users.AddAsync(userProcess);
           await _dbContext.SaveChangesAsync();

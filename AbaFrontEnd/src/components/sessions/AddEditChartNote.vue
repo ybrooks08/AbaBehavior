@@ -22,8 +22,7 @@
                   <v-text-field box :disabled="loading" label="Title" v-model="chartNote.title" required prepend-icon="fa-tag" counter="20" maxlength="20" :rules="[required]"></v-text-field>
                 </v-flex>
                 <v-flex xs12 sm6>
-                  <!-- <v-text-field required label="Note date" box v-model="chartNote.chartNoteDate" mask="##/##/####" prepend-icon="fa-calendar-plus" return-masked-value data-vv-name="notedate" :rules="[required]" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/DD/YYYY'"></v-text-field> -->
-                  <v-text-field required label="Note date" box v-model="chartNote.chartNoteDate" mask="##/##/####" prepend-icon="fa-calendar-plus" return-masked-value :rules="[required]"></v-text-field>
+                  <v-text-field required label="Note date" box v-model="chartNote.chartNoteDate" mask="##/##/####" prepend-icon="fa-calendar-plus" return-masked-value data-vv-name="notedate" :rules="[required]" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
                 </v-flex>
               </v-layout>
               <v-layout row wrap>

@@ -4,14 +4,16 @@ using AbaBackend.DataModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AbaBackend.Migrations
 {
     [DbContext(typeof(AbaDbContext))]
-    partial class AbaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190410130704_DriveTimePayRate")]
+    partial class DriveTimePayRate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1928,9 +1930,6 @@ namespace AbaBackend.Migrations
                     b.Property<int>("ClientId");
 
                     b.Property<DateTime>("Created");
-
-                    b.Property<decimal>("DriveTime")
-                        .HasColumnType("decimal(6,2)");
 
                     b.Property<int>("Pos");
 

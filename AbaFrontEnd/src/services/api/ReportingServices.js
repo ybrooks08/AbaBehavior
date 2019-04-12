@@ -34,4 +34,12 @@ export default {
     });
   },
 
+  getTimeSheet(from, to, userId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/reporting/GetTimeSheet/${from}/${to}/${userId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
 }

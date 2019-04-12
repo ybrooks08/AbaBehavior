@@ -44,10 +44,10 @@
               </td>
               <td class="hidden-sm-and-down">
                 <v-icon color="green" small>fa-check-circle</v-icon>
-                {{r.startDate | moment('MM/DD/YYYY')}}
+                {{r.startDate | moment('utc', 'MM/DD/YYYY')}}
                 <br>
                 <v-icon color="red" small>fa-times-circle</v-icon>
-                {{r.endDate | moment('MM/DD/YYYY')}}
+                {{r.endDate | moment('utc', 'MM/DD/YYYY')}}
               </td>
               <td>{{r.endDate | moment('from', 'now')}}</td>
               <td class="hidden-sm-and-down">

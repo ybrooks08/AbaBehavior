@@ -238,6 +238,7 @@ namespace AbaBackend.Controllers
                             s.BehaviorAnalysisCode.Description,
                             s.BehaviorAnalysisCode.Hcpcs,
                             s.Sign,
+                            s.DriveTime,
                             SessionLogs = s.SessionLogs.Select(l => new
                             {
                               l.Entry,
@@ -1174,6 +1175,24 @@ namespace AbaBackend.Controllers
         });
       }
       catch (System.Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpPut("[action]")]
+    public async Task<IActionResult> EditSessionDriveTime([FromBody] ClassIdDecimal s)
+    {
+      try
+      {
+        var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == s.Id);
+        if (session == null) throw new Exception("Session not found");
+        session.DriveTime = s.Value;
+        await _dbContext.SaveChangesAsync();
+        await _utils.NewEntryLog(session.SessionId, "Drive Time", $"Session Drive time edited to {s.Value} hours", "fa-car", "teal");
+        return Ok();
+      }
+      catch (Exception e)
       {
         return BadRequest(e.InnerException?.Message ?? e.Message);
       }

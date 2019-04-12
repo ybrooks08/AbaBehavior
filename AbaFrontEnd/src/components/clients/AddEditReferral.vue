@@ -49,12 +49,10 @@
                   </v-layout>
                   <v-layout row wrap>
                     <v-flex sm12 md6>
-                      <!-- <v-text-field box :disabled="loading" label="Date referral" v-model="data.dateReferral" prepend-icon="fa-calendar-plus" return-masked-value required mask="##/##/####" data-vv-name="referral" :rules="errors.collect('referral')" v-validate="'required|date_format:MM/DD/YYYY'"></v-text-field> -->
-                      <v-text-field box :disabled="loading" label="Date referral" v-model="data.dateReferral" prepend-icon="fa-calendar-plus" return-masked-value required mask="##/##/####" :rules="[required]"></v-text-field>
+                      <v-text-field box :disabled="loading" label="Date referral" v-model="data.dateReferral" prepend-icon="fa-calendar-plus" return-masked-value required mask="##/##/####" data-vv-name="referral" :rules="errors.collect('referral')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
                     </v-flex>
                     <v-flex sm12 md6>
-                      <!-- <v-text-field box :disabled="loading" label="Date expires" v-model="data.dateExpires" prepend-icon="fa-calendar-minus" return-masked-value mask="##/##/####" required data-vv-name="expires" :rules="errors.collect('expires')" v-validate="'required|date_format:MM/DD/YYYY'"></v-text-field> -->
-                      <v-text-field box :disabled="loading" label="Date expires" v-model="data.dateExpires" prepend-icon="fa-calendar-minus" return-masked-value mask="##/##/####" required :rules="[required]"></v-text-field>
+                      <v-text-field box :disabled="loading" label="Date expires" v-model="data.dateExpires" prepend-icon="fa-calendar-minus" return-masked-value mask="##/##/####" required data-vv-name="expires" :rules="errors.collect('expires')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
                     </v-flex>
                   </v-layout>
                 </v-container>

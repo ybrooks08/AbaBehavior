@@ -44,5 +44,6 @@ namespace AbaBackend.Model.User
     public string BankRoutingNumber { get; set; }
     public string BankAccountNumber { get; set; }
     public decimal PayRate { get; set; }
+    public decimal DriveTimePayRate { get; set; }
   }
 }

@@ -158,7 +158,7 @@ export default new Router({
           path: '/reporting/rbt_ba_services_log',
           name: 'RbtBaServicesLog',
           component: () => import(/* webpackChunkName: "RbtBaServicesLog" */ '@/components/reporting/RbtBaServicesLog'),
-          meta: { rol: ['assistant', 'tech', 'management', 'admin'] },
+          meta: { rol: ['assistant', 'tech', 'management', 'admin', 'analyst'] },
         },
         {
           path: '/reporting/sessions-history',
@@ -201,6 +201,12 @@ export default new Router({
           name: 'SystemLogs',
           component: () => import(/* webpackChunkName: "SystemLogs" */ '@/views/SystemLogs'),
           meta: { rol: ['admin'] },
+        },
+        {
+          path: '/reporting/time-sheet',
+          name: 'TimeSheet',
+          component: () => import(/* webpackChunkName: "TimeSheet" */ '@/components/reporting/TimeSheet'),
+          meta: { rol: ['admin', 'billing', 'assistant', 'tech', 'analyst'] },
         },
       ],
     },

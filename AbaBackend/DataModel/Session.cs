@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AbaBackend.DataModel
 {
@@ -54,6 +55,8 @@ namespace AbaBackend.DataModel
     public DateTime SessionStart { get; set; }
     public DateTime SessionEnd { get; set; }
     public int TotalUnits { get; set; }
+    [Column(TypeName = "decimal(6,2)")]
+    public decimal DriveTime { get; set; }
     public SessionType SessionType { get; set; }
     public Pos Pos { get; set; }
     public DateTime Created { get; set; } = DateTime.Now;
@@ -68,7 +71,6 @@ namespace AbaBackend.DataModel
     public List<SessionCollectReplacement> SessionCollectReplacements { get; set; }
     public List<SessionProblemNote> SessionProblemNotes { get; set; }
     public List<SessionLog> SessionLogs { get; set; }
-
     public SessionSign Sign { get; set; }
   }
 }

@@ -90,6 +90,14 @@
                     </v-list-tile-content>
                   </v-list-tile>
                 </template>
+                <v-list-tile @click="goToData">
+                  <v-list-tile-action>
+                    <v-icon medium>fa-chart-line</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title>Data collection</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
               </v-list>
             </v-menu>
 
@@ -143,6 +151,22 @@
                             <v-icon small>fa-clock</v-icon>
                             {{(sessionDetailed.totalUnits / 4).toLocaleString()}}
                           </v-flex>
+                          <v-flex class="body-2 text-xs-right" xs4>Drive time (hrs):</v-flex>
+                          <v-flex xs8>
+                            <div v-if="!driveTimeEditVisible">
+                              <v-icon small>fa-car</v-icon>
+                              {{sessionDetailed.driveTime}}&nbsp;
+                              <v-tooltip top>
+                                <template #activator="data">
+                                  <v-icon color="primary" style="cursor: pointer;" small v-on="data.on" @click="editDriveTime">fa-pen-alt</v-icon>
+                                </template>
+                                <span>Edit Drive time in hours</span>
+                              </v-tooltip>
+                            </div>
+                            <div v-else>
+                              <v-text-field :disabled="loadEditDriveTime" v-model="sessionDetailed.driveTime" class="pa-0" suffix="hrs" single-line hide-details append-outer-icon="fa-paper-plane" @click:append-outer="submitDriveTime" placeholder="Edit drive time" @keypress.enter.native="submitDriveTime"></v-text-field>
+                            </div>
+                          </v-flex>
                           <!-- <v-flex class="body-2 text-xs-right" xs4>Sign:</v-flex> -->
                           <v-flex xs8 :offset-xs4="!sessionDetailed || !sessionDetailed.sign">
                             <v-chip v-if="!sessionDetailed || !sessionDetailed.sign" label disabled color="orange" text-color="white">
@@ -160,16 +184,14 @@
                           <v-flex xs8>{{sessionDetailed.clientFullname}} ({{sessionDetailed.clientCode}})</v-flex>
                           <v-flex class="body-2 text-xs-right" xs4>Pos:</v-flex>
                           <v-flex xs8>
-                            <div style="position: relative;" v-if="!posEditVisible">
+                            <div v-if="!posEditVisible">
+                              <span class="text-no-wrap text-truncate">{{sessionDetailed.pos}}</span> &nbsp;
                               <v-tooltip left>
                                 <template #activator="data">
-                                  <v-btn flat icon color="primary" class="ma-0 pa-0" style="position: absolute; right: 0; top: -8px;" v-if="!editDisabled" v-on="data.on" @click="editPos">
-                                    <v-icon small>fa-pen-alt</v-icon>
-                                  </v-btn>
+                                  <v-icon color="primary" style="cursor: pointer;" v-on="data.on" small @click="editPos">fa-pen-alt</v-icon>
                                 </template>
                                 <span>Edit POS</span>
                               </v-tooltip>
-                              <span class="text-no-wrap text-truncate">{{sessionDetailed.pos}}</span>
                             </div>
                             <v-select v-if="posEditVisible" :loading="loadingPosEdit" :disabled="loading" hide-details single-line class="pa-0 ma-0" placeholder="Pos" v-model="posToEdit" :items="posEnum" prepend-icon="fa-map-marker-alt" @change="changeNewPos">
                               <template slot="selection" slot-scope="data">
@@ -651,7 +673,9 @@ export default {
       posEnum: [],
       posToEdit: null,
       posEditVisible: false,
-      loadingPosEdit: false
+      loadingPosEdit: false,
+      driveTimeEditVisible: false,
+      loadEditDriveTime: false
     };
   },
 
@@ -964,6 +988,32 @@ export default {
         this.posEditVisible = false;
         this.loadingPosEdit = false;
       }
+    },
+
+    editDriveTime() {
+      //this.posToEdit = this.sessionDetailed.posCode;
+      this.driveTimeEditVisible = true;
+    },
+
+    async submitDriveTime() {
+      this.loadEditDriveTime = true;
+      const model = {
+        id: this.activeSessionId,
+        value: this.sessionDetailed.driveTime,
+      };
+      try {
+        await sessionServicesApi.editSessionDriveTime(model);
+      } catch (error) {
+        this.$toast.error("Error changing the driving time value. Error: " + error);
+      } finally {
+        this.loadSessionData();
+        this.driveTimeEditVisible = false;
+        this.loadEditDriveTime = false;
+      }
+    },
+
+    goToData(){
+      this.$router.push('/session/session_collect_data');
     }
 
   }

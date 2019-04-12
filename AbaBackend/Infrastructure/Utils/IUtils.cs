@@ -38,5 +38,6 @@ namespace AbaBackend.Infrastructure.Utils
     Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId);
     Task NewSystemLog(SystemLogType logType, Module module, int moduleId, string title, string description);
     Task<string> GetFullDataForSystemLog(Module who, int valueId);
+    Task<User> GetUserById(int userId);
   }
 }

@@ -87,7 +87,7 @@
       </template>
 
       <v-subheader>Reports</v-subheader>
-      <v-list-tile to="/reporting/specialist_billing_report" active-class="blue lighten-4">
+      <v-list-tile to="/reporting/rbt_ba_services_log" active-class="blue lighten-4">
         <v-list-tile-action>
           <v-icon>fa-clipboard-list</v-icon>
         </v-list-tile-action>
@@ -101,6 +101,14 @@
         </v-list-tile-action>
         <v-list-tile-content>
           <v-list-tile-title>Progress Notes</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile to="/reporting/time-sheet" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-calendar-week</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Time sheet</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
     </v-list>

@@ -340,4 +340,12 @@ export default {
     });
   },
 
+  editSessionDriveTime(data) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.put('api/session/EditSessionDriveTime', data)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
 };
