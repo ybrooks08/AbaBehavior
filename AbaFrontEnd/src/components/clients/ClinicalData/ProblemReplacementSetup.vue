@@ -17,9 +17,9 @@
                     <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>
                   </v-list-tile-title>
                   <v-list-tile-sub-title>
-                    Baseline: {{p.baselineCount || 'N/A'}},
-                    <span v-if="p.baselineFrom">From {{p.baselineFrom | moment('utc','MM/DD/YYYY')}}</span>&nbsp;
-                    <span v-if="p.baselineTo">to {{p.baselineTo | moment('utc','MM/DD/YYYY')}}</span>
+                    Baseline: {{p.baselineCount || "N/A"}},
+                    <span v-if="p.baselineFrom">From {{p.baselineFrom | moment("MM/DD/YYYY")}}</span>&nbsp;
+                    <span v-if="p.baselineTo">to {{p.baselineTo | moment("MM/DD/YYYY")}}</span>
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
                 <v-list-tile-action>
@@ -93,12 +93,12 @@
                 <v-list-tile-content>
                   <v-list-tile-title class="body-2">
                     {{p.replacement.replacementProgramDescription}} &nbsp;&nbsp;&nbsp;
-                    <!--<v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>-->
+                    <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>
                   </v-list-tile-title>
                   <v-list-tile-sub-title>
-                    Baseline: {{p.baselinePercent || 'N/A'}},
-                    <span v-if="p.baselineFrom">From {{p.baselineFrom | moment('utc','MM/DD/YYYY')}}</span>&nbsp;
-                    <span v-if="p.baselineTo">to {{p.baselineTo | moment('utc','MM/DD/YYYY')}}</span>
+                    Baseline: {{p.baselinePercent || "N/A"}},
+                    <span v-if="p.baselineFrom">From {{p.baselineFrom | moment("MM/DD/YYYY")}}</span>&nbsp;
+                    <span v-if="p.baselineTo">to {{p.baselineTo | moment("MM/DD/YYYY")}}</span>
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
                 <v-list-tile-action>
@@ -166,27 +166,27 @@
 </template>
 
 <script>
-import clientApi from '@/services/api/ClientServices';
-import tablesApi from '@/services/api/MasterTablesServices';
-import problemStoDialog from '@/components/clients/ClinicalData/ProblemStoDialog';
-import replacementStoDialog from '@/components/clients/ClinicalData/ReplacementStoDialog';
+import clientApi from "@/services/api/ClientServices";
+import tablesApi from "@/services/api/MasterTablesServices";
+import problemStoDialog from "@/components/clients/ClinicalData/ProblemStoDialog";
+import replacementStoDialog from "@/components/clients/ClinicalData/ReplacementStoDialog";
 
 export default {
   props: {
     clientId: {
       type: [Number, String],
-      required: true,
-    },
+      required: true
+    }
   },
 
   components: {
     problemStoDialog,
-    replacementStoDialog,
+    replacementStoDialog
   },
 
   data() {
     return {
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       loadingProblems: false,
       problemFormShow: false,
       problemFormValid: false,
@@ -199,7 +199,7 @@ export default {
         baselineCount: null,
         baselineFrom: null,
         baselineTo: null,
-        clientId: this.clientId,
+        clientId: this.clientId
       },
 
       problemStoDialogShow: false,
@@ -219,15 +219,15 @@ export default {
         baselinePercent: null,
         baselineFrom: null,
         baselineTo: null,
-        clientId: this.clientId,
-      },
+        clientId: this.clientId
+      }
     };
   },
 
   computed: {
     loading() {
       return this.loadingProblems || this.loadingReplacements;
-    },
+    }
   },
 
   mounted() {
@@ -244,7 +244,9 @@ export default {
         this.problemsMaster = await tablesApi.getProblemBehaviors();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingProblems = false; }
+      } finally {
+        this.loadingProblems = false;
+      }
     },
 
     async loadReplacementsMaster() {
@@ -253,7 +255,9 @@ export default {
         this.replacementsMaster = await tablesApi.getReplacementPrograms();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingReplacements = false; }
+      } finally {
+        this.loadingReplacements = false;
+      }
     },
 
     loadAllData() {
@@ -295,8 +299,12 @@ export default {
       this.clientProblem.problemId = p.problemId;
       this.clientProblem.baselineCount = p.baselineCount;
       this.clientProblem.clientProblemId = p.clientProblemId;
-      this.clientProblem.baselineFrom = this.$moment(p.baselineFrom).utc().format('MM/DD/YYYY');
-      this.clientProblem.baselineTo = this.$moment(p.baselineTo).utc().format('MM/DD/YYYY');
+      this.clientProblem.baselineFrom = this.$moment(p.baselineFrom)
+        .utc()
+        .format("MM/DD/YYYY");
+      this.clientProblem.baselineTo = this.$moment(p.baselineTo)
+        .utc()
+        .format("MM/DD/YYYY");
       this.problemFormShow = true;
     },
 
@@ -314,21 +322,22 @@ export default {
         this.loadClientProblems();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingProblems = false; }
+      } finally {
+        this.loadingProblems = false;
+      }
     },
 
     async deleteProblem(p) {
-      this.$confirm('Do you want to delete this Problem behavior?')
-        .then(async res => {
-          if (res) {
-            try {
-              await clientApi.deleteClientProblem(p.clientProblemId);
-              this.loadClientProblems();
-            } catch (error) {
-              this.$toast.error(error.message || error);
-            }
+      this.$confirm("Do you want to delete this Problem behavior?").then(async res => {
+        if (res) {
+          try {
+            await clientApi.deleteClientProblem(p.clientProblemId);
+            this.loadClientProblems();
+          } catch (error) {
+            this.$toast.error(error.message || error);
           }
-        });
+        }
+      });
     },
 
     newReplacement() {
@@ -341,8 +350,12 @@ export default {
       this.clientReplacement.replacementId = p.replacementId;
       this.clientReplacement.baselinePercent = p.baselinePercent;
       this.clientReplacement.clientReplacementId = p.clientReplacementId;
-      this.clientReplacement.baselineFrom = this.$moment(p.baselineFrom).utc().format('MM/DD/YYYY');
-      this.clientReplacement.baselineTo = this.$moment(p.baselineTo).utc().format('MM/DD/YYYY');
+      this.clientReplacement.baselineFrom = this.$moment(p.baselineFrom)
+        .utc()
+        .format("MM/DD/YYYY");
+      this.clientReplacement.baselineTo = this.$moment(p.baselineTo)
+        .utc()
+        .format("MM/DD/YYYY");
       this.replacementFormShow = true;
     },
 
@@ -360,21 +373,22 @@ export default {
         this.loadClientReplacements();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingReplacements = false; }
+      } finally {
+        this.loadingReplacements = false;
+      }
     },
 
     async deleteReplacement(p) {
-      this.$confirm('Do you want to delete this Replacement?')
-        .then(async res => {
-          if (res) {
-            try {
-              await clientApi.deleteClientReplacement(p.clientReplacementId);
-              this.loadClientReplacements();
-            } catch (error) {
-              this.$toast.error(error.message || error);
-            }
+      this.$confirm("Do you want to delete this Replacement?").then(async res => {
+        if (res) {
+          try {
+            await clientApi.deleteClientReplacement(p.clientReplacementId);
+            this.loadClientReplacements();
+          } catch (error) {
+            this.$toast.error(error.message || error);
           }
-        });
+        }
+      });
     },
 
     showProblemSto(p) {
@@ -397,8 +411,8 @@ export default {
       this.replacementStoDialogShow = false;
       this.loadClientReplacements();
       this.replacementStoDialogData = null;
-    },
-  },
+    }
+  }
 };
 </script>
 

@@ -45,6 +45,15 @@
                   <v-list-tile-title>New quick note</v-list-tile-title>
                 </v-list-tile-content>
               </v-list-tile>
+              <v-divider></v-divider>
+              <v-list-tile to="/reporting/client_progress_print">
+                <v-list-tile-action>
+                  <v-icon medium>fa-print</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-content>
+                  <v-list-tile-title>Print version</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
             </v-list>
             <v-divider></v-divider>
           </v-menu>
@@ -62,34 +71,34 @@
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
-import ClientProgressBehavior from '@/components/sessions/ProgressBehavior';
-import ClientProgressReplacement from '@/components/sessions/ProgressReplacement';
+import userApi from "@/services/api/UserServices";
+import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
+import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
 
 export default {
   data() {
     return {
       loading: false,
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       validForm: false,
       clients: [],
-      clientId: null,
+      clientId: null
     };
   },
 
   components: {
     ClientProgressBehavior,
-    ClientProgressReplacement,
+    ClientProgressReplacement
   },
 
   computed: {
     activeClientId() {
       return this.$store.getters.activeClientId;
-    },
+    }
   },
 
   mounted() {
-    this.$store.commit('SET_ACTIVE_CLIENT', 0);
+    this.$store.commit("SET_ACTIVE_CLIENT", 0);
     this.loadUserClients();
   },
 
@@ -101,14 +110,14 @@ export default {
         this.clients = await userApi.loadUserClients();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     clientChanged(clientId) {
-      this.$store.commit('SET_ACTIVE_CLIENT', clientId);
-    },
-
-  },
-
+      this.$store.commit("SET_ACTIVE_CLIENT", clientId);
+    }
+  }
 };
 </script>

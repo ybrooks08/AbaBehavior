@@ -12,7 +12,7 @@
             <v-tab key="assessment" v-if="clientManagementAutorized">Authorizations</v-tab>
             <v-tab key="assignment" v-if="clientManagementAutorized">Staff</v-tab>
             <v-tab key="diagnosis" v-if="clientManagementAutorized">Diagnosis</v-tab>
-            <v-spacer/>
+            <v-spacer />
             <v-btn v-show="(activeTabBasic == 0 || activeTabBasic == 1) && clientManagementAutorized" dark flat :to="`/clients/add_edit/${id}`">
               <v-icon left>fa-edit</v-icon>EDIT
             </v-btn>
@@ -372,37 +372,37 @@
           </v-tabs>
         </v-card>
       </v-flex>
-      <v-flex xs12 v-if="clinicalAutorized">
-        <clinical-data :id="id"/>
+      <v-flex xs12>
+        <clinical-data :id="id" />
       </v-flex>
     </v-layout>
 
-    <add-edit-referral-dialog :model="referralDialog" :data="referralData" @cancel="referralDialog = false" @onSubmit="onSubmitReferral"/>
-    <add-assignment-dialog :model="assignmentDialog" :clientId="id" @cancel="assignmentDialog = false" @onSubmit="onSubmitAssignment"/>
-    <add-assessment-dialog ref="assessmentDiag" :model="assessmentDialog" :clientId="id" @cancel="assessmentDialog = false" @onSubmit="onSubmitAssessment"/>
+    <add-edit-referral-dialog :model="referralDialog" :data="referralData" @cancel="referralDialog = false" @onSubmit="onSubmitReferral" />
+    <add-assignment-dialog :model="assignmentDialog" :clientId="id" @cancel="assignmentDialog = false" @onSubmit="onSubmitAssignment" />
+    <add-assessment-dialog ref="assessmentDiag" :model="assessmentDialog" :clientId="id" @cancel="assessmentDialog = false" @onSubmit="onSubmitAssessment" />
   </v-container>
 </template>
 
 <script>
-import clientApi from '@/services/api/ClientServices';
-import addEditReferralDialog from '@/components/clients/AddEditReferral';
-import addAssignmentDialog from '@/components/clients/AddAssignment';
-import addAssessmentDialog from '@/components/clients/AddAssessment';
-import ClinicalData from '@/components/clients/ClinicalData/ClinicalData';
+import clientApi from "@/services/api/ClientServices";
+import addEditReferralDialog from "@/components/clients/AddEditReferral";
+import addAssignmentDialog from "@/components/clients/AddAssignment";
+import addAssessmentDialog from "@/components/clients/AddAssessment";
+import ClinicalData from "@/components/clients/ClinicalData/ClinicalData";
 
 export default {
   props: {
     id: {
       type: [Number, String],
-      required: true,
-    },
+      required: true
+    }
   },
 
   components: {
     addEditReferralDialog,
     addAssignmentDialog,
     addAssessmentDialog,
-    ClinicalData,
+    ClinicalData
   },
 
   computed: {
@@ -410,11 +410,8 @@ export default {
       return this.$store.getters.user;
     },
     clientManagementAutorized() {
-      return this.user.rol === 'admin' || this.user.rol === 'client management';
-    },
-    clinicalAutorized() {
-      return this.user.rol === 'admin' || this.user.rol2 === 'analyst';
-    },
+      return this.user.rol === "admin" || this.user.rol === "client management";
+    }
   },
 
   data() {
@@ -422,7 +419,7 @@ export default {
       loadingBasicInfo: false,
       loadingExtra: false,
       loadingCaregiverForm: false,
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       addEditCaregiverMenu: false,
       client: {},
       activeTab: 0,
@@ -431,24 +428,24 @@ export default {
         caregiverId: 0,
         caregiverFullname: null,
         phone: null,
-        email: null,
+        email: null
       },
       caregiverMenuFormValid: false,
       caregiversTypes: [],
       caregiverType: 0,
       referralData: {
         referralId: 0,
-        clientId: 0,
+        clientId: 0
       },
       referralDialog: false,
       assignmentData: {
         assignmentId: 0,
-        clientId: 0,
+        clientId: 0
       },
       assignmentDialog: false,
       assignments: [],
       assessmentDialog: false,
-      assessments: [],
+      assessments: []
     };
   },
 
@@ -519,20 +516,19 @@ export default {
     },
 
     async deleteCaregiver(caregiver) {
-      this.$confirm('Do you want to delete selected caregiver?')
-        .then(async res => {
-          if (res) {
-            this.loadingExtra = true;
-            try {
-              await clientApi.deleteCaregiver(caregiver);
-              this.client.caregivers = this.client.caregivers.filter(s => s.caregiverId !== caregiver.caregiverId);
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loadingExtra = false;
-            }
+      this.$confirm("Do you want to delete selected caregiver?").then(async res => {
+        if (res) {
+          this.loadingExtra = true;
+          try {
+            await clientApi.deleteCaregiver(caregiver);
+            this.client.caregivers = this.client.caregivers.filter(s => s.caregiverId !== caregiver.caregiverId);
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingExtra = false;
           }
-        });
+        }
+      });
     },
 
     async submitCaregiverForm() {
@@ -550,8 +546,8 @@ export default {
             email: this.caregiverForm.email,
             caregiverTypeId: this.caregiverForm.caregiverTypeId,
             caregiverType: {
-              description: this.caregiversTypes.find(f => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description,
-            },
+              description: this.caregiversTypes.find(f => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description
+            }
           });
         } else {
           let caregiver = this.client.caregivers.find(f => f.caregiverId == id);
@@ -560,19 +556,21 @@ export default {
           caregiver.email = this.caregiverForm.email;
           caregiver.caregiverTypeId = this.caregiverForm.caregiverTypeId;
           caregiver.caregiverType = {
-            description: this.caregiversTypes.find(f => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description,
+            description: this.caregiversTypes.find(f => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description
           };
         }
         this.close();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingCaregiverForm = false; }
+      } finally {
+        this.loadingCaregiverForm = false;
+      }
     },
 
     addReferral() {
       this.referralData = {
         clientId: this.id,
-        referralId: 0,
+        referralId: 0
       };
       this.referralDialog = true;
     },
@@ -580,8 +578,12 @@ export default {
     editReferral(referral) {
       this.referralData = {
         ...referral,
-        dateReferral: this.$moment(referral.dateReferral).utc().format('MM/DD/YYYY'),
-        dateExpires: this.$moment(referral.dateExpires).utc().format('MM/DD/YYYY'),
+        dateReferral: this.$moment(referral.dateReferral)
+          .utc()
+          .format("MM/DD/YYYY"),
+        dateExpires: this.$moment(referral.dateExpires)
+          .utc()
+          .format("MM/DD/YYYY")
       };
       this.referralDialog = true;
     },
@@ -597,26 +599,25 @@ export default {
     },
 
     deleteReferral(referral) {
-      this.$confirm('Do you want to delete selected referral?')
-        .then(async res => {
-          if (res) {
-            this.loadingBasicInfo = true;
-            try {
-              await clientApi.deleteReferral(referral);
-              this.client.referrals = this.client.referrals.filter(r => r.referralId != referral.referralId);
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loadingBasicInfo = false;
-            }
+      this.$confirm("Do you want to delete selected referral?").then(async res => {
+        if (res) {
+          this.loadingBasicInfo = true;
+          try {
+            await clientApi.deleteReferral(referral);
+            this.client.referrals = this.client.referrals.filter(r => r.referralId != referral.referralId);
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingBasicInfo = false;
           }
-        });
+        }
+      });
     },
 
     async changeReferralActive(referral) {
       const newStatus = {
         status: referral.active,
-        referralId: referral.referralId,
+        referralId: referral.referralId
       };
       try {
         await clientApi.changeReferralStatus(newStatus);
@@ -637,8 +638,12 @@ export default {
       this.$refs.assessmentDiag.data.paNumber = a.paNumber;
       this.$refs.assessmentDiag.data.clientId = a.clientId;
       this.$refs.assessmentDiag.data.behaviorAnalysisCodeId = a.behaviorAnalysisCodeId;
-      this.$refs.assessmentDiag.data.startDate = this.$moment(a.startDate).utc().format('MM/DD/YYYY');
-      this.$refs.assessmentDiag.data.endDate = this.$moment(a.endDate).utc().format('MM/DD/YYYY');
+      this.$refs.assessmentDiag.data.startDate = this.$moment(a.startDate)
+        .utc()
+        .format("MM/DD/YYYY");
+      this.$refs.assessmentDiag.data.endDate = this.$moment(a.endDate)
+        .utc()
+        .format("MM/DD/YYYY");
       this.assessmentDialog = true;
       console.log(a);
     },
@@ -653,20 +658,19 @@ export default {
     },
 
     deleteAssessment(assessment) {
-      this.$confirm('Do you want to delete selected authorization?')
-        .then(async res => {
-          if (res) {
-            this.loadingBasicInfo = true;
-            try {
-              await clientApi.deleteAssessment(assessment);
-              this.loadAssessments();
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loadingBasicInfo = false;
-            }
+      this.$confirm("Do you want to delete selected authorization?").then(async res => {
+        if (res) {
+          this.loadingBasicInfo = true;
+          try {
+            await clientApi.deleteAssessment(assessment);
+            this.loadAssessments();
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingBasicInfo = false;
           }
-        });
+        }
+      });
     },
 
     onSubmitAssignment() {
@@ -675,70 +679,71 @@ export default {
     },
 
     deleteAssignment(assignment) {
-      this.$confirm('Do you want to delete selected assignment?')
-        .then(async res => {
-          if (res) {
-            this.loadingBasicInfo = true;
-            try {
-              await clientApi.deleteAssignment(assignment);
-              this.loadAssignments();
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loadingBasicInfo = false;
-            }
+      this.$confirm("Do you want to delete selected assignment?").then(async res => {
+        if (res) {
+          this.loadingBasicInfo = true;
+          try {
+            await clientApi.deleteAssignment(assignment);
+            this.loadAssignments();
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingBasicInfo = false;
           }
-        });
+        }
+      });
     },
 
     async changeAssignmentActive(assignment) {
       const newStatus = {
         status: assignment.active,
-        userId: assignment.assignmentId,
+        userId: assignment.assignmentId
       };
       this.loadingBasicInfo = true;
       try {
         await clientApi.changeAssignmentStatus(newStatus);
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingBasicInfo = false; }
+      } finally {
+        this.loadingBasicInfo = false;
+      }
     },
 
     addDiagnosis() {
-      this.$prompt(null, { title: 'Add new diagnosis', label: 'Diagnosis code' })
-        .then(async text => {
-          if (text) {
-            let model = {
-              clientId: this.id,
-              code: text,
-            };
-            try {
-              this.loadingBasicInfo = true;
-              let diag = await clientApi.addClientDiagnosis(model);
-              this.client.clientDiagnostics.push(diag.data);
-            } catch (error) {
-              this.$toast.error(error);
-            } finally { this.loadingBasicInfo = false; }
+      this.$prompt(null, { title: "Add new diagnosis", label: "Diagnosis code" }).then(async text => {
+        if (text) {
+          let model = {
+            clientId: this.id,
+            code: text
+          };
+          try {
+            this.loadingBasicInfo = true;
+            let diag = await clientApi.addClientDiagnosis(model);
+            this.client.clientDiagnostics.push(diag.data);
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingBasicInfo = false;
           }
-        });
+        }
+      });
     },
 
     deleteDiagnosis(clientDiagnosis) {
-      this.$confirm('Do you want to delete selected diagnosis?')
-        .then(async res => {
-          if (res) {
-            this.loadingBasicInfo = true;
-            try {
-              await clientApi.deleteClientDiagnosis(clientDiagnosis);
-              this.client.clientDiagnostics = this.client.clientDiagnostics.filter(c => c.clientDiagnosisId !== clientDiagnosis.clientDiagnosisId);
-            } catch (error) {
-              this.$toast.error(error);
-            } finally {
-              this.loadingBasicInfo = false;
-            }
+      this.$confirm("Do you want to delete selected diagnosis?").then(async res => {
+        if (res) {
+          this.loadingBasicInfo = true;
+          try {
+            await clientApi.deleteClientDiagnosis(clientDiagnosis);
+            this.client.clientDiagnostics = this.client.clientDiagnostics.filter(c => c.clientDiagnosisId !== clientDiagnosis.clientDiagnosisId);
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingBasicInfo = false;
           }
-        });
-    },
-  },
+        }
+      });
+    }
+  }
 };
 </script>

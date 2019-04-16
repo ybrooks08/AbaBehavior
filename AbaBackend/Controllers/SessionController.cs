@@ -407,6 +407,7 @@ namespace AbaBackend.Controllers
                                   .ToListAsync();
 
       var problemsUnique = await _utils.GetClientBehaviors(clientId);
+      if (problemId != 0) problemsUnique = problemsUnique.Where(w => w.ProblemId == problemId).ToList();
       // var problemsUnique = mainData.Select(s => new { s.Behavior.ProblemId, s.Behavior.ProblemBehaviorDescription }).Distinct()
       //                              .Union(currentPeriod.PeriodClientProblems.Select(s => new { s.ProblemBehavior.ProblemId, s.ProblemBehavior.ProblemBehaviorDescription }).Distinct())
       //                              .OrderBy(o => o.ProblemBehaviorDescription).ToList();
@@ -443,8 +444,7 @@ namespace AbaBackend.Controllers
         {
           var calWeekEnd = calWeekStart.AddDays(6);
           var problemsCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                      .Where(w => w.ProblemId == problem.ProblemId)
-                                      .Count();
+                                      .Count(w => w.ProblemId == problem.ProblemId);
 
           data.Add(problemsCount == 0 ? null : (int?)problemsCount);
 
@@ -478,7 +478,8 @@ namespace AbaBackend.Controllers
           title = new { text = "" },
           chart = new { type = "spline" },
           tooltip = new { shared = true },
-          yAxis = new { title = new { text = "Count" } }
+          yAxis = new { title = new { text = "Count" } },
+          legend = new { enabled = problemId == 0 }
         },
         notes
       });
@@ -502,6 +503,7 @@ namespace AbaBackend.Controllers
                                   .ToListAsync();
 
       var replacementUnique = await _utils.GetClientReplacements(clientId);
+      if (replacementId != 0) replacementUnique = replacementUnique.Where(w => w.ReplacementId == replacementId).ToList();
       // var replacementUnique = mainData.Select(s => new { s.Replacement.ReplacementId, s.Replacement.ReplacementProgramDescription }).Distinct()
       //                                 .Union(currentPeriod.PeriodClientReplacements.Select(s => new { s.Replacement.ReplacementId, s.Replacement.ReplacementProgramDescription }).Distinct())
       //                                 .OrderBy(o => o.ReplacementProgramDescription).ToList();
@@ -578,7 +580,8 @@ namespace AbaBackend.Controllers
           title = new { text = "" },
           chart = new { type = "spline" },
           tooltip = new { shared = true },
-          yAxis = new { title = new { text = "Trials percent" } }
+          yAxis = new { title = new { text = "Trials percent" } },
+          legend = new { enabled = replacementId == 0 }
         },
         notes
       });

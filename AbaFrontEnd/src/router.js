@@ -203,11 +203,17 @@ export default new Router({
           meta: { rol: ['admin'] },
         },
         {
-          path: '/reporting/time-sheet',
+          path: "/reporting/time-sheet",
           name: 'TimeSheet',
           component: () => import(/* webpackChunkName: "TimeSheet" */ '@/components/reporting/TimeSheet'),
           meta: { rol: ['admin', 'billing', 'assistant', 'tech', 'analyst'] },
         },
+        {
+          path: "/reporting/client_progress_print",
+          name: "ClientProgressPrint",
+          component: () => import(/* webpackChunkName: "ClientProgressPrint" */ "@/components/reporting/ClientProgressPrint"),
+          meta: { rol: ["admin", "assistant", "tech", "analyst"] }
+        }
       ],
     },
     { path: '*', redirect: '/' },

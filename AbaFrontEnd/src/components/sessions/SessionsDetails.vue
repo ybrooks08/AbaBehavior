@@ -23,6 +23,15 @@
                     <v-list-tile-title>New quick note</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
+                <v-divider></v-divider>
+                <v-list-tile to="/reporting/client_progress_print">
+                  <v-list-tile-action>
+                    <v-icon medium>fa-print</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title>Print version</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
               </v-list>
               <v-divider></v-divider>
             </v-menu>
@@ -41,22 +50,22 @@
 </template>
 
 <script>
-import ClientProgressBehavior from '@/components/sessions/ProgressBehavior';
-import ClientProgressReplacement from '@/components/sessions/ProgressReplacement';
-import CalendarSessions from '@/components/sessions/CalendarSessions';
+import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
+import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
+import CalendarSessions from "@/components/sessions/CalendarSessions";
 
 export default {
   components: {
     ClientProgressBehavior,
     ClientProgressReplacement,
-    CalendarSessions,
+    CalendarSessions
   },
 
   data() {
     return {
       loading: false,
-      whatShow: [{ value: 1, text: 'Problem behaviors' }, { value: 2, text: 'Replacements' }],
-      whatShowItem: 1,
+      whatShow: [{ value: 1, text: "Problem behaviors" }, { value: 2, text: "Replacements" }],
+      whatShowItem: 1
     };
   },
 
@@ -69,8 +78,7 @@ export default {
     },
     user() {
       return this.$store.getters.user;
-    },
-  },
-
+    }
+  }
 };
 </script>

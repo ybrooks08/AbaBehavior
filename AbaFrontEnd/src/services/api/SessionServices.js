@@ -113,17 +113,17 @@ export default {
     });
   },
 
-  getProblemsChartData(clientId) {
+  getProblemsChartData(clientId, behaviorId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetProblemBehaviorsChart/${clientId}`)
+      Vue.axios.get(`api/session/GetProblemBehaviorsChart/${clientId}/${behaviorId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
   },
 
-  getReplacementsChartData(clientId) {
+  getReplacementsChartData(clientId, replacementId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetReplacementProgramChart/${clientId}`)
+      Vue.axios.get(`api/session/GetReplacementProgramChart/${clientId}/${replacementId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });

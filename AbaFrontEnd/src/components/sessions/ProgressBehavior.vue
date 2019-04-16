@@ -3,17 +3,17 @@
     <template v-if="chartOptions.series.length === 0">
       <v-alert :value="true" type="warning">No data to show</v-alert>
     </template>
-    <template v-else>
+    <template v-show="chartOptions.series.length > 0">
       <v-layout row wrap>
         <v-flex class="text-xs-center">
           <v-progress-circular style="position: absolute; z-index: 343948394" v-show="loading" indeterminate></v-progress-circular>
         </v-flex>
         <v-flex xs12>
-          <highcharts v-if="finish" :options="chartOptions"></highcharts>
+          <highcharts ref="hc" v-show="finish" :options="chartOptions"></highcharts>
         </v-flex>
       </v-layout>
 
-      <v-expansion-panel>
+      <v-expansion-panel class="no-print">
         <v-expansion-panel-content expand-icon="fa-angle-up" class="grey lighten-4">
           <div slot="header">Notes</div>
           <v-card>
@@ -34,7 +34,7 @@
                     <v-card-text class="pa-1 yellow lighten-5">
                       {{n.note}}
                       <br>
-                      <span class="grey--text">{{n.chartNoteDate | moment('ddd, MM/DD/YYYY')}}</span>
+                      <span class="grey--text">{{n.chartNoteDate | moment("ddd, MM/DD/YYYY")}}</span>
                     </v-card-text>
                   </v-card>
                 </v-flex>
@@ -48,30 +48,38 @@
 </template>
 
 <script>
-import sessionServicesApi from '@/services/api/SessionServices';
+import sessionServicesApi from "@/services/api/SessionServices";
 
 export default {
+  props: {
+    behaviorId: {
+      type: Number,
+      default: 0,
+      required: false
+    }
+  },
+
   data() {
     return {
       loading: false,
       finish: false,
       notes: [],
       chartOptions: {
-        series: [],
-      },
+        series: []
+      }
     };
   },
 
   computed: {
     activeClientId() {
       return this.$store.getters.activeClientId;
-    },
+    }
   },
 
   watch: {
     activeClientId() {
       this.loadAll();
-    },
+    }
   },
 
   mounted() {
@@ -83,7 +91,7 @@ export default {
     async loadAll() {
       try {
         this.loading = true;
-        let data = await sessionServicesApi.getProblemsChartData(this.activeClientId);
+        let data = await sessionServicesApi.getProblemsChartData(this.activeClientId, this.behaviorId);
         this.chartOptions = data.chartOptions;
         this.notes = data.notes;
       } catch (error) {
@@ -98,18 +106,17 @@ export default {
     },
 
     async deleteNote(note) {
-      this.$confirm('Do you want to delete this note?')
-        .then(async res => {
-          if (res) {
-            try {
-              await sessionServicesApi.deleteChartNote(note.clientChartNoteId);
-              await this.loadAll();
-            } catch (error) {
-              this.$toast.error(error);
-            }
+      this.$confirm("Do you want to delete this note?").then(async res => {
+        if (res) {
+          try {
+            await sessionServicesApi.deleteChartNote(note.clientChartNoteId);
+            await this.loadAll();
+          } catch (error) {
+            this.$toast.error(error);
           }
-        });
-    },
-  },
+        }
+      });
+    }
+  }
 };
 </script>
