@@ -466,30 +466,29 @@ namespace AbaBackend.Infrastructure.Utils
 
     public async Task AddSessionProblemNotes(int sessionId, int clientId)
     {
-      await Task.Delay(1);
-      // var currentProblems = (await GetCurrentPeriodBehaviors(clientId)).Select(s => s.ProblemId).ToList();
-      // var currentReplacements = (await GetCurrentPeriodReplacements(clientId)).Select(s => s.ReplacementId).ToList();
+      var currentProblems = (await GetClientBehaviors(clientId)).Select(s => s.ProblemId).ToList();
+      var currentReplacements = (await GetClientReplacements(clientId)).Select(s => s.ReplacementId).ToList();
 
 
-      // foreach (var problemId in currentProblems)
-      // {
-      //   var newSessionProblemNote = new SessionProblemNote
-      //   {
-      //     ProblemId = problemId,
-      //     SessionId = sessionId
-      //   };
-      //   await _dbContext.SessionProblemNotes.AddAsync(newSessionProblemNote);
-      //   await _dbContext.SaveChangesAsync();
-      //   foreach (var replacementId in currentReplacements)
-      //   {
-      //     await _dbContext.SessionProblemNoteReplacements.AddAsync(new SessionProblemNoteReplacement
-      //     {
-      //       SessionProblemNoteId = newSessionProblemNote.SessionProblemNoteId,
-      //       ReplacementId = replacementId
-      //     });
-      //     await _dbContext.SaveChangesAsync();
-      //   }
-      // }
+      foreach (var problemId in currentProblems)
+      {
+        var newSessionProblemNote = new SessionProblemNote
+        {
+          ProblemId = problemId,
+          SessionId = sessionId
+        };
+        await _dbContext.SessionProblemNotes.AddAsync(newSessionProblemNote);
+        await _dbContext.SaveChangesAsync();
+        foreach (var replacementId in currentReplacements)
+        {
+          await _dbContext.SessionProblemNoteReplacements.AddAsync(new SessionProblemNoteReplacement
+          {
+            SessionProblemNoteId = newSessionProblemNote.SessionProblemNoteId,
+            ReplacementId = replacementId
+          });
+          await _dbContext.SaveChangesAsync();
+        }
+      }
 
     }
 
