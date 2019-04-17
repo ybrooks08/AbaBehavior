@@ -185,4 +185,28 @@ export default {
         .catch(error => reject(error.response.data || error.message));
     });
   },
+
+  uploadDocument(id, file) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post(`api/users/UploadDocumentPdf/${id}`, file)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  getUserPdfs(documentUserid) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/users/GetUserPdfs/${documentUserid}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  deletePdf(pdf) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post("api/users/DeletePdf", pdf)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  }
 };

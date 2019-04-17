@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
@@ -9,6 +10,8 @@ using AbaBackend.Model.MasterTables;
 using AbaBackend.Model.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -22,12 +25,14 @@ namespace AbaBackend.Controllers
     private readonly AbaDbContext _dbContext;
     private IPasswordHasher _passwordHasher;
     private IUtils _utils;
+    private readonly IHostingEnvironment _env;
 
-    public UserController(AbaDbContext context, IPasswordHasher passwordHasher, IUtils utils)
+    public UserController(AbaDbContext context, IPasswordHasher passwordHasher, IUtils utils, IHostingEnvironment env)
     {
       _dbContext = context;
       _passwordHasher = passwordHasher;
       _utils = utils;
+      _env = env;
     }
 
     [HttpGet]
@@ -634,6 +639,66 @@ namespace AbaBackend.Controllers
       {
         _dbContext.Remove(group);
         await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]/{documentUserId}")]
+    public async Task<IActionResult> UploadDocumentPdf([FromRoute] int documentUserId, [FromForm] IFormFile body)
+    {
+      try
+      {
+        var path = Path.Combine(_env.WebRootPath, "UserDocuments", documentUserId.ToString());
+        var fullFilename = Path.Combine(path, body.FileName);
+        Directory.CreateDirectory(path);
+
+        if (System.IO.File.Exists(fullFilename)) throw new Exception("File already exists");
+
+        using (var fileStream = new FileStream(fullFilename, FileMode.Create))
+          await body.CopyToAsync(fileStream);
+
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{documentUserId}")]
+    public IActionResult GetUserPdfs(int documentUserId)
+    {
+      try
+      {
+        var path = Path.Combine(_env.WebRootPath, "UserDocuments", documentUserId.ToString());
+        if (!Directory.Exists(path)) return Ok();
+        var di = new DirectoryInfo(path);
+        var files = di.GetFiles("*.pdf");
+        var f = files.Select(s => new
+        {
+          s.Name,
+          s.Length,
+          s.CreationTime
+        }).OrderByDescending(o => o.CreationTime).ToList();
+        return Ok(f);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public IActionResult DeletePdf([FromBody] ClassIntString model)
+    {
+      try
+      {
+        var path = Path.Combine(_env.WebRootPath, "UserDocuments", model.Id.ToString(), model.Value);
+        System.IO.File.Delete(path);
         return Ok();
       }
       catch (Exception e)

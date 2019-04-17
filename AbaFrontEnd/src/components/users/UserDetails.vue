@@ -5,7 +5,7 @@
         <v-card class="elevation-12" width="750">
           <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>User basic info</v-toolbar-title>
-            <v-spacer/>
+            <v-spacer />
             <v-btn dark flat :to="`/users/add_edit/${id}`">
               <v-icon left>fa-edit</v-icon>EDIT
             </v-btn>
@@ -51,7 +51,7 @@
         <v-card class="elevation-12" width="750">
           <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>User e-sign</v-toolbar-title>
-            <v-spacer/>
+            <v-spacer />
             <v-btn dark flat :to="`/user-sign/${id}`">
               <v-icon left>fa-signature</v-icon>
               {{user.userSign ? 'Change' : 'Create'}}
@@ -65,7 +65,7 @@
                     <v-alert type="info" :value="true">NO SIGN</v-alert>
                   </template>
                   <template v-else>
-                    <v-img max-width="300" :contain="true" max-height="100" :src="!user.userSign || user.userSign.sign"/>
+                    <v-img max-width="300" :contain="true" max-height="100" :src="!user.userSign || user.userSign.sign" />
                   </template>
                 </v-flex>
               </v-layout>
@@ -116,6 +116,11 @@
                       <td class="text-xs-right">
                         <v-text-field prepend-inner-icon="fa-calendar-times" box v-if="doc.document.documentExpires" @change="dateChanged(doc)" hide-actions hide-details label="Expires" v-model="doc.expires" mask="##/##/####" return-masked-value></v-text-field>
                       </td>
+                      <td class="pa-0">
+                        <v-btn icon @click="uploadForm(doc)">
+                          <v-icon color="primary">fa-cloud fa-lg</v-icon>
+                        </v-btn>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -125,19 +130,26 @@
           </v-card-text>
         </v-card>
       </v-flex>
+
+      <documents-pdf :docUser="docUser" :active="showPdfForm" @close="showPdfForm = false" :key="new Date().toString()"></documents-pdf>
+
     </v-layout>
   </v-container>
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 
 export default {
   props: {
     id: {
       type: [Number, String],
-      required: true,
-    },
+      required: true
+    }
+  },
+
+  components: {
+    DocumentsPdf: () => import(/* webpackChunkName: "DocPdf" */ "@/components/users/DocumentsPdf")
   },
 
   data() {
@@ -145,8 +157,10 @@ export default {
       groups: [],
       user: { documents: [] },
       loadingBasicInfo: false,
-      loadingDocuments: false
-    }
+      loadingDocuments: false,
+      showPdfForm: false,
+      docUser: null
+    };
   },
 
   mounted() {
@@ -160,7 +174,9 @@ export default {
         this.groups = await userApi.getDocumentGroups();
         this.user = await userApi.getUserFull(this.id);
         this.user.documents.forEach(d => {
-          d.expires = this.$moment(d.expires).utc().format('MM/DD/YYYY')
+          d.expires = this.$moment(d.expires)
+            .utc()
+            .format("MM/DD/YYYY");
         });
       } catch (error) {
         this.$toast.error(error);
@@ -182,11 +198,13 @@ export default {
       this.loadingDocuments = true;
       try {
         await userApi.changeUserDocumentStatus(newStatus);
-        this.$toast.success('Document changed successful.');
+        this.$toast.success("Document changed successful.");
       } catch (error) {
         this.$toast.error(error);
         doc.active = !doc.active;
-      } finally { this.loadingDocuments = false }
+      } finally {
+        this.loadingDocuments = false;
+      }
     },
 
     async dateChanged(doc) {
@@ -197,12 +215,14 @@ export default {
       this.loadingDocuments = true;
       try {
         await userApi.changeUserDocumentDate(newDate);
-        this.$toast.success('Document date changed successful.');
+        this.$toast.success("Document date changed successful.");
         doc.active = true;
       } catch (error) {
         this.$toast.error(error);
         doc.expires = null;
-      } finally { this.loadingDocuments = false }
+      } finally {
+        this.loadingDocuments = false;
+      }
     },
 
     async addMissingDocuments() {
@@ -213,24 +233,32 @@ export default {
         if (added !== 0) this.loadBasicInfo();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingDocuments = false }
+      } finally {
+        this.loadingDocuments = false;
+      }
     },
 
     async deleteDocuments() {
       this.loadingDocuments = true;
       try {
-        this.$confirm('Do you want to delete all documents?')
-          .then(async res => {
-            if (res) {
-              await userApi.deleteDocuments(this.id);
-              this.$toast.success(`Delete all documents successful`);
-              this.loadBasicInfo();
-            }
-          })
+        this.$confirm("Do you want to delete all documents?").then(async res => {
+          if (res) {
+            await userApi.deleteDocuments(this.id);
+            this.$toast.success(`Delete all documents successful`);
+            this.loadBasicInfo();
+          }
+        });
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loadingDocuments = false; }
+      } finally {
+        this.loadingDocuments = false;
+      }
     },
+
+    uploadForm(doc) {
+      this.docUser = doc;
+      this.showPdfForm = true;
+    }
   }
-}
+};
 </script>

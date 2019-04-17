@@ -14,12 +14,11 @@
               </v-flex>
               <v-flex xs12 sm6 md7 lg8 xl9 v-if="isAdminOrBilling">
                 <select-user v-model="userId"></select-user>
-                {{userId}}
               </v-flex>
             </v-layout>
           </v-card-text>
           <v-card-actions>
-            <v-spacer/>
+            <v-spacer />
             <v-btn :disabled="loading" :loading="loading" color="primary" @click="viewReport">Generate</v-btn>
           </v-card-actions>
         </v-card>
@@ -30,7 +29,7 @@
         <v-card>
           <v-toolbar dense dark class="secondary no-print">
             <v-toolbar-title>Time sheet report</v-toolbar-title>
-            <v-spacer/>
+            <v-spacer />
             <v-btn dark icon @click="print">
               <v-icon>fa-print</v-icon>
             </v-btn>
@@ -48,10 +47,10 @@
               <h5 class="pr-3 right">{{userData.rol.rolName}}</h5>
               <v-divider></v-divider>
               <span>
-                  FROM:
-                  <strong>{{dateRange.start | moment("MM/DD/YYYY")}}</strong> TO:
-                  <strong>{{dateRange.end | moment("MM/DD/YYYY")}}</strong>
-                </span>
+                FROM:
+                <strong>{{dateRange.start | moment("MM/DD/YYYY")}}</strong> TO:
+                <strong>{{dateRange.end | moment("MM/DD/YYYY")}}</strong>
+              </span>
             </v-flex>
           </v-layout>
           <v-card-text class="print-full-width">
@@ -146,12 +145,12 @@
 </template>
 
 <script>
-import reportingApi from '@/services/api/ReportingServices';
+import reportingApi from "@/services/api/ReportingServices";
 
 export default {
   components: {
-    SelectWeek: () => import(/* webpackChunkName: "SelectWeek" */ '@/components/shared/SelectWeek'),
-    SelectUser: () => import(/* webpackChunkName: "SelectUser" */ '@/components/shared/SelectUser'),
+    SelectWeek: () => import(/* webpackChunkName: "SelectWeek" */ "@/components/shared/SelectWeek"),
+    SelectUser: () => import(/* webpackChunkName: "SelectUser" */ "@/components/shared/SelectUser")
   },
 
   data() {
@@ -164,7 +163,7 @@ export default {
         payRate: 0,
         driveTimePayRate: 0
       }
-    }
+    };
   },
 
   computed: {
@@ -172,7 +171,7 @@ export default {
       return this.$store.getters.user;
     },
     isAdminOrBilling() {
-      return this.user.rol2 === 'admin' || this.user.rol2 === 'billing';
+      return this.user.rol2 === "admin" || this.user.rol2 === "billing";
     },
     totalRegular() {
       return this.report.reduce((a, b) => +a + +b.regularHours, 0);
@@ -187,10 +186,10 @@ export default {
       return this.report.reduce((a, b) => +a + +b.extraDrive, 0);
     },
     payExtraRate() {
-      return (this.userData.payRate + (this.userData.payRate / 2)).toFixed(2);
+      return (this.userData.payRate + this.userData.payRate / 2).toFixed(2);
     },
     payDriveTimeExtraRate() {
-      return (this.userData.driveTimePayRate + (this.userData.driveTimePayRate / 2)).toFixed(2);
+      return (this.userData.driveTimePayRate + this.userData.driveTimePayRate / 2).toFixed(2);
     }
   },
 
@@ -201,9 +200,14 @@ export default {
         this.report = [];
         this.userData = {};
         const report = await reportingApi.getTimeSheet(this.dateRange.start, this.dateRange.end, this.userId);
-        this.report = report.rows;
+        const rows = report.rows;
+        rows.forEach(e => {
+          e.date = this.$moment(e.date).local();
+          e.sessionIn = this.$moment(e.sessionIn).local();
+          e.sessionOut = this.$moment(e.sessionOut).local();
+          this.report.push(e);
+        });
         this.userData = report.user;
-        console.log(this.userData)
       } catch (error) {
         console.error(error);
         this.$toast.error(error);
@@ -212,10 +216,8 @@ export default {
       }
     },
 
-    print() {
-
-    }
+    print() {}
   }
-}
+};
 </script>
 

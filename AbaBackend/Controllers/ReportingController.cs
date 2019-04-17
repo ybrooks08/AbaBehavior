@@ -292,9 +292,9 @@ namespace AbaBackend.Controllers
           new
           {
             sessionId = session.SessionId,
-            date = session.SessionStart,
-            sessionIn = session.SessionStart,
-            sessionOut = session.SessionEnd,
+            date = session.SessionStart.ToString("u"),
+            sessionIn = session.SessionStart.ToString("u"),
+            sessionOut = session.SessionEnd.ToString("u"),
             client = $"{session.Client.Firstname} {session.Client.Lastname[0]}.",
             sessionHours,
             sessionDriveTime,
