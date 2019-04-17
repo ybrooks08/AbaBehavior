@@ -80,7 +80,7 @@ namespace AbaBackend.Controllers
           {
             var bcaba = await _dbContext.Clients
                         .Where(w => w.ClientId.Equals(session.ClientId))
-                        .Where(w => w.Assignments.Where(w1 => w1.User.Rol.BehaviorAnalysisCode.Hcpcs == "H2012").Count() > 0)
+                        .Where(w => w.Assignments.Count(w1 => w1.User.Rol.BehaviorAnalysisCode.Hcpcs == "H2012") > 0)
                         .ToListAsync();
             if (bcaba.Count == 0) throw new Exception("Client haven't any BCBAB service/user.");
           }

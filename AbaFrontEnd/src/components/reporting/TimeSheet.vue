@@ -72,15 +72,15 @@
                 <tr v-for="r in report" :key="('session'+r.sessionId)">
                   <td>
                     <v-icon small>fa-calendar</v-icon>
-                    {{r.date | moment('utc','MM/DD/YYYY')}}
+                    {{r.date | moment('MM/DD/YYYY')}}
                   </td>
                   <td>
                     <v-icon small>fa-clock</v-icon>
-                    {{r.sessionIn | moment('utc', 'LT')}}
+                    {{r.sessionIn | moment('LT')}}
                   </td>
                   <td>
                     <v-icon small>fa-clock</v-icon>
-                    {{r.sessionOut | moment('utc', 'LT')}}
+                    {{r.sessionOut | moment('LT')}}
                   </td>
                   <td class="text-xs-left">{{r.client}}</td>
                   <td class="text-xs-right">{{r.sessionHours}}/{{r.sessionDriveTime}}</td>
