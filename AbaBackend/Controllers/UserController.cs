@@ -355,7 +355,7 @@ namespace AbaBackend.Controllers
                                   s.Expires,
                                   Days = EF.Functions.DateDiffDay(DateTime.Today, Convert.ToDateTime(s.Expires).Date)
                                 })
-                                .OrderBy(o => o.UserFullname).ThenBy(o => o.Days)
+                                .OrderBy(o => o.Days).ThenBy(o => o.UserFullname)
                                 .ToListAsync();
         return Ok(expiring);
       }
@@ -700,6 +700,42 @@ namespace AbaBackend.Controllers
         var path = Path.Combine(_env.WebRootPath, "UserDocuments", model.Id.ToString(), model.Value);
         System.IO.File.Delete(path);
         return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientId}")]
+    public async Task<IActionResult> GetClientMonthlyNotes(int clientId)
+    {
+      try
+      {
+        var notes = await _dbContext.MonthlyNotes
+                                    .Where(w => w.ClientId == clientId)
+                                    .OrderByDescending(o => o.Year).ThenByDescending(o => o.Month)
+                                    .Select(s => new
+                                    {
+                                      value = s.MonthlyNoteId,
+                                      text = s.MonthlyNoteDate.ToString("Y")
+                                    })
+                                    .ToListAsync();
+        return Ok(notes);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{monthlyNoteId}")]
+    public async Task<IActionResult> GetClientMonthlyNote(int monthlyNoteId)
+    {
+      try
+      {
+        var note = await _dbContext.MonthlyNotes.FirstOrDefaultAsync(w => w.MonthlyNoteId == monthlyNoteId);
+        return Ok(note);
       }
       catch (Exception e)
       {

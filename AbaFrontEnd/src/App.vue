@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view/>
+    <router-view />
     <vue-ins-progress-bar></vue-ins-progress-bar>
   </div>
 </template>
@@ -22,7 +22,7 @@ export default {
     this.$router.afterEach((to, from) => {
       this.$insProgress.finish();
     });
-  },
+  }
 };
 </script>
 
@@ -66,6 +66,10 @@ export default {
     color: #000 !important;
     box-shadow: none !important;
     text-shadow: none !important;
+  }
+
+  .no-page-break {
+    page-break-inside: avoid !important;
   }
 
   .no-print {

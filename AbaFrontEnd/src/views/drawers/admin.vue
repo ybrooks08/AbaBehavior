@@ -107,6 +107,14 @@
           <v-list-tile-title>Time sheet</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/reporting/monthly-notes" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-calendar-alt</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Monthly notes</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-subheader>Tools</v-subheader>
       <v-list-tile to="/system_logs">
         <v-list-tile-action>

@@ -394,13 +394,11 @@ namespace AbaBackend.Controllers
     {
       var currentPeriod = await _utils.GetClientWholePeriod(clientId);
       var mainData = await _dbContext.SessionCollectBehaviors
-                                     //.Where(w => w.Entry.Date >= currentPeriod.Start.Date && w.Entry.Date <= currentPeriod.End.Date)
                                      .Where(w => w.ClientId == clientId)
                                      .Where(w => problemId == 0 || w.ProblemId == problemId)
                                      .Include(i => i.Behavior)
                                      .ToListAsync();
       var notes = await _dbContext.ClientChartNotes
-                                  //.Where(w => w.ChartNoteDate >= currentPeriod.Start && w.ChartNoteDate <= currentPeriod.End)
                                   .Where(w => w.ClientId == clientId)
                                   .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
                                   .OrderBy(o => o.ChartNoteDate)
@@ -408,22 +406,16 @@ namespace AbaBackend.Controllers
 
       var problemsUnique = await _utils.GetClientBehaviors(clientId);
       if (problemId != 0) problemsUnique = problemsUnique.Where(w => w.ProblemId == problemId).ToList();
-      // var problemsUnique = mainData.Select(s => new { s.Behavior.ProblemId, s.Behavior.ProblemBehaviorDescription }).Distinct()
-      //                              .Union(currentPeriod.PeriodClientProblems.Select(s => new { s.ProblemBehavior.ProblemId, s.ProblemBehavior.ProblemBehaviorDescription }).Distinct())
-      //                              .OrderBy(o => o.ProblemBehaviorDescription).ToList();
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
 
       var firstWeekStart = currentPeriod.start;
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      // while (firstWeekStart.DayOfWeek != DayOfWeek.Sunday) firstWeekStart = firstWeekStart.AddDays(-1);
       var lastWeekEnd = DateTime.Today;
       while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
 
-      var legend = new List<string>();
-      legend.Add("Base");
-      legend.Add("");
+      var legend = new List<string> { "Base", "" };
       plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
       plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
 
@@ -434,10 +426,7 @@ namespace AbaBackend.Controllers
                                        .Select(s => s.BaselineCount)
                                        .FirstOrDefaultAsync();
 
-        var data = new List<int?>();
-
-        data.Add(baseLine);
-        data.Add(null);
+        var data = new List<int?> { baseLine, null };
 
         var calWeekStart = firstWeekStart;
         for (int i = 0; i < totalWeeks; i++)
@@ -476,10 +465,11 @@ namespace AbaBackend.Controllers
           xAxis = new { categories = legend, plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
           series = dataSet,
           title = new { text = "" },
-          chart = new { type = "spline" },
+          chart = new { type = "spline", height = problemId == 0 ? null : "350" },
           tooltip = new { shared = true },
           yAxis = new { title = new { text = "Count" } },
-          legend = new { enabled = problemId == 0 }
+          legend = new { enabled = problemId == 0 },
+          exporting = new { chartOptions = new { title = new { text = problemId == 0 ? "" : problemsUnique.First().ProblemBehavior.ProblemBehaviorDescription } } }
         },
         notes
       });
@@ -490,13 +480,11 @@ namespace AbaBackend.Controllers
     {
       var currentPeriod = await _utils.GetClientWholePeriod(clientId);
       var mainData = await _dbContext.SessionCollectReplacements
-                                     //.Where(w => w.Entry.Date >= currentPeriod.Start.Date && w.Entry.Date <= currentPeriod.End.Date)
                                      .Where(w => w.ClientId == clientId)
                                      .Where(w => replacementId == 0 || w.ReplacementId == replacementId)
                                      .Include(i => i.Replacement)
                                      .ToListAsync();
       var notes = await _dbContext.ClientChartNotes
-                                  //.Where(w => w.ChartNoteDate >= currentPeriod.Start && w.ChartNoteDate <= currentPeriod.End)
                                   .Where(w => w.ClientId == clientId)
                                   .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
                                   .OrderBy(o => o.ChartNoteDate)
@@ -504,25 +492,18 @@ namespace AbaBackend.Controllers
 
       var replacementUnique = await _utils.GetClientReplacements(clientId);
       if (replacementId != 0) replacementUnique = replacementUnique.Where(w => w.ReplacementId == replacementId).ToList();
-      // var replacementUnique = mainData.Select(s => new { s.Replacement.ReplacementId, s.Replacement.ReplacementProgramDescription }).Distinct()
-      //                                 .Union(currentPeriod.PeriodClientReplacements.Select(s => new { s.Replacement.ReplacementId, s.Replacement.ReplacementProgramDescription }).Distinct())
-      //                                 .OrderBy(o => o.ReplacementProgramDescription).ToList();
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
 
       var firstWeekStart = currentPeriod.start;
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      //while (firstWeekStart.DayOfWeek != DayOfWeek.Sunday) firstWeekStart = firstWeekStart.AddDays(-1);
       var lastWeekEnd = DateTime.Today;
       while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
 
-      var legend = new List<string>();
-      legend.Add("Base");
-      legend.Add("");
+      var legend = new List<string> { "Base", "" };
       plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
       plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
-
 
       foreach (var replacement in replacementUnique)
       {
@@ -531,18 +512,14 @@ namespace AbaBackend.Controllers
                                        .Select(s => s.BaselinePercent)
                                        .FirstOrDefaultAsync();
 
-        var data = new List<int?>();
-
-        data.Add(baseLine);
-        data.Add(null);
+        var data = new List<int?> { baseLine, null };
 
         var calWeekStart = firstWeekStart;
         for (int i = 0; i < totalWeeks; i++)
         {
           var calWeekEnd = calWeekStart.AddDays(6);
           var replacementCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                         .Where(w => w.ReplacementId == replacement.ReplacementId)
-                                         .Count();
+                                         .Count(w => w.ReplacementId == replacement.ReplacementId);
           var replacementComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
                                             .Where(w => w.ReplacementId == replacement.ReplacementId)
                                             .Count(w => w.Completed);
@@ -578,10 +555,11 @@ namespace AbaBackend.Controllers
           xAxis = new { categories = legend, plotLines = plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
           series = dataSet,
           title = new { text = "" },
-          chart = new { type = "spline" },
+          chart = new { type = "spline", height = replacementId == 0 ? null : "350" },
           tooltip = new { shared = true },
           yAxis = new { title = new { text = "Trials percent" } },
-          legend = new { enabled = replacementId == 0 }
+          legend = new { enabled = replacementId == 0 },
+          exporting = new { chartOptions = new { title = new { text = replacementId == 0 ? "" : replacementUnique.First().Replacement.ReplacementProgramDescription } } }
         },
         notes
       });

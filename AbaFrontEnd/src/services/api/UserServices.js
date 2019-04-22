@@ -208,5 +208,21 @@ export default {
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
+  },
+
+  getClientMonthlyNotes(clientId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/users/GetClientMonthlyNotes/${clientId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  getClientMonthlyNote(monthlyNoteId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/users/GetClientMonthlyNote/${monthlyNoteId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
   }
 };

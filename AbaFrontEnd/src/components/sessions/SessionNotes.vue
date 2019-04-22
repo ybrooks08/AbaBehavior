@@ -16,7 +16,7 @@
                 <v-icon small color="white">fa-ellipsis-v</v-icon>
               </v-btn>
               <v-list>
-                <v-list-tile @click="editTime" v-if="!editDisabled">
+                <v-list-tile @click="editTime" v-if="!editDisabled && isAdmin">
                   <v-list-tile-action>
                     <v-icon medium>fa-clock</v-icon>
                   </v-list-tile-action>
@@ -24,7 +24,7 @@
                     <v-list-tile-title>Edit time</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-divider v-if="!editDisabled"></v-divider>
+                <v-divider v-if="!editDisabled && isAdmin"></v-divider>
                 <v-list-tile to="/session/session_print">
                   <v-list-tile-action>
                     <v-icon medium>fa-print</v-icon>
@@ -164,8 +164,7 @@
                               </v-tooltip>
                             </div>
                             <div v-else>
-                              <v-text-field :disabled="loadEditDriveTime" v-model="sessionDetailed.driveTime" class="pa-0" suffix="hrs" single-line hide-details append-outer-icon="fa-paper-plane" @click:append-outer="submitDriveTime"
-                                            placeholder="Edit drive time" @keypress.enter.native="submitDriveTime"></v-text-field>
+                              <v-text-field :disabled="loadEditDriveTime" v-model="sessionDetailed.driveTime" class="pa-0" suffix="hrs" single-line hide-details append-outer-icon="fa-paper-plane" @click:append-outer="submitDriveTime" placeholder="Edit drive time" @keypress.enter.native="submitDriveTime"></v-text-field>
                             </div>
                           </v-flex>
                           <!-- <v-flex class="body-2 text-xs-right" xs4>Sign:</v-flex> -->
@@ -176,7 +175,7 @@
                               </v-avatar>
                               UNSIGNED
                             </v-chip>
-                            <v-img max-width="300" :contain="true" max-height="100" v-else :src="!sessionDetailed || sessionDetailed.sign.sign"/>
+                            <v-img max-width="300" :contain="true" max-height="100" v-else :src="!sessionDetailed || sessionDetailed.sign.sign" />
                           </v-flex>
                         </v-layout>
                       </v-flex>
@@ -195,8 +194,7 @@
                                 <span>Edit POS</span>
                               </v-tooltip>
                             </div>
-                            <v-select v-if="posEditVisible" :loading="loadingPosEdit" :disabled="loading" hide-details single-line class="pa-0 ma-0" placeholder="Pos" v-model="posToEdit" :items="posEnum" prepend-icon="fa-map-marker-alt"
-                                      @change="changeNewPos">
+                            <v-select v-if="posEditVisible" :loading="loadingPosEdit" :disabled="loading" hide-details single-line class="pa-0 ma-0" placeholder="Pos" v-model="posToEdit" :items="posEnum" prepend-icon="fa-map-marker-alt" @change="changeNewPos">
                               <template slot="selection" slot-scope="data">
                                 <div class="input-group__selections__comma">
                                   {{ data.item.text }} &nbsp;
@@ -373,8 +371,7 @@
                           </v-flex>
                           <v-flex xs6>
                             <v-textarea box hide-details :disabled="loading || editDisabled" label="Replacement bx. implemented interventions used" auto-grow v-model="problem.replacementInterventionsUsed"></v-textarea>
-                            <v-switch :disabled="editDisabled" :key="replacement.sessionProblemNoteReplacementId" v-for="replacement in problem.sessionProblemNoteReplacements" hide-details color="primary"
-                                      :label="replacement.replacementProgram.replacementProgramDescription" v-model="replacement.active"></v-switch>
+                            <v-switch :disabled="editDisabled" :key="replacement.sessionProblemNoteReplacementId" v-for="replacement in problem.sessionProblemNoteReplacements" hide-details color="primary" :label="replacement.replacementProgram.replacementProgramDescription" v-model="replacement.active"></v-switch>
                           </v-flex>
                         </v-layout>
                       </template>
@@ -479,64 +476,55 @@
                               <v-switch hide-details color="primary" label="Follow up upon recommendations from previous reassessment" v-model="session.sessionSupervisionNote.oversightFollowUpBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightFollowUpBool" label="Eval" v-model="session.sessionSupervisionNote.oversightFollowUp"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightFollowUpBool" label="Eval" v-model="session.sessionSupervisionNote.oversightFollowUp" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Designing implementating and monitoring program for client" v-model="session.sessionSupervisionNote.oversightDesigningBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightDesigningBool" label="Eval" v-model="session.sessionSupervisionNote.oversightDesigning"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightDesigningBool" label="Eval" v-model="session.sessionSupervisionNote.oversightDesigning" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Contributing with Behavioral Assessment" v-model="session.sessionSupervisionNote.oversightContributingBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightContributingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightContributing"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightContributingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightContributing" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Analyzing data" v-model="session.sessionSupervisionNote.oversightAnalyzingBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightAnalyzingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightAnalyzing"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightAnalyzingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightAnalyzing" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Goals progress evidenced in client performance" v-model="session.sessionSupervisionNote.oversightGoalsBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightGoalsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightGoals"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightGoalsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightGoals" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Making decisions about progress" v-model="session.sessionSupervisionNote.oversightMakingDecisionsBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightMakingDecisionsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightMakingDecisions"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightMakingDecisionsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightMakingDecisions" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Modeling technical, professional and ethical behavior" v-model="session.sessionSupervisionNote.oversightModelingBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightModelingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightModeling"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightModelingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightModeling" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Response to feedback from Lead Analyst" v-model="session.sessionSupervisionNote.oversightResponseBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightResponseBool" label="Eval" v-model="session.sessionSupervisionNote.oversightResponse"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightResponseBool" label="Eval" v-model="session.sessionSupervisionNote.oversightResponse" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Overall Evaluation in session" v-model="session.sessionSupervisionNote.oversightOverallBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightOverallBool" label="Eval" v-model="session.sessionSupervisionNote.oversightOverall"
-                                        :items="oversightSessionSupervisionEnum"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightOverallBool" label="Eval" v-model="session.sessionSupervisionNote.oversightOverall" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                           </v-layout>
                         </v-container>
@@ -704,10 +692,10 @@ export default {
       return this.$store.getters.activeClientId;
     },
     loading() {
-      return (this.loadingRiskBehaviorCodes || this.loadingCaregivers || this.loadingParticipationLevelCodes || this.loadingSession);
+      return this.loadingRiskBehaviorCodes || this.loadingCaregivers || this.loadingParticipationLevelCodes || this.loadingSession;
     },
     editDisabled() {
-      return (!this.sessionDetailed || (this.sessionDetailed.sessionStatusCode === 5));
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5;
     },
     user() {
       return this.$store.getters.user;
@@ -754,7 +742,11 @@ export default {
             const a = (c.value & this.session.sessionSupervisionNote.workWith) != 0;
             this.sessionSupervisionWorkWithArray.push(a ? c.value : 0);
           });
-          this.session.sessionSupervisionNote.nextScheduledDate = !this.session.sessionSupervisionNote.nextScheduledDate || this.$moment(this.session.sessionSupervisionNote.nextScheduledDate).utc().format("MM/DD/YYYY");
+          this.session.sessionSupervisionNote.nextScheduledDate =
+            !this.session.sessionSupervisionNote.nextScheduledDate ||
+            this.$moment(this.session.sessionSupervisionNote.nextScheduledDate)
+              .utc()
+              .format("MM/DD/YYYY");
         }
         this.problemsUnique = this.session.sessionProblemNotes.map(m => m.problemBehavior);
       } catch (error) {
@@ -767,9 +759,7 @@ export default {
     async loadCaregivers() {
       try {
         this.loadingCaregivers = true;
-        this.caregivers = await clientApi.getClientCaregivers(
-            this.activeClientId
-        );
+        this.caregivers = await clientApi.getClientCaregivers(this.activeClientId);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -900,17 +890,16 @@ export default {
     },
 
     rejectSession() {
-      this.$prompt(null, { title: "Reject note", label: "Reason", textArea: true })
-          .then(async desc => {
-            if (desc) {
-              if (!this.activeSessionId) return;
-              await sessionServicesApi.rejectSession({
-                sessionId: this.activeSessionId,
-                RejectMessage: desc
-              });
-              this.close();
-            }
+      this.$prompt(null, { title: "Reject note", label: "Reason", textArea: true }).then(async desc => {
+        if (desc) {
+          if (!this.activeSessionId) return;
+          await sessionServicesApi.rejectSession({
+            sessionId: this.activeSessionId,
+            RejectMessage: desc
           });
+          this.close();
+        }
+      });
     },
 
     async send2Email() {
@@ -930,9 +919,7 @@ export default {
     },
 
     async markAsChecked() {
-      this.$confirm(
-          "Are you sure you want to check this session and notes?"
-      ).then(async res => {
+      this.$confirm("Are you sure you want to check this session and notes?").then(async res => {
         if (res) {
           const model = {
             sessionId: this.activeSessionId,
@@ -963,9 +950,7 @@ export default {
     },
 
     async reopenSession() {
-      this.$confirm(
-          "Are you sure you want to reopen this session?"
-      ).then(async res => {
+      this.$confirm("Are you sure you want to reopen this session?").then(async res => {
         if (res) {
           const model = {
             sessionId: this.activeSessionId,
@@ -1028,7 +1013,6 @@ export default {
     goToData() {
       this.$router.push("/session/session_collect_data");
     }
-
   }
 };
 </script>

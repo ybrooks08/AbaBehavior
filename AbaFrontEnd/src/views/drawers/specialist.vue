@@ -2,7 +2,7 @@
   <div>
     <v-container fluid grid-list-md pa-0></v-container>
     <v-list class="pa-0">
-      <v-divider/>
+      <v-divider />
       <v-list-tile to="/home" active-class="blue lighten-4">
         <v-list-tile-action>
           <v-icon>fa-home</v-icon>
@@ -11,7 +11,7 @@
           <v-list-tile-title>Home</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
-      <v-divider/>
+      <v-divider />
       <template v-if="activeClients.length > 0">
         <v-subheader>Assigned clients</v-subheader>
         <template v-for="client in activeClients">
@@ -31,7 +31,7 @@
               </v-btn>
             </v-list-tile-action>
           </v-list-tile>
-          <v-divider :key="'d-'+client.assignmentId"/>
+          <v-divider :key="'d-'+client.assignmentId" />
         </template>
       </template>
       <template v-if="inactiveClients.length > 0">
@@ -53,7 +53,7 @@
               </v-btn>
             </v-list-tile-action>
           </v-list-tile>
-          <v-divider :key="'d-'+client.assignmentId"/>
+          <v-divider :key="'d-'+client.assignmentId" />
         </template>
       </template>
 
@@ -81,7 +81,7 @@
                 </v-btn>
               </v-list-tile-action>
             </v-list-tile>
-            <v-divider :key="'d-'+client.assignmentId"/>
+            <v-divider :key="'d-'+client.assignmentId" />
           </template>
         </v-list-group>
       </template>
@@ -111,18 +111,26 @@
           <v-list-tile-title>Time sheet</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile v-if="isLead" to="/reporting/monthly-notes" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-calendar-alt</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Monthly notes</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
   </div>
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 
 export default {
   data() {
     return {
       loadingClients: false,
-      clients: [],
+      clients: []
     };
   },
 
@@ -139,6 +147,9 @@ export default {
     disabledClients() {
       return this.clients.filter(s => !s.clientActive);
     },
+    isLead() {
+      return this.$store.getters.user.rol2 === "analyst";
+    }
   },
 
   mounted() {
@@ -158,21 +169,21 @@ export default {
     },
 
     async setActiveClientNoRoute(clientId) {
-      this.$store.commit('SET_ACTIVE_CLIENT', clientId);
+      this.$store.commit("SET_ACTIVE_CLIENT", clientId);
     },
 
     async setActiveClient(client) {
       if (!client.active) return;
-      this.$store.commit('SET_ACTIVE_CLIENT', client.clientId);
-      this.$router.push('/clients/sessions_details');
+      this.$store.commit("SET_ACTIVE_CLIENT", client.clientId);
+      this.$router.push("/clients/sessions_details");
     },
 
     clientDetails(client) {
       if (!client.active) return;
       this.setActiveClientNoRoute(client.clientId);
-      this.$router.push('/clients/client_details/' + client.clientId);
-    },
-  },
+      this.$router.push("/clients/client_details/" + client.clientId);
+    }
+  }
 };
 </script>
 

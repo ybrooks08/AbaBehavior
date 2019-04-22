@@ -213,6 +213,12 @@ export default new Router({
           name: "ClientProgressPrint",
           component: () => import(/* webpackChunkName: "ClientProgressPrint" */ "@/components/reporting/ClientProgressPrint"),
           meta: { rol: ["admin", "assistant", "tech", "analyst"] }
+        },
+        {
+          path: "/reporting/monthly-notes",
+          name: "MonthlyNotes",
+          component: () => import(/* webpackChunkName: "MonthlyNotes" */ "@/components/reporting/MonthlyNotes"),
+          meta: { rol: ["admin", "analyst"] }
         }
       ],
     },

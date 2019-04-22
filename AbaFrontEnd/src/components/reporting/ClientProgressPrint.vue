@@ -1,13 +1,15 @@
 <template>
   <v-layout row wrap>
-    <v-flex xs12 v-for="p in clientBehaviors" :key="'p'+p.clientProblemId">
-      <v-subheader>{{p.problemBehavior.problemBehaviorDescription}}</v-subheader>
-      <client-progress-behavior :behaviorId="p.problemId"></client-progress-behavior>
-    </v-flex>
-    <v-flex xs12 v-for="p in clientReplacements" :key="'r'+p.clientReplacementId">
-      <v-subheader>{{p.replacement.replacementProgramDescription}}</v-subheader>
-      <client-progress-replacement :replacementId="p.replacementId"></client-progress-replacement>
-    </v-flex>
+    <table style="width: 100%">
+      <tr v-for="p in clientBehaviors" :key="'p'+p.clientProblemId" class="no-page-break">
+        <v-subheader>{{p.problemBehavior.problemBehaviorDescription}}</v-subheader>
+        <client-progress-behavior :behaviorId="p.problemId"></client-progress-behavior>
+      </tr>
+      <tr v-for="p in clientReplacements" :key="'r'+p.clientReplacementId" class="no-page-break">
+        <v-subheader>{{p.replacement.replacementProgramDescription}}</v-subheader>
+        <client-progress-replacement :replacementId="p.replacementId"></client-progress-replacement>
+      </tr>
+    </table>
   </v-layout>
 </template>
 
@@ -48,7 +50,6 @@ export default {
       try {
         this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId);
         this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId);
-        console.log(this.clientReplacements);
       } catch (error) {
         this.$toast.error(error);
       } finally {
