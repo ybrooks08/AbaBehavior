@@ -7,12 +7,12 @@
           <v-tabs dark v-model="activeTabBasic" show-arrows>
             <v-tab key="basic-info">Basic Info</v-tab>
             <v-tab key="notes">Notes</v-tab>
-            <v-tab key="caregivers">Caregivers</v-tab>
+            <v-tab key="caregivers" v-if="clientManagementAutorized">Caregivers</v-tab>
             <v-tab key="referral" v-if="clientManagementAutorized">Referrals</v-tab>
             <v-tab key="assessment" v-if="clientManagementAutorized">Authorizations</v-tab>
             <v-tab key="assignment" v-if="clientManagementAutorized">Staff</v-tab>
             <v-tab key="diagnosis" v-if="clientManagementAutorized">Diagnosis</v-tab>
-            <v-spacer/>
+            <v-spacer />
             <v-btn v-show="(activeTabBasic == 0 || activeTabBasic == 1) && clientManagementAutorized" dark flat :to="`/clients/add_edit/${id}`">
               <v-icon left>fa-edit</v-icon>
               EDIT
@@ -32,14 +32,12 @@
                           <v-text-field box :disabled="loadingCaregiverForm" label="Fullname" v-model="caregiverForm.caregiverFullname" required prepend-icon="fa-tag" :rules="[required]"></v-text-field>
                         </v-flex>
                         <v-flex sm4>
-                          <v-select box :disabled="loadingCaregiverForm" label="Relationship" v-model="caregiverType" required :items="caregiversTypes" item-text="description" item-value="caregiverTypeId" prepend-icon="fa-heart"
-                                    :rules="[required]"></v-select>
+                          <v-select box :disabled="loadingCaregiverForm" label="Relationship" v-model="caregiverType" required :items="caregiversTypes" item-text="description" item-value="caregiverTypeId" prepend-icon="fa-heart" :rules="[required]"></v-select>
                         </v-flex>
                       </v-layout>
                       <v-layout row wrap>
                         <v-flex sm8>
-                          <v-text-field box :disabled="loadingCaregiverForm" label="Email" v-model="caregiverForm.email" type="email" prepend-icon="fa-envelope" data-vv-name="email" :rules="errors.collect('email')"
-                                        v-validate="'email'"></v-text-field>
+                          <v-text-field box :disabled="loadingCaregiverForm" label="Email" v-model="caregiverForm.email" type="email" prepend-icon="fa-envelope" data-vv-name="email" :rules="errors.collect('email')" v-validate="'email'"></v-text-field>
                         </v-flex>
                         <v-flex sm4>
                           <v-text-field box :disabled="loadingCaregiverForm" label="Phone" v-model="caregiverForm.phone" prepend-icon="fa-phone" type="phone" mask="phone"></v-text-field>
@@ -381,13 +379,13 @@
         </v-card>
       </v-flex>
       <v-flex xs12>
-        <clinical-data :id="id"/>
+        <clinical-data :id="id" />
       </v-flex>
     </v-layout>
 
-    <add-edit-referral-dialog :model="referralDialog" :data="referralData" @cancel="referralDialog = false" @onSubmit="onSubmitReferral"/>
-    <add-assignment-dialog :model="assignmentDialog" :clientId="id" @cancel="assignmentDialog = false" @onSubmit="onSubmitAssignment"/>
-    <add-assessment-dialog ref="assessmentDiag" :model="assessmentDialog" :clientId="id" @cancel="assessmentDialog = false" @onSubmit="onSubmitAssessment"/>
+    <add-edit-referral-dialog :model="referralDialog" :data="referralData" @cancel="referralDialog = false" @onSubmit="onSubmitReferral" />
+    <add-assignment-dialog :model="assignmentDialog" :clientId="id" @cancel="assignmentDialog = false" @onSubmit="onSubmitAssignment" />
+    <add-assessment-dialog ref="assessmentDiag" :model="assessmentDialog" :clientId="id" @cancel="assessmentDialog = false" @onSubmit="onSubmitAssessment" />
   </v-container>
 </template>
 
@@ -587,11 +585,11 @@ export default {
       this.referralData = {
         ...referral,
         dateReferral: this.$moment(referral.dateReferral)
-            .utc()
-            .format("MM/DD/YYYY"),
+          .utc()
+          .format("MM/DD/YYYY"),
         dateExpires: this.$moment(referral.dateExpires)
-            .utc()
-            .format("MM/DD/YYYY")
+          .utc()
+          .format("MM/DD/YYYY")
       };
       this.referralDialog = true;
     },
@@ -647,11 +645,11 @@ export default {
       this.$refs.assessmentDiag.data.clientId = a.clientId;
       this.$refs.assessmentDiag.data.behaviorAnalysisCodeId = a.behaviorAnalysisCodeId;
       this.$refs.assessmentDiag.data.startDate = this.$moment(a.startDate)
-          .utc()
-          .format("MM/DD/YYYY");
+        .utc()
+        .format("MM/DD/YYYY");
       this.$refs.assessmentDiag.data.endDate = this.$moment(a.endDate)
-          .utc()
-          .format("MM/DD/YYYY");
+        .utc()
+        .format("MM/DD/YYYY");
       this.assessmentDialog = true;
       console.log(a);
     },
