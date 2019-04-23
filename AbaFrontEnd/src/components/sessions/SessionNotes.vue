@@ -33,20 +33,20 @@
                     <v-list-tile-title>Print</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign)" :to="'/sign/'+activeSessionId">
+                <!-- <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign)" :to="'/sign/'+activeSessionId">
                   <v-list-tile-action>
                     <v-icon medium>fa-signature</v-icon>
                   </v-list-tile-action>
                   <v-list-tile-content>
                     <v-list-tile-title>Sign session</v-list-tile-title>
                   </v-list-tile-content>
-                </v-list-tile>
+                </v-list-tile> -->
                 <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign)" @click="send2Email">
                   <v-list-tile-action>
-                    <v-icon medium>fa-mobile-alt</v-icon>
+                    <v-icon medium>fa-signature</v-icon>
                   </v-list-tile-action>
                   <v-list-tile-content>
-                    <v-list-tile-title>Send link</v-list-tile-title>
+                    <v-list-tile-title>Send sign form to caregiver</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
                 <v-list-tile v-if="isAdminOrLead &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5)" @click="markAsChecked">
@@ -904,13 +904,13 @@ export default {
 
     async send2Email() {
       let signPath = this.$router.resolve({
-        name: "sign",
-        params: { id: this.activeSessionId }
+        name: "sign"
       }).href;
       let fullPath = `${window.location.origin}/${signPath}`;
       try {
         this.loadingSession = true;
-        await sessionServicesApi.sendUrlSign({ url: fullPath });
+        await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
+        this.$toast.success("Link sent successful");
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {

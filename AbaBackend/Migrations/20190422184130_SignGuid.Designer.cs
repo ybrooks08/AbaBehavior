@@ -4,14 +4,16 @@ using AbaBackend.DataModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AbaBackend.Migrations
 {
     [DbContext(typeof(AbaDbContext))]
-    partial class AbaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190422184130_SignGuid")]
+    partial class SignGuid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2177,7 +2179,7 @@ namespace AbaBackend.Migrations
                     b.HasIndex("SessionId")
                         .IsUnique();
 
-                    b.ToTable("SessionSigns");
+                    b.ToTable("SessionSign");
                 });
 
             modelBuilder.Entity("AbaBackend.DataModel.SessionSupervisionNote", b =>

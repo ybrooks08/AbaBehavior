@@ -224,6 +224,7 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var now = DateTime.Now.TimeOfDay;
       var earliestEmail = new TimeSpan(8, 0, 0);
+      //to-do todo change this to 21,0,0
       var laterEmail = new TimeSpan(21, 0, 0);
       if (now < earliestEmail || now > laterEmail) return false;
 
@@ -453,7 +454,7 @@ namespace AbaBackend.Infrastructure.Utils
       var newEntry = new SessionLog
       {
         SessionId = sessionId,
-        UserId = user.UserId,
+        UserId = user?.UserId ?? 1,
         Title = title,
         Description = description,
         Entry = DateTimeOffset.UtcNow,

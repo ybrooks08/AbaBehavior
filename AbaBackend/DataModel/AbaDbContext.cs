@@ -321,5 +321,7 @@ namespace AbaBackend.DataModel
     public DbSet<SessionLog> SessionLogs { get; set; }
     public DbSet<SystemLog> SystemLogs { get; set; }
 
+    public DbSet<SessionSign> SessionSigns { get; set; }
+
   }
 }

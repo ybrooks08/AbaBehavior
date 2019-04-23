@@ -219,9 +219,9 @@ export default {
     });
   },
 
-  sendUrlSign(url) {
+  sendUrlSign(url, sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('api/session/SendUrlSign', url)
+      Vue.axios.post(`api/session/SendUrlSign/${sessionId}`, url)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -344,6 +344,14 @@ export default {
     return new Promise((resolve, reject) => {
       Vue.axios.put('api/session/EditSessionDriveTime', data)
         .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  getSessionDetailedForSign(token) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/session/GetSessionDetailedForSign/${token}`)
+        .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
   },

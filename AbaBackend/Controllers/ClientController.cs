@@ -40,7 +40,7 @@ namespace AbaBackend.Controllers
           s.Firstname,
           s.Lastname,
           s.Nickname,
-          Dob = s.Dob.ToString("u"),
+          s.Dob,
           s.Phone,
           s.Email,
           s.Address,

@@ -72,7 +72,7 @@ if (token) {
 
 router.beforeEach((to, from, next) => {
   // if (to.name === 'login' || to.name === '403' || to.name === "sign") return next();
-  if (to.name === 'login' || to.name === '403') return next();
+  if (to.name === 'login' || to.name === '403' || to.name === 'sign') return next();
   store.dispatch('CHECK_USER')
     .then((user) => {
       if (!to.meta.rol) {

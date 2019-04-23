@@ -20,10 +20,10 @@
           <v-divider></v-divider>
           <v-list-tile @click="showInactive = !showInactive">
             <v-list-tile-action>
-              <v-icon>{{showInactive ? 'fa-user-check':'fa-user-times'}}</v-icon>
+              <v-icon>{{showInactive ? "fa-user-check":"fa-user-times"}}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title>{{showInactive ? 'Show active users':'Show inactived users'}}</v-list-tile-title>
+              <v-list-tile-title>{{showInactive ? "Show active users":"Show inactived users"}}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
           <v-list-tile @click="loadClients">
@@ -47,9 +47,9 @@
               <img :src="`images/${props.item.gender ? props.item.gender.toLowerCase() : 'nogender'}.png`">
             </v-avatar>
           </td>
-          <td class="text-xs-left px-1">{{props.item.firstname}} {{props.item.nickname ? `(${props.item.nickname})` : ''}}</td>
+          <td class="text-xs-left px-1">{{props.item.firstname}} {{props.item.nickname ? `(${props.item.nickname})` : ""}}</td>
           <td class="text-xs-left px-1">{{props.item.lastname}}</td>
-          <td class="text-xs-left px-1 hidden-xs-only">{{props.item.dob | moment('MM/DD/YYYY')}}</td>
+          <td class="text-xs-left px-1 hidden-xs-only">{{props.item.dob | moment("utc", "MM/DD/YYYY")}}</td>
           <td class="text-xs-left px-1 hidden-sm-and-down">{{getAddress(props.item)}}</td>
           <td class="text-xs-center px-0">
             <v-switch color="primary" hide-details v-model="props.item.active" @change="changeActive(props.item)"></v-switch>
@@ -75,28 +75,20 @@
 </template>
 
 <script>
-import clientApi from '@/services/api/ClientServices';
-import utils from '@/services/Utils';
+import clientApi from "@/services/api/ClientServices";
+import utils from "@/services/Utils";
 
 export default {
   data() {
     return {
       users: [],
-      search: '',
+      search: "",
       loading: false,
       showInactive: false,
-      headers: [
-        { text: '', align: 'center', value: 'gender', class: 'px-0 hidden-xs-only', width: 30, sortable: false },
-        { text: 'Firstname', align: 'left', value: 'firstname', class: 'px-1' },
-        { text: 'Lastname', align: 'left', value: 'lastname', class: 'px-1' },
-        { text: 'DOB', align: 'left', value: 'dob', class: 'px-1 hidden-xs-only' },
-        { text: 'Address', align: 'left', value: 'address', class: 'px-1 hidden-sm-and-down' },
-        { text: 'Active', align: 'left', value: 'active', class: 'px-1', sortable: false },
-        { text: 'Actions', align: 'left', value: 'active2', class: 'px-1', sortable: false },
-      ],
+      headers: [{ text: "", align: "center", value: "gender", class: "px-0 hidden-xs-only", width: 30, sortable: false }, { text: "Firstname", align: "left", value: "firstname", class: "px-1" }, { text: "Lastname", align: "left", value: "lastname", class: "px-1" }, { text: "DOB", align: "left", value: "dob", class: "px-1 hidden-xs-only" }, { text: "Address", align: "left", value: "address", class: "px-1 hidden-sm-and-down" }, { text: "Active", align: "left", value: "active", class: "px-1", sortable: false }, { text: "Actions", align: "left", value: "active2", class: "px-1", sortable: false }],
       pagination: {
-        sortBy: 'firstname',
-      },
+        sortBy: "firstname"
+      }
     };
   },
 
@@ -107,7 +99,7 @@ export default {
   computed: {
     filterUsers() {
       return this.users.filter(s => s.active !== this.showInactive);
-    },
+    }
   },
 
   methods: {
@@ -117,25 +109,27 @@ export default {
       this.users = [];
       this.loading = true;
       try {
-        let clients = await clientApi.getClients();
-        clients.forEach(c => {
-          c.dbo = this.$moment(c.dbo).utc();
-          this.users.push(c);
-        });
+        this.users = await clientApi.getClients();
+        // clients.forEach(c => {
+        //   c.dbo = this.$moment(c.dbo).local();
+        //   this.users.push(c);
+        // });
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     async changeActive(item) {
       const newStatus = {
         status: item.active,
-        userId: item.clientId,
+        userId: item.clientId
       };
       this.loading = true;
       try {
         await clientApi.changeClientStatus(newStatus);
-        this.$toast.success('Status changed successful.');
+        this.$toast.success("Status changed successful.");
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -150,7 +144,7 @@ export default {
 
     clientDetails(clientId) {
       this.$router.push(`/clients/client_details/${clientId}`);
-    },
-  },
+    }
+  }
 };
 </script>

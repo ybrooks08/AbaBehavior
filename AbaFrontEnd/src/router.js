@@ -13,6 +13,12 @@ export default new Router({
       component: () => import(/* webpackChunkName: "Login" */ '@/views/Login'),
     },
     {
+      path: "/sign/:id?",
+      name: 'sign',
+      component: () => import(/* webpackChunkName: "SignSession" */ '@/components/sessions/Sign/SignSession'),
+      props: true,
+    },
+    {
       path: '/',
       component: () => import(/* webpackChunkName: "MainLayout" */ '@/views/MainLayout'),
       redirect: '/home',
@@ -171,12 +177,6 @@ export default new Router({
           name: 'ClientProgress',
           component: () => import(/* webpackChunkName: "ClientProgress" */ '@/components/reporting/ClientProgress'),
           meta: { rol: ['admin'] },
-        },
-        {
-          path: '/sign/:id',
-          name: 'sign',
-          component: () => import(/* webpackChunkName: "SignSession" */ '@/components/sessions/Sign/SignSession'),
-          props: true,
         },
         {
           path: '/user-sign/:userId',

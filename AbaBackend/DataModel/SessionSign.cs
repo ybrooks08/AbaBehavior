@@ -9,5 +9,6 @@ namespace AbaBackend.DataModel
     public int SessionId { get; set; }
     public string Sign { get; set; }
     public DateTime SignedDate { get; set; }
+    public Guid Auth { get; set; }
   }
 }

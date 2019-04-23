@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using AbaBackend.Model.MasterTables;
+using AbaBackend.Infrastructure.Utils.Static;
 
 namespace AbaBackend.Controllers
 {
@@ -806,14 +807,18 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [AllowAnonymous]
     [HttpPost("[action]")]
     public async Task<IActionResult> SaveSessionSign([FromBody] SessionSign sign)
     {
       try
       {
-        await _dbContext.AddAsync(sign);
+        var signSaved = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.Auth == sign.Auth);
+        signSaved.Sign = sign.Sign;
+        signSaved.SignedDate = DateTime.UtcNow;
+        _dbContext.Update(signSaved);
         await _dbContext.SaveChangesAsync();
-        await _utils.NewEntryLog(sign.SessionId, "Signed", "Status electronically signed", "fa-signature");
+        await _utils.NewEntryLog(signSaved.SessionId, "Signed", "Status electronically signed", "fa-signature");
         return Ok();
       }
       catch (Exception e)
@@ -822,17 +827,32 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpPost("[action]")]
-    public async Task<IActionResult> SendUrlSign([FromBody] UrlClass url)
+    [HttpPost("[action]/{sessionId}")]
+    public async Task<IActionResult> SendUrlSign([FromBody] UrlClass url, [FromRoute] int sessionId)
     {
       try
       {
-        var user = await _utils.GetCurrentUser();
-        var to = user.Email;
-        var subject = $"Link to caregiver sign session";
+        var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
+        if (sessionNotes == null || sessionNotes.CaregiverId == null) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+        var caregiver = await _dbContext.Caregivers.FirstOrDefaultAsync(w => w.CaregiverId == sessionNotes.CaregiverId);
+        if (!StaticUtils.IsValidEmail(caregiver.Email)) throw new Exception("The caregiver hasn't a valid email address.");
+        var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+        var token = sign?.Auth ?? Guid.NewGuid();
+        if (sign == null)
+        {
+          await _dbContext.AddAsync(new SessionSign
+          {
+            Auth = token,
+            SessionId = sessionId
+          });
+          await _dbContext.SaveChangesAsync();
+        }
+
+        var to = caregiver.Email;
+        var subject = $"Please sign the session.";
         var body = $@"<h3>Caregiver sign session:</h3><br>
-                      Please tap on following link to sign the session<br> 
-                      {url.Url}";
+                             Please tap on following link to sign the session<br> 
+                             {url.Url}/{token}";
         await _utils.CreateEmail(to, subject, body, MessageType.General);
         await _utils.SendEmailsAsync(false);
         return Ok();
@@ -1172,6 +1192,55 @@ namespace AbaBackend.Controllers
         await _dbContext.SaveChangesAsync();
         await _utils.NewEntryLog(session.SessionId, "Drive Time", $"Session Drive time edited to {s.Value} hours", "fa-car", "teal");
         return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [AllowAnonymous]
+    [HttpGet("[action]/{token}")]
+    public async Task<IActionResult> GetSessionDetailedForSign(Guid token)
+    {
+      try
+      {
+        var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.Auth == token);
+        var session = await _dbContext
+                          .Sessions
+                          .AsNoTracking()
+                          .Where(w => w.SessionId.Equals(sign.SessionId))
+                          .Select(s => new
+                          {
+                            s.SessionId,
+                            SessionStart = s.SessionStart.ToString("u"),
+                            SessionEnd = s.SessionEnd.ToString("u"),
+                            s.TotalUnits,
+                            SessionType = s.SessionType.ToString().Replace("_", " "),
+                            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+                            ClientCode = s.Client.Code ?? "N/A",
+                            SessionStatus = s.SessionStatus.ToString(),
+                            SessionStatusCode = s.SessionStatus,
+                            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
+                            Pos = s.Pos.ToString().Replace("_", " "),
+                            PosCode = s.Pos,
+                            s.BehaviorAnalysisCode.Description,
+                            s.BehaviorAnalysisCode.Hcpcs,
+                            s.Sign,
+                            s.DriveTime,
+                            SessionLogs = s.SessionLogs.Select(l => new
+                            {
+                              l.Entry,
+                              l.Icon,
+                              l.Title,
+                              l.Description,
+                              l.IconColor,
+                              l.SessionLogId,
+                              l.User
+                            }).OrderByDescending(o => o.Entry)
+                          })
+                          .FirstOrDefaultAsync();
+        return Ok(session);
       }
       catch (Exception e)
       {
