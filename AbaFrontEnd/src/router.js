@@ -219,7 +219,13 @@ export default new Router({
           name: "MonthlyNotes",
           component: () => import(/* webpackChunkName: "MonthlyNotes" */ "@/components/reporting/MonthlyNotes"),
           meta: { rol: ["admin", "analyst"] }
-        }
+        },
+        {
+          path: "/clients/caregiver_data_collection",
+          name: "CaregiverDataCollection",
+          component: () => import(/* webpackChunkName: "CaregiverDataCollection" */ "@/components/sessions/CaregiverDataCollection"),
+          meta: { rol: ["analyst"] }
+        },
       ],
     },
     { path: '*', redirect: '/' },

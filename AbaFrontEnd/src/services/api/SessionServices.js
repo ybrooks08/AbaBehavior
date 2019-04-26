@@ -356,4 +356,28 @@ export default {
     });
   },
 
+  getCaregiverCollectionData(date, clientId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/session/GetCaregiverCollectionData/${date}/${clientId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  saveCaregiverCollectionData(caregiverDataCollection) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post("api/session/SaveCaregiverCollectionData", caregiverDataCollection)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  getCaregiverCollectionDataForCalendar(clientId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/session/GetCaregiverCollectionDataForCalendar/${clientId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  }
+
 };

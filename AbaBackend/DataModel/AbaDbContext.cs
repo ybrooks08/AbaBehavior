@@ -323,5 +323,9 @@ namespace AbaBackend.DataModel
 
     public DbSet<SessionSign> SessionSigns { get; set; }
 
+    public DbSet<CaregiverDataCollection> CaregiverDataCollections { get; set; }
+    public DbSet<CaregiverDataCollectionProblem> CaregiverDataCollectionProblems { get; set; }
+    public DbSet<CaregiverDataCollectionReplacement> CaregiverDataCollectionReplacements { get; set; }
+
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-xs pa-0>
-    <template v-if="chartOptions.series.length === 0">
+    <template v-show="chartOptions.series.length === 0">
       <v-alert :value="true" type="warning">No data to show</v-alert>
     </template>
     <template v-show="chartOptions.series.length > 0">

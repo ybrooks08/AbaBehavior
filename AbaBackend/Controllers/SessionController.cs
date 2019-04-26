@@ -399,6 +399,11 @@ namespace AbaBackend.Controllers
                                      .Where(w => problemId == 0 || w.ProblemId == problemId)
                                      .Include(i => i.Behavior)
                                      .ToListAsync();
+      var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
+                                                     .Where(w => w.ClientId == clientId)
+                                                     .Include(i => i.CaregiverDataCollectionProblems)
+                                                     .ToListAsync();
+
       var notes = await _dbContext.ClientChartNotes
                                   .Where(w => w.ClientId == clientId)
                                   .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
@@ -407,6 +412,7 @@ namespace AbaBackend.Controllers
 
       var problemsUnique = await _utils.GetClientBehaviors(clientId);
       if (problemId != 0) problemsUnique = problemsUnique.Where(w => w.ProblemId == problemId).ToList();
+
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
 
@@ -416,7 +422,9 @@ namespace AbaBackend.Controllers
       while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
 
-      var legend = new List<string> { "Base", "" };
+      var legend = new List<string>();
+      legend.Add("Base");
+      legend.Add("");
       plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
       plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
 
@@ -427,7 +435,10 @@ namespace AbaBackend.Controllers
                                        .Select(s => s.BaselineCount)
                                        .FirstOrDefaultAsync();
 
-        var data = new List<int?> { baseLine, null };
+        var data = new List<int?>();
+
+        data.Add(baseLine);
+        data.Add(null);
 
         var calWeekStart = firstWeekStart;
         for (int i = 0; i < totalWeeks; i++)
@@ -435,8 +446,14 @@ namespace AbaBackend.Controllers
           var calWeekEnd = calWeekStart.AddDays(6);
           var problemsCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
                                       .Count(w => w.ProblemId == problem.ProblemId);
+          var caregiverProblemsCount = mainDataCaregiverCollect
+                                       .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
+                                       .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(s1 => s1.Count)).Sum();
+          problemsCount += caregiverProblemsCount ?? 0;
 
-          data.Add(problemsCount == 0 ? null : (int?)problemsCount);
+          //todo arreglar esto
+          //data.Add(problemsCount == 0 ? null : (int?)problemsCount);
+          data.Add(problemsCount);
 
           var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
           foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
@@ -490,6 +507,10 @@ namespace AbaBackend.Controllers
                                   .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
                                   .OrderBy(o => o.ChartNoteDate)
                                   .ToListAsync();
+      var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
+                                                     .Where(w => w.ClientId == clientId)
+                                                     .Include(i => i.CaregiverDataCollectionReplacements)
+                                                     .ToListAsync();
 
       var replacementUnique = await _utils.GetClientReplacements(clientId);
       if (replacementId != 0) replacementUnique = replacementUnique.Where(w => w.ReplacementId == replacementId).ToList();
@@ -502,9 +523,12 @@ namespace AbaBackend.Controllers
       while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
 
-      var legend = new List<string> { "Base", "" };
+      var legend = new List<string>();
+      legend.Add("Base");
+      legend.Add("");
       plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
       plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
+
 
       foreach (var replacement in replacementUnique)
       {
@@ -513,20 +537,38 @@ namespace AbaBackend.Controllers
                                        .Select(s => s.BaselinePercent)
                                        .FirstOrDefaultAsync();
 
-        var data = new List<int?> { baseLine, null };
+        var data = new List<int?>();
+
+        data.Add(baseLine);
+        data.Add(null);
 
         var calWeekStart = firstWeekStart;
         for (int i = 0; i < totalWeeks; i++)
         {
           var calWeekEnd = calWeekStart.AddDays(6);
-          var replacementCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                         .Count(w => w.ReplacementId == replacement.ReplacementId);
+          var replacementCount = mainData
+                                 .Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
+                                 .Count(w => w.ReplacementId == replacement.ReplacementId);
           var replacementComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
                                             .Where(w => w.ReplacementId == replacement.ReplacementId)
                                             .Count(w => w.Completed);
+          var caregiverReplacements = mainDataCaregiverCollect
+                                       .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
+                                       .GroupBy(g => 0)
+                                       .Select(s => new
+                                       {
+                                         TotalTrial = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalTrial)),
+                                         TotalCompleted = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalCompleted))
+                                       }).FirstOrDefault();
+
+          replacementCount += caregiverReplacements?.TotalTrial ?? 0;
+          replacementComplete += caregiverReplacements?.TotalCompleted ?? 0;
+
           var percent = replacementCount == 0 ? 0 : replacementComplete / (decimal)replacementCount * 100;
 
-          data.Add(replacementCount == 0 ? null : (int?)percent);
+          //todo arreglar esto
+          data.Add((int?)percent);
+          //data.Add(replacementCount == 0 ? null : (int?)percent);
 
           var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
           foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
@@ -1241,6 +1283,101 @@ namespace AbaBackend.Controllers
                           })
                           .FirstOrDefaultAsync();
         return Ok(session);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{dateStr}/{clientId}")]
+    public async Task<IActionResult> GetCaregiverCollectionData(string dateStr, int clientId)
+    {
+      try
+      {
+        var date = Convert.ToDateTime(dateStr);
+        var data = await _dbContext.CaregiverDataCollections
+                                   .Where(w => w.CollectDate.Date == date.Date && w.ClientId == clientId)
+                                   .Include(i => i.CaregiverDataCollectionProblems)
+                                   .Include(i => i.CaregiverDataCollectionReplacements)
+                                   .FirstOrDefaultAsync();
+
+        if (data == null)
+        {
+          var problems = await _utils.GetClientBehaviors(clientId);
+          var replacements = await _utils.GetClientReplacements(clientId);
+
+          var caregiverDataCollectionProblems = new List<CaregiverDataCollectionProblem>();
+          var caregiverDataCollectionReplacements = new List<CaregiverDataCollectionReplacement>();
+
+          problems.ForEach(s =>
+          {
+            caregiverDataCollectionProblems.Add(new CaregiverDataCollectionProblem
+            {
+              ProblemId = s.ProblemId,
+              Count = null
+            });
+          });
+
+          replacements.ForEach(s =>
+          {
+            caregiverDataCollectionReplacements.Add(new CaregiverDataCollectionReplacement
+            {
+              ReplacementId = s.ReplacementId,
+              TotalTrial = null,
+              TotalCompleted = null
+            });
+          });
+
+          data = data ?? new CaregiverDataCollection
+          {
+            CollectDate = date,
+            ClientId = clientId,
+            CaregiverDataCollectionProblems = caregiverDataCollectionProblems,
+            CaregiverDataCollectionReplacements = caregiverDataCollectionReplacements
+          };
+        }
+        return Ok(data);
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> SaveCaregiverCollectionData([FromBody] CaregiverDataCollection caregiverDataCollection)
+    {
+      try
+      {
+        _dbContext.Update(caregiverDataCollection);
+        await _dbContext.SaveChangesAsync();
+
+        //await _utils.NewEntryLog(session.SessionId, "Rejected", $"Session rejected: {reject.RejectMessage}", "fa-exclamation-circle", "red");
+
+        return Ok(caregiverDataCollection);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientId}")]
+    public async Task<IActionResult> GetCaregiverCollectionDataForCalendar(int clientId)
+    {
+      try
+      {
+        var sessions = await _dbContext.CaregiverDataCollections
+                                       .Where(w => w.ClientId.Equals(clientId))
+                                       .Select(s => new
+                                       {
+                                         s.CaregiverDataCollectionId,
+                                         title = "Collected",
+                                         date = s.CollectDate.ToString("yyyy-MM-dd"),
+                                       })
+                                       .ToListAsync();
+        return Ok(sessions);
       }
       catch (Exception e)
       {
