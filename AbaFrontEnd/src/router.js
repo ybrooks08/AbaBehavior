@@ -226,6 +226,12 @@ export default new Router({
           component: () => import(/* webpackChunkName: "CaregiverDataCollection" */ "@/components/sessions/CaregiverDataCollection"),
           meta: { rol: ["analyst"] }
         },
+        {
+          path: "/video_tutorials",
+          name: "VideoTutorials",
+          component: () => import(/* webpackChunkName: "VideoTutorials" */ "@/components/others/VideoTutorials"),
+          meta: { rol: ["admin", "assistant", "tech", "analyst"] }
+        },
       ],
     },
     { path: '*', redirect: '/' },

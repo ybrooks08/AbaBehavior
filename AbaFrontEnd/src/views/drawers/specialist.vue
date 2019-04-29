@@ -119,6 +119,15 @@
           <v-list-tile-title>Monthly notes</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-subheader>Documents and resources</v-subheader>
+      <v-list-tile to="/video_tutorials">
+        <v-list-tile-action>
+          <v-icon>fa-file-video</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Video tutorials</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
   </div>
 </template>
