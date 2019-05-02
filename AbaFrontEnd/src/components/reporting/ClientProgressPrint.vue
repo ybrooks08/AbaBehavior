@@ -3,11 +3,11 @@
     <table style="width: 100%">
       <tr v-for="p in clientBehaviors" :key="'p'+p.clientProblemId" class="no-page-break">
         <v-subheader>{{p.problemBehavior.problemBehaviorDescription}}</v-subheader>
-        <client-progress-behavior :behaviorId="p.problemId"></client-progress-behavior>
+        <client-progress-behavior :dateStart="dateStart" :dateEnd="dateEnd" :behaviorId="p.problemId"></client-progress-behavior>
       </tr>
       <tr v-for="p in clientReplacements" :key="'r'+p.clientReplacementId" class="no-page-break">
         <v-subheader>{{p.replacement.replacementProgramDescription}}</v-subheader>
-        <client-progress-replacement :replacementId="p.replacementId"></client-progress-replacement>
+        <client-progress-replacement :dateStart="dateStart" :dateEnd="dateEnd" :replacementId="p.replacementId"></client-progress-replacement>
       </tr>
     </table>
   </v-layout>
@@ -29,11 +29,15 @@ export default {
   data() {
     return {
       clientBehaviors: [],
-      clientReplacements: []
+      clientReplacements: [],
+      dateStart: null,
+      dateEnd: null
     };
   },
 
   created() {
+    this.dateStart = this.$route.query.dateStart;
+    this.dateEnd = this.$route.query.dateEnd;
     this.loadData();
   },
 

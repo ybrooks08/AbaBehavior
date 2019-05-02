@@ -1,9 +1,9 @@
 <template>
   <v-container grid-list-xs pa-0>
-    <template v-show="chartOptions.series.length === 0">
+    <template v-if="chartOptions.series.length === 0">
       <v-alert :value="true" type="warning">No data to show</v-alert>
     </template>
-    <template v-show="chartOptions.series.length > 0">
+    <template v-if="chartOptions.series.length > 0">
       <v-layout row wrap>
         <v-flex class="text-xs-center">
           <v-progress-circular style="position: absolute; z-index: 343948394" v-show="loading" indeterminate></v-progress-circular>
@@ -56,6 +56,16 @@ export default {
       type: Number,
       default: 0,
       required: false
+    },
+    dateStart: {
+      type: String,
+      default: null,
+      required: false
+    },
+    dateEnd: {
+      type: String,
+      default: null,
+      required: false
     }
   },
 
@@ -91,7 +101,7 @@ export default {
     async loadAll() {
       try {
         this.loading = true;
-        let data = await sessionServicesApi.getProblemsChartData(this.activeClientId, this.behaviorId);
+        let data = await sessionServicesApi.getProblemsChartData(this.activeClientId, this.behaviorId, this.dateStart, this.dateEnd);
         this.chartOptions = data.chartOptions;
         this.notes = data.notes;
       } catch (error) {

@@ -390,8 +390,8 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpGet("[action]/{clientId}/{problemId?}")]
-    public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, int problemId = 0)
+    [HttpGet("[action]/{clientId}/{problemId?}/{dateStart?}/{dateEnd?}")]
+    public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, int problemId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
     {
       var currentPeriod = await _utils.GetClientWholePeriod(clientId);
       var mainData = await _dbContext.SessionCollectBehaviors
@@ -416,15 +416,13 @@ namespace AbaBackend.Controllers
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
 
-      var firstWeekStart = currentPeriod.start;
+      var firstWeekStart = dateStart ?? currentPeriod.start;
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      var lastWeekEnd = DateTime.Today;
+      var lastWeekEnd = dateEnd ?? DateTime.Today;
       while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
 
-      var legend = new List<string>();
-      legend.Add("Base");
-      legend.Add("");
+      var legend = new List<string> { "Base", "" };
       plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
       plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
 
@@ -435,10 +433,7 @@ namespace AbaBackend.Controllers
                                        .Select(s => s.BaselineCount)
                                        .FirstOrDefaultAsync();
 
-        var data = new List<int?>();
-
-        data.Add(baseLine);
-        data.Add(null);
+        var data = new List<int?> { baseLine, null };
 
         var calWeekStart = firstWeekStart;
         for (int i = 0; i < totalWeeks; i++)
@@ -493,8 +488,8 @@ namespace AbaBackend.Controllers
       });
     }
 
-    [HttpGet("[action]/{clientId}/{replacementId?}")]
-    public async Task<IActionResult> GetReplacementProgramChart(int clientId, int replacementId = 0)
+    [HttpGet("[action]/{clientId}/{replacementId?}/{dateStart?}/{dateEnd?}")]
+    public async Task<IActionResult> GetReplacementProgramChart(int clientId, int replacementId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
     {
       var currentPeriod = await _utils.GetClientWholePeriod(clientId);
       var mainData = await _dbContext.SessionCollectReplacements
@@ -517,18 +512,15 @@ namespace AbaBackend.Controllers
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
 
-      var firstWeekStart = currentPeriod.start;
+      var firstWeekStart = dateStart ?? currentPeriod.start;
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      var lastWeekEnd = DateTime.Today;
+      var lastWeekEnd = dateEnd ?? DateTime.Today;
       while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
 
-      var legend = new List<string>();
-      legend.Add("Base");
-      legend.Add("");
+      var legend = new List<string> { "Base", "" };
       plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
       plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
-
 
       foreach (var replacement in replacementUnique)
       {
@@ -537,10 +529,7 @@ namespace AbaBackend.Controllers
                                        .Select(s => s.BaselinePercent)
                                        .FirstOrDefaultAsync();
 
-        var data = new List<int?>();
-
-        data.Add(baseLine);
-        data.Add(null);
+        var data = new List<int?> { baseLine, null };
 
         var calWeekStart = firstWeekStart;
         for (int i = 0; i < totalWeeks; i++)

@@ -113,17 +113,17 @@ export default {
     });
   },
 
-  getProblemsChartData(clientId, behaviorId) {
+  getProblemsChartData(clientId, behaviorId, dateStart, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetProblemBehaviorsChart/${clientId}/${behaviorId}`)
+      Vue.axios.get(`api/session/GetProblemBehaviorsChart/${clientId}/${behaviorId}/${dateStart}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
   },
 
-  getReplacementsChartData(clientId, replacementId) {
+  getReplacementsChartData(clientId, replacementId, dateStart, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetReplacementProgramChart/${clientId}/${replacementId}`)
+      Vue.axios.get(`api/session/GetReplacementProgramChart/${clientId}/${replacementId}/${dateStart}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
