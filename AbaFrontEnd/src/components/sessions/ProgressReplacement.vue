@@ -80,7 +80,7 @@ export default {
       chartOptions: {
         series: [],
         chart: {
-          type: "spline"
+          type: "line"
         },
         title: {
           text: null

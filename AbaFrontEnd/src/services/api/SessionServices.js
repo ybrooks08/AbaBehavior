@@ -378,6 +378,14 @@ export default {
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
-  }
+  },
+
+  deleteSign(id) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.delete(`api/session/DeleteSign/${id}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
 
 };

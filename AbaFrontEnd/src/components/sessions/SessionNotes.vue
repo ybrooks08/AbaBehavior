@@ -33,14 +33,6 @@
                     <v-list-tile-title>Print</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <!-- <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign)" :to="'/sign/'+activeSessionId">
-                  <v-list-tile-action>
-                    <v-icon medium>fa-signature</v-icon>
-                  </v-list-tile-action>
-                  <v-list-tile-content>
-                    <v-list-tile-title>Sign session</v-list-tile-title>
-                  </v-list-tile-content>
-                </v-list-tile> -->
                 <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign)" @click="send2Email">
                   <v-list-tile-action>
                     <v-icon medium>fa-signature</v-icon>
@@ -49,7 +41,18 @@
                     <v-list-tile-title>Send sign form to caregiver</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-if="isAdminOrLead &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5)" @click="markAsChecked">
+                <v-list-tile v-else @click="deleteSign">
+                  <v-list-tile-action>
+                    <span class="fa-stack">
+                      <v-icon medium>fa-signature fa-stack-2x</v-icon>
+                      <v-icon medium color="red lighten-3">fa-times fa-stack-1x</v-icon>
+                    </span>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title>Delete sign</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+                <v-list-tile v-if="isAdminOrLeadOrAssistant &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5)" @click="markAsChecked">
                   <v-list-tile-action>
                     <v-icon medium>fa-check-circle</v-icon>
                   </v-list-tile-action>
@@ -57,7 +60,7 @@
                     <v-list-tile-title>Mark as Checked</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <template v-if="!editDisabled && isAdminOrLead && (!sessionDetailed || sessionDetailed.sessionStatusCode !== 2)">
+                <template v-if="!editDisabled && isAdminOrLeadOrAssistant && (!sessionDetailed || sessionDetailed.sessionStatusCode !== 2)">
                   <v-divider></v-divider>
                   <v-list-tile @click="rejectSession">
                     <v-list-tile-action>
@@ -79,7 +82,7 @@
                     </v-list-tile-content>
                   </v-list-tile>
                 </template>
-                <template v-if="isAdminOrLead && (!sessionDetailed || sessionDetailed.sessionStatusCode === 5)">
+                <template v-if="isAdminOrLeadOrAssistant && (!sessionDetailed || sessionDetailed.sessionStatusCode === 5)">
                   <v-divider></v-divider>
                   <v-list-tile @click="reopenSession">
                     <v-list-tile-action>
@@ -103,7 +106,7 @@
 
             <v-tabs slot="extension" :color="(!sessionDetailed ? 'secondary' : sessionDetailed.sessionStatusColor)" dark show-arrows v-model="tabModel">
               <v-tab key="details">Details</v-tab>
-              <v-tab v-if="session.sessionType == 1 || session.sessionType == 2" key="caregiver">Caregiver</v-tab>
+              <v-tab key="caregiver">Caregiver</v-tab>
               <template v-if="session.sessionType === 1">
                 <v-tab key="risk">Risk Behavior</v-tab>
                 <v-tab key="reinforcers">Reinforcers</v-tab>
@@ -168,8 +171,8 @@
                             </div>
                           </v-flex>
                           <!-- <v-flex class="body-2 text-xs-right" xs4>Sign:</v-flex> -->
-                          <v-flex xs8 :offset-xs4="!sessionDetailed || !sessionDetailed.sign">
-                            <v-chip v-if="!sessionDetailed || !sessionDetailed.sign" label disabled color="orange" text-color="white">
+                          <v-flex xs8 :offset-xs4="!sessionDetailed || !sessionDetailed.sign || !sessionDetailed.sign.sign">
+                            <v-chip v-if="!sessionDetailed || !sessionDetailed.sign  || !sessionDetailed.sign.sign" label disabled color="orange" text-color="white">
                               <v-avatar>
                                 <v-icon>fa-signature</v-icon>
                               </v-avatar>
@@ -228,16 +231,18 @@
                 </v-card-text>
               </v-card>
             </v-tab-item>
-            <v-tab-item v-if="session.sessionType == 1 || session.sessionType == 2" key="caregiver">
+            <v-tab-item key="caregiver">
               <v-card flat>
                 <v-card-text class="pa-2">
                   <v-container fluid grid-list-sm pa-0>
                     <v-layout row wrap>
                       <v-flex xs12>
-                        <v-select box hide-details :disabled="loading || editDisabled" label="Caregiver" v-model="session.sessionNote.caregiverId" :items="caregivers"></v-select>
+                        <v-select v-if="session.sessionType !== 3" box hide-details :disabled="loading || editDisabled" label="Caregiver" v-model="session.sessionNote.caregiverId" :items="caregivers"></v-select>
+                        <v-select v-else box hide-details :disabled="loading || editDisabled" label="Caregiver" v-model="session.sessionSupervisionNote.caregiverId" :items="caregivers"></v-select>
                       </v-flex>
                       <v-flex xs12>
-                        <v-textarea box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionNote.caregiverNote"></v-textarea>
+                        <v-textarea v-if="session.sessionType !== 3" box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionNote.caregiverNote"></v-textarea>
+                        <v-textarea v-else box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionSupervisionNote.caregiverNote"></v-textarea>
                       </v-flex>
                     </v-layout>
                   </v-container>
@@ -479,7 +484,7 @@
                               <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightFollowUpBool" label="Eval" v-model="session.sessionSupervisionNote.oversightFollowUp" :items="oversightSessionSupervisionEnum"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Designing implementating and monitoring program for client" v-model="session.sessionSupervisionNote.oversightDesigningBool"></v-switch>
+                              <v-switch hide-details color="primary" label="Designing, implementing and monitoring program for client" v-model="session.sessionSupervisionNote.oversightDesigningBool"></v-switch>
                             </v-flex>
                             <v-flex xs3>
                               <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightDesigningBool" label="Eval" v-model="session.sessionSupervisionNote.oversightDesigning" :items="oversightSessionSupervisionEnum"></v-select>
@@ -706,6 +711,9 @@ export default {
     isAdminOrLead() {
       return this.user.rol2 === "admin" || this.user.rol2 === "analyst";
     },
+    isAdminOrLeadOrAssistant() {
+      return this.user.rol2 === "admin" || this.user.rol2 === "analyst" || this.user.rol2 === "assistant";
+    },
     isMobile() {
       return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
     }
@@ -826,55 +834,6 @@ export default {
       }
     },
 
-    // async addMissingProblems() {
-    //   this.$confirm('Do you want to add all missing problems/replacements?')
-    //     .then(async res => {
-    //       if (res) {
-    //         try {
-    //           this.loadingSession = true;
-    //           await sessionServicesApi.addSessionMissingProblems(this.activeSessionId);
-    //           this.loadSessionData();
-    //         } catch (error) {
-    //           this.$toast.error(error.message || error);
-    //         } finally {
-    //           this.loadingSession = false;
-    //         }
-    //       }
-    //     });
-    // },
-
-    // async changeMetricProblem(problem) {
-    //   try {
-    //     this.loadingSessionMetrics = true;
-    //     await sessionServicesApi.changeMetricProblem(problem);
-    //   } catch (error) {
-    //     this.$toast.error(error.message || error);
-    //   } finally {
-    //     this.loadingSessionMetrics = false;
-    //   }
-    // },
-
-    // clearMetricProblem(problem) {
-    //   problem.problemsCount = '';
-    //   this.changeMetricProblem(problem);
-    // },
-
-    // async changeMetricReplacement(replacement) {
-    //   try {
-    //     this.loadingSessionMetrics = true;
-    //     await sessionServicesApi.changeMetricReplacement(replacement);
-    //   } catch (error) {
-    //     this.$toast.error(error.message || error);
-    //   } finally {
-    //     this.loadingSessionMetrics = false;
-    //   }
-    // },
-
-    // clearMetricReplacement(replacement, param) {
-    //   param == 1 ? replacement.trialAttempted = '' : replacement.trialCompleted = '';
-    //   this.changeMetricReplacement(replacement);
-    // },
-
     async deleteSession() {
       this.$confirm("Do you want to delete this Session?").then(async res => {
         if (res) {
@@ -910,7 +869,21 @@ export default {
       try {
         this.loadingSession = true;
         await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
+        this.loadSessionData();
         this.$toast.success("Link sent successful");
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loadingSession = false;
+      }
+    },
+
+    async deleteSign() {
+      try {
+        this.loadingSession = true;
+        await sessionServicesApi.deleteSign(this.activeSessionId);
+        this.loadSessionData();
+        this.$toast.success("Sign deleted successful");
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {

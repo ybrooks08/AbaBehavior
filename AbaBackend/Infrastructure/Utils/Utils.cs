@@ -256,7 +256,6 @@ namespace AbaBackend.Infrastructure.Utils
             email.Sent = DateTime.Now;
             await _dbContext.SaveChangesAsync();
           }
-
           await client.DisconnectAsync(true);
         }
       }
@@ -272,7 +271,7 @@ namespace AbaBackend.Infrastructure.Utils
       {
         var msg = new MimeMessage();
         var to = email.To.Split(';', StringSplitOptions.RemoveEmptyEntries);
-        msg.From.Add(new MailboxAddress("DONOTREPLY", from));
+        msg.From.Add(new MailboxAddress(from, from));
         foreach (var e in to) msg.To.Add(new MailboxAddress(e));
         if (sendGlobal) msg.Cc.Add(new MailboxAddress(toGlobal));
         msg.Subject = email.Subject;

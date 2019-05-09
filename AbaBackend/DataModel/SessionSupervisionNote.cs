@@ -25,6 +25,9 @@ namespace AbaBackend.DataModel
   {
     public int SessionSupervisionNoteId { get; set; }
     public int SessionId { get; set; }
+    public int? CaregiverId { get; set; }
+    public string CaregiverNote { get; set; }
+    public Caregiver Caregiver { get; set; }
     public WorkWith WorkWith { get; set; }
     public bool isDirectSession { get; set; } = true;
     public bool BriefObservation { get; set; }

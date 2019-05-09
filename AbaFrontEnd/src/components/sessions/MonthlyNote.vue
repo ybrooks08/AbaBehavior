@@ -82,7 +82,7 @@
                         <v-switch hide-details color="primary" label="Continue plan as is next month" v-model="note.continueNextMonth"></v-switch>
                       </v-flex>
                       <v-flex xs12>
-                        <v-switch hide-details color="primary" label="Re-assessment bext month" v-model="note.reassessmentNextMonth"></v-switch>
+                        <v-switch hide-details color="primary" label="Re-assessment next month" v-model="note.reassessmentNextMonth"></v-switch>
                       </v-flex>
                       <v-flex xs12>
                         <v-switch hide-details color="primary" label="Refer to other services" v-model="note.refer2OtherServices"></v-switch>
@@ -112,7 +112,7 @@
 
 
 <script>
-import sessionServicesApi from '@/services/api/SessionServices';
+import sessionServicesApi from "@/services/api/SessionServices";
 
 export default {
   data() {
@@ -136,15 +136,15 @@ export default {
         extraNotes: null,
         monthlyNoteDate: new Date()
       }
-    }
+    };
   },
 
   computed: {
     activeClientId() {
-      return this.$store.getters.activeClientId
+      return this.$store.getters.activeClientId;
     },
     activeDate() {
-      return this.$store.getters.activeDate
+      return this.$store.getters.activeDate;
     }
   },
 
@@ -155,14 +155,14 @@ export default {
   methods: {
     async loadMonthlyNote() {
       try {
-        this.note = await sessionServicesApi.getMonthlyNote(this.activeClientId, this.$moment(this.activeDate).format('YYYY-MM-DD'));
+        this.note = await sessionServicesApi.getMonthlyNote(this.activeClientId, this.$moment(this.activeDate).format("YYYY-MM-DD"));
       } catch (error) {
         this.$toast.error(error.message || error);
       }
     },
 
     close() {
-      this.$router.push('/clients/sessions_details');
+      this.$router.push("/clients/sessions_details");
     },
 
     async save() {
@@ -175,7 +175,7 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
+    }
   }
-}
+};
 </script>

@@ -63,7 +63,7 @@ namespace AbaBackend.Controllers
 
           //check if have expiring documents
           var documentsExpired = await _utils.GetUserExpiredDocumentsCount();
-          if (documentsExpired > 0) throw new Exception($"You cannot create any session beacause you have {documentsExpired} expired document(s).");
+          if (documentsExpired > 0) throw new Exception($"You cannot create any session because you have {documentsExpired} expired document(s).");
 
           // check if user is assigned to the client
           if (!await _utils.CheckAssignmentClientActive(user.UserId, session.ClientId)) throw new Exception("Selected client is not assigned or not actived in your assigments.");
@@ -478,7 +478,7 @@ namespace AbaBackend.Controllers
           xAxis = new { categories = legend, plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
           series = dataSet,
           title = new { text = "" },
-          chart = new { type = "spline", height = problemId == 0 ? null : "350" },
+          chart = new { type = "line", height = problemId == 0 ? null : "350" },
           tooltip = new { shared = true },
           yAxis = new { title = new { text = "Count" } },
           legend = new { enabled = problemId == 0 },
@@ -587,7 +587,7 @@ namespace AbaBackend.Controllers
           xAxis = new { categories = legend, plotLines = plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
           series = dataSet,
           title = new { text = "" },
-          chart = new { type = "spline", height = replacementId == 0 ? null : "350" },
+          chart = new { type = "line", height = replacementId == 0 ? null : "350" },
           tooltip = new { shared = true },
           yAxis = new { title = new { text = "Trials percent" } },
           legend = new { enabled = replacementId == 0 },
@@ -863,9 +863,13 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
         var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
-        if (sessionNotes == null || sessionNotes.CaregiverId == null) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
-        var caregiver = await _dbContext.Caregivers.FirstOrDefaultAsync(w => w.CaregiverId == sessionNotes.CaregiverId);
+        var supervisionNotes = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
+        if (session.SessionType != SessionType.Supervision_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+        if (session.SessionType == SessionType.Supervision_BCABA && (supervisionNotes == null || supervisionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+        var caregiverId = session.SessionType != SessionType.Supervision_BCABA ? sessionNotes.CaregiverId : supervisionNotes.CaregiverId;
+        var caregiver = await _dbContext.Caregivers.FirstOrDefaultAsync(w => w.CaregiverId == caregiverId);
         if (!StaticUtils.IsValidEmail(caregiver.Email)) throw new Exception("The caregiver hasn't a valid email address.");
         var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.SessionId == sessionId);
         var token = sign?.Auth ?? Guid.NewGuid();
@@ -1083,7 +1087,8 @@ namespace AbaBackend.Controllers
                                          SessionStatusCode = s.SessionStatus,
                                          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
                                          s.User.Rol.RolShortName,
-                                         s.User
+                                         s.User,
+                                         UserRole = s.User.Rol
                                        })
                                        .ToListAsync();
         return Ok(sessions);
@@ -1373,5 +1378,23 @@ namespace AbaBackend.Controllers
         return BadRequest(e.InnerException?.Message ?? e.Message);
       }
     }
+
+    [HttpDelete("[action]/{id}")]
+    public async Task<IActionResult> DeleteSign(int id)
+    {
+      try
+      {
+        var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.SessionId == id);
+        if (sign == null) throw new Exception("Sign data not found");
+        _dbContext.SessionSigns.Remove(sign);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
   }
 }
