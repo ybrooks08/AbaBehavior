@@ -868,9 +868,10 @@ export default {
       let fullPath = `${window.location.origin}/${signPath}`;
       try {
         this.loadingSession = true;
-        await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
+        const response = await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
         this.loadSessionData();
-        this.$toast.success("Link sent successful");
+        console.log(response);
+        this.$toast.success("Email sent with code: " + response.statusCode);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {

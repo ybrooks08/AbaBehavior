@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
 using AbaBackend.Model.Session;
@@ -12,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MimeKit;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace AbaBackend.Infrastructure.Utils
 {
@@ -198,7 +201,7 @@ namespace AbaBackend.Infrastructure.Utils
       }
     }
 
-    public async Task<bool> CreateEmail(string to, string subject, string message, MessageType messageType)
+    public async Task<Email> CreateEmail(string to, string subject, string message, MessageType messageType)
     {
       try
       {
@@ -212,11 +215,11 @@ namespace AbaBackend.Infrastructure.Utils
         };
         await _dbContext.Emails.AddAsync(email);
         await _dbContext.SaveChangesAsync();
-        return true;
+        return email;
       }
       catch
       {
-        return false;
+        return null;
       }
     }
 
@@ -240,23 +243,17 @@ namespace AbaBackend.Infrastructure.Utils
         if (!pendingEmails.Any()) return false;
         from = _configuration["Email:From"];
         toGlobal = _configuration["Email:GlobalEmail"];
-        var host = _configuration["Email:Host"];
-        var username = _configuration["Email:Username"];
-        var password = _configuration["Email:Password"];
-        var port = Convert.ToInt32(_configuration["Email:Port"]);
-        using (var client = new SmtpClient())
+
+        var apiKey = _configuration["Email:SendGridApiKey"];
+
+        var client = new SendGridClient(apiKey);
+        foreach (var email in pendingEmails)
         {
-          client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-          await client.ConnectAsync(host, port, false);
-          await client.AuthenticateAsync(username, password);
-          foreach (var email in pendingEmails)
-          {
-            var msg = CreateEmails(email);
-            await client.SendAsync(msg);
-            email.Sent = DateTime.Now;
-            await _dbContext.SaveChangesAsync();
-          }
-          await client.DisconnectAsync(true);
+          var msg = CreateEmails(email);
+          var response = await client.SendEmailAsync(msg);
+          //if (response.StatusCode == System.Net.HttpStatusCode.BadRequest || ) throw new Exception(response.StatusCode.ToString());
+          email.Sent = DateTime.Now;
+          await _dbContext.SaveChangesAsync();
         }
       }
       catch (System.Exception e)
@@ -267,17 +264,40 @@ namespace AbaBackend.Infrastructure.Utils
 
       return true;
 
-      MimeMessage CreateEmails(Email email)
+      SendGridMessage CreateEmails(Email email)
       {
-        var msg = new MimeMessage();
+        var msg1 = new SendGridMessage();
+        msg1.SetFrom(new EmailAddress(from, "ABA DO NOT REPLY"));
         var to = email.To.Split(';', StringSplitOptions.RemoveEmptyEntries);
-        msg.From.Add(new MailboxAddress(from, from));
-        foreach (var e in to) msg.To.Add(new MailboxAddress(e));
-        if (sendGlobal) msg.Cc.Add(new MailboxAddress(toGlobal));
-        msg.Subject = email.Subject;
-        msg.Body = new TextPart("html") { Text = email.Body };
-        msg.Priority = MessagePriority.Urgent;
-        return msg;
+        foreach (var e in to) msg1.AddTo(new EmailAddress(e));
+        msg1.Subject = email.Subject;
+        msg1.AddContent(MimeType.Html, email.Body);
+        return msg1;
+      }
+    }
+
+    public async Task<Response> SendEmailsAsync(Email email)
+    {
+      string from = _configuration["Email:From"];
+      try
+      {
+        var apiKey = _configuration["Email:SendGridApiKey"];
+        var client = new SendGridClient(apiKey);
+        var msg1 = new SendGridMessage();
+        msg1.SetFrom(new EmailAddress(from, "ABA DO NOT REPLY"));
+        var to = email.To.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var e in to) msg1.AddTo(new EmailAddress(e));
+        msg1.Subject = email.Subject;
+        msg1.AddContent(MimeType.Html, email.Body);
+        var response = await client.SendEmailAsync(msg1);
+        email.Sent = DateTime.Now;
+        await _dbContext.SaveChangesAsync();
+        return response;
+      }
+      catch (System.Exception e)
+      {
+        _logger.LogCritical("Error: " + e.Message);
+        return new Response(HttpStatusCode.BadRequest, null, null);
       }
     }
 

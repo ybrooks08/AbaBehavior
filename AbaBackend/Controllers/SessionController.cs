@@ -861,40 +861,44 @@ namespace AbaBackend.Controllers
     [HttpPost("[action]/{sessionId}")]
     public async Task<IActionResult> SendUrlSign([FromBody] UrlClass url, [FromRoute] int sessionId)
     {
-      try
+      using (var transaction = await _dbContext.Database.BeginTransactionAsync())
       {
-        var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
-        var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
-        var supervisionNotes = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
-        if (session.SessionType != SessionType.Supervision_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
-        if (session.SessionType == SessionType.Supervision_BCABA && (supervisionNotes == null || supervisionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
-        var caregiverId = session.SessionType != SessionType.Supervision_BCABA ? sessionNotes.CaregiverId : supervisionNotes.CaregiverId;
-        var caregiver = await _dbContext.Caregivers.FirstOrDefaultAsync(w => w.CaregiverId == caregiverId);
-        if (!StaticUtils.IsValidEmail(caregiver.Email)) throw new Exception("The caregiver hasn't a valid email address.");
-        var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.SessionId == sessionId);
-        var token = sign?.Auth ?? Guid.NewGuid();
-        if (sign == null)
+        try
         {
-          await _dbContext.AddAsync(new SessionSign
+          var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+          var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
+          var supervisionNotes = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
+          if (session.SessionType != SessionType.Supervision_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+          if (session.SessionType == SessionType.Supervision_BCABA && (supervisionNotes == null || supervisionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+          var caregiverId = session.SessionType != SessionType.Supervision_BCABA ? sessionNotes.CaregiverId : supervisionNotes.CaregiverId;
+          var caregiver = await _dbContext.Caregivers.FirstOrDefaultAsync(w => w.CaregiverId == caregiverId);
+          if (!StaticUtils.IsValidEmail(caregiver.Email)) throw new Exception("The caregiver hasn't a valid email address.");
+          var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+          var token = sign?.Auth ?? Guid.NewGuid();
+          if (sign == null)
           {
-            Auth = token,
-            SessionId = sessionId
-          });
-          await _dbContext.SaveChangesAsync();
-        }
+            await _dbContext.AddAsync(new SessionSign
+            {
+              Auth = token,
+              SessionId = sessionId
+            });
+            await _dbContext.SaveChangesAsync();
+          }
 
-        var to = caregiver.Email;
-        var subject = $"Please sign the session.";
-        var body = $@"<h3>Caregiver sign session:</h3><br>
+          var to = caregiver.Email;
+          var subject = $"Please sign the session.";
+          var body = $@"<h3>Caregiver sign session:</h3><br>
                              Please tap on following link to sign the session<br> 
                              {url.Url}/{token}";
-        await _utils.CreateEmail(to, subject, body, MessageType.General);
-        await _utils.SendEmailsAsync(false);
-        return Ok();
-      }
-      catch (System.Exception e)
-      {
-        return BadRequest(e.Message);
+          var email = await _utils.CreateEmail(to, subject, body, MessageType.General);
+          var response = await _utils.SendEmailsAsync(email);
+          transaction.Commit();
+          return Ok(response);
+        }
+        catch (System.Exception e)
+        {
+          return BadRequest(e.Message);
+        }
       }
     }
 

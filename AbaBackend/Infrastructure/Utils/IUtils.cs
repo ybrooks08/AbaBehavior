@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
 using AbaBackend.Model.Session;
+using SendGrid;
 
 namespace AbaBackend.Infrastructure.Utils
 {
@@ -20,9 +21,10 @@ namespace AbaBackend.Infrastructure.Utils
     Task<string> CheckMaxHoursUserByClientInDay(DateTime date, int userId, int clientId, int totalUnits);
     Task<string> CheckMaxHoursByClientInSchool(DateTime date, int userId, int clientId, int totalUnits);
     Task<int> GetUnitsAvailable(DateTime? date, int clientId, User user);
-    Task<bool> CreateEmail(string to, string subject, string message, MessageType messageType);
+    Task<Email> CreateEmail(string to, string subject, string message, MessageType messageType);
     Task MidNightProcess();
     Task<bool> SendEmailsAsync(bool sendGlobal = true);
+    Task<Response> SendEmailsAsync(Email email);
     // Task<ChartNoteData> GetNotesForChart(int clientId, int lastWeeks, ChartNoteType chartNoteType);
     Task<string> CheckUserSessionOverlap(DateTime dateStart, DateTime dateEnd, int userId);
     Task<string> CheckSessionOverlapSameDayClient(DateTime dateStart, DateTime dateEnd, int clientId);
