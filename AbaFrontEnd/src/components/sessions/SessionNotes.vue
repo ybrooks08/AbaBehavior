@@ -33,7 +33,7 @@
                     <v-list-tile-title>Print</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign)" @click="send2Email">
+                <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign) && !isBilled" @click="send2Email">
                   <v-list-tile-action>
                     <v-icon medium>fa-signature</v-icon>
                   </v-list-tile-action>
@@ -41,7 +41,7 @@
                     <v-list-tile-title>Send sign form to caregiver</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-else @click="deleteSign">
+                <v-list-tile v-else-if="!isBilled" @click="deleteSign">
                   <v-list-tile-action>
                     <span class="fa-stack">
                       <v-icon medium>fa-signature fa-stack-2x</v-icon>
@@ -52,7 +52,7 @@
                     <v-list-tile-title>Delete sign</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-if="isAdminOrLeadOrAssistant &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5)" @click="markAsChecked">
+                <v-list-tile v-if="isAdminOrLeadOrAssistant &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5) && !isBilled" @click="markAsChecked">
                   <v-list-tile-action>
                     <v-icon medium>fa-check-circle</v-icon>
                   </v-list-tile-action>
@@ -700,7 +700,10 @@ export default {
       return this.loadingRiskBehaviorCodes || this.loadingCaregivers || this.loadingParticipationLevelCodes || this.loadingSession;
     },
     editDisabled() {
-      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5;
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6;
+    },
+    isBilled() {
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 6;
     },
     user() {
       return this.$store.getters.user;

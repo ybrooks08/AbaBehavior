@@ -44,7 +44,7 @@ namespace AbaBackend.DataModel
     orange,
     cyan,
     teal,
-    green,
+    pink,
   }
 
   public class Session

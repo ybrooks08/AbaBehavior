@@ -25,9 +25,9 @@
                     </div>
                   </v-card-title>
                   <v-card-actions>
-                    <v-btn color="secondary" @click="addNewBehaviorFormShow(b)">NEW ENTRY</v-btn>
+                    <v-btn :disabled="editDisabled" color="secondary" @click="addNewBehaviorFormShow(b)">NEW ENTRY</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn fab dark small color="success" @click="addNewBehaviorQuickEntry(b)">
+                    <v-btn :disabled="editDisabled" fab dark small color="success" @click="addNewBehaviorQuickEntry(b)">
                       <v-icon dark>fa-bolt</v-icon>
                     </v-btn>
                     <!--<v-spacer></v-spacer>-->
@@ -49,7 +49,7 @@
                               <div class="caption">{{t.notes}}</div>
                             </v-flex>
                             <v-flex xs2 class="pl-0">
-                              <v-btn class="py-0 my-0" small flat dark icon @click="deleteBehaviorEntry(t)">
+                              <v-btn :disabled="editDisabled" class="py-0 my-0" small flat dark icon @click="deleteBehaviorEntry(t)">
                                 <v-icon small color="black">fa-trash</v-icon>
                               </v-btn>
                             </v-flex>
@@ -89,12 +89,12 @@
                     </div>
                   </v-card-title>
                   <v-card-actions>
-                    <v-btn color="secondary" @click="addNewReplacementFormShow(b)">NEW TRIAL</v-btn>
+                    <v-btn :disabled="editDisabled" color="secondary" @click="addNewReplacementFormShow(b)">NEW TRIAL</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn fab dark small color="success" @click="addNewReplacementQuickEntry(b, true)">
+                    <v-btn :disabled="editDisabled" fab dark small color="success" @click="addNewReplacementQuickEntry(b, true)">
                       <v-icon>fa-thumbs-up</v-icon>
                     </v-btn>
-                    <v-btn fab dark small color="error" @click="addNewReplacementQuickEntry(b, false)">
+                    <v-btn :disabled="editDisabled" fab dark small color="error" @click="addNewReplacementQuickEntry(b, false)">
                       <v-icon>fa-thumbs-down</v-icon>
                     </v-btn>
                     <!--<v-spacer></v-spacer>-->
@@ -119,7 +119,7 @@
                               <div class="caption">{{t.notes}}</div>
                             </v-flex>
                             <v-flex xs2 class="pl-0">
-                              <v-btn class="py-0 my-0" small flat dark icon @click="deleteReplacementEntry(t)">
+                              <v-btn :disabled="editDisabled" class="py-0 my-0" small flat dark icon @click="deleteReplacementEntry(t)">
                                 <v-icon small color="black">fa-trash</v-icon>
                               </v-btn>
                             </v-flex>
@@ -167,7 +167,7 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn :disabled="loading" flat @click="cancelNewBehavior">Cancel</v-btn>
           <v-btn :disabled="loading || !validNewBehaviorForm" :loading="loading" color="primary" @click="addNewBehaviorEvent">Add</v-btn>
         </v-card-actions>
@@ -202,7 +202,7 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn :disabled="loading" flat @click="cancelNewReplacement">Cancel</v-btn>
           <v-btn :disabled="loading || !validNewReplacementForm" :loading="loading" color="primary" @click="addNewReplacementEvent">Add</v-btn>
         </v-card-actions>
@@ -212,252 +212,258 @@
 </template>
 
 <script>
-  import sessionServicesApi from '@/services/api/SessionServices';
+import sessionServicesApi from "@/services/api/SessionServices";
 
-  export default {
-    computed: {
-      activeSessionId() {
-        return this.$store.getters.activeSessionId;
+export default {
+  computed: {
+    activeSessionId() {
+      return this.$store.getters.activeSessionId;
+    },
+    activeClientId() {
+      return this.$store.getters.activeClientId;
+    },
+    activeDate() {
+      return this.$store.getters.activeDate;
+    },
+    isMobile() {
+      return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
+    },
+    editDisabled() {
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6;
+    }
+  },
+
+  data() {
+    return {
+      loading: false,
+      validNewBehaviorForm: false,
+      openNewBehaviorDialog: false,
+      clientBehaviors: [],
+      collectBehaviors: {
+        dataDetails: [],
+        dataSummary: []
       },
-      activeClientId() {
-        return this.$store.getters.activeClientId;
+      formNewBehaviorTitle: null,
+      formNewBehaviorId: null,
+      showBehaviorDetails: [],
+      addNewBehavior: {
+        noTime: false,
+        entry: null,
+        duration: 0,
+        notes: null
       },
-      activeDate() {
-        return this.$store.getters.activeDate;
+
+      validNewReplacementForm: false,
+      openNewReplacementDialog: false,
+      formNewReplacementTitle: null,
+      clientReplacements: [],
+      showReplacementDetails: [],
+      collectReplacements: {
+        dataDetails: [],
+        dataSummary: []
       },
-      isMobile() {
-        return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
+      addNewReplacement: {
+        noTime: false,
+        entry: null,
+        completed: false,
+        notes: null
       },
+      sessionDetailed: null
+    };
+  },
+
+  mounted() {
+    if (!this.activeSessionId) this.close();
+    this.loadGlobalData();
+    this.loadCollectBehaviors();
+    this.loadCollectReplacements();
+  },
+
+  methods: {
+    async loadGlobalData() {
+      try {
+        this.sessionDetailed = await sessionServicesApi.getSessionDetailed(this.activeSessionId);
+        this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId);
+        this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId);
+        this.clientBehaviors.forEach(() => {
+          this.showBehaviorDetails.push(false);
+        });
+        this.clientReplacements.forEach(() => {
+          this.showBehaviorDetails.push(false);
+        });
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      }
     },
 
-    data() {
-      return {
-        loading: false,
-        validNewBehaviorForm: false,
-        openNewBehaviorDialog: false,
-        clientBehaviors: [],
-        collectBehaviors: {
-          dataDetails: [],
-          dataSummary: [],
-        },
-        formNewBehaviorTitle: null,
-        formNewBehaviorId: null,
-        showBehaviorDetails: [],
-        addNewBehavior: {
-          noTime: false,
-          entry: null,
-          duration: 0,
-          notes: null,
-        },
-
-        validNewReplacementForm: false,
-        openNewReplacementDialog: false,
-        formNewReplacementTitle: null,
-        clientReplacements: [],
-        showReplacementDetails: [],
-        collectReplacements: {
-          dataDetails: [],
-          dataSummary: [],
-        },
-        addNewReplacement: {
-          noTime: false,
-          entry: null,
-          completed: false,
-          notes: null,
-        },
-      };
+    async loadCollectBehaviors() {
+      try {
+        this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      }
     },
 
-    mounted() {
-      if (!this.activeSessionId) this.close();
-      this.loadGlobalData();
-      this.loadCollectBehaviors();
-      this.loadCollectReplacements();
+    async loadCollectReplacements() {
+      try {
+        this.collectReplacements = await sessionServicesApi.getCollectReplacements(this.activeSessionId);
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      }
     },
 
-    methods: {
-      async loadGlobalData() {
-        try {
-          this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId);
-          this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId);
-          this.clientBehaviors.forEach(() => { this.showBehaviorDetails.push(false); });
-          this.clientReplacements.forEach(() => { this.showBehaviorDetails.push(false); });
-        } catch (error) {
-          this.$toast.error(error.message || error);
-        }
-      },
+    addNewBehaviorFormShow(b) {
+      this.formNewBehaviorTitle = b.problemBehavior.problemBehaviorDescription;
+      this.formNewBehaviorId = b.problemBehavior.problemId;
+      this.addNewBehavior.duration = 0;
+      this.addNewBehavior.entry = this.$moment().format("HH:mm");
+      this.openNewBehaviorDialog = true;
+    },
 
-      async loadCollectBehaviors() {
-        try {
-          this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
-        } catch (error) {
-          this.$toast.error(error.message || error);
-        }
-      },
+    addNewBehaviorQuickEntry(b) {
+      this.formNewBehaviorId = b.problemBehavior.problemId;
+      this.addNewBehavior.duration = 0;
+      this.addNewBehavior.noTime = true;
+      this.addNewBehaviorEvent();
+    },
 
-      async loadCollectReplacements() {
-        try {
-          this.collectReplacements = await sessionServicesApi.getCollectReplacements(this.activeSessionId);
-        } catch (error) {
-          this.$toast.error(error.message || error);
-        }
-      },
+    cancelNewBehavior() {
+      this.openNewBehaviorDialog = false;
+      this.$refs.newBehaviorForm.reset();
+    },
 
-      addNewBehaviorFormShow(b) {
-        this.formNewBehaviorTitle = b.problemBehavior.problemBehaviorDescription;
-        this.formNewBehaviorId = b.problemBehavior.problemId;
-        this.addNewBehavior.duration = 0;
-        this.addNewBehavior.entry = this.$moment().format('HH:mm');
-        this.openNewBehaviorDialog = true;
-      },
+    async addNewBehaviorEvent() {
+      try {
+        this.loading = true;
+        let s = this.$moment(`${this.activeDate.format("MM/DD/YYYY")} ${this.addNewBehavior.noTime ? "00:00:00" : this.addNewBehavior.entry}`);
+        let data = {
+          sessionId: this.activeSessionId,
+          clientId: this.activeClientId,
+          problemId: this.formNewBehaviorId,
+          notes: this.addNewBehavior.notes,
+          duration: this.addNewBehavior.duration,
+          entry: s
+        };
+        await sessionServicesApi.saveSessionCollectBehavior(data);
+        await this.loadCollectBehaviors();
+        this.cancelNewBehavior();
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loading = false;
+      }
+    },
 
-      addNewBehaviorQuickEntry(b) {
-        this.formNewBehaviorId = b.problemBehavior.problemId;
-        this.addNewBehavior.duration = 0;
-        this.addNewBehavior.noTime = true;
-        this.addNewBehaviorEvent();
-      },
+    getTotalBehaviors(problemId) {
+      let c = this.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
+      return c ? c.count : 0;
+    },
 
-      cancelNewBehavior() {
-        this.openNewBehaviorDialog = false;
-        this.$refs.newBehaviorForm.reset();
-      },
+    showBehaviorDetailsEvent(i) {
+      this.$set(this.showBehaviorDetails, i, !this.showBehaviorDetails[i]);
+    },
 
-      async addNewBehaviorEvent() {
-        try {
+    getTimelineBehavior(problemId) {
+      let arr = this.collectBehaviors.dataDetails.filter(p => p.problemId == problemId);
+      return arr;
+    },
+
+    deleteBehaviorEntry(t) {
+      this.$confirm("Do you want to delete this entry?").then(async res => {
+        if (res) {
           this.loading = true;
-          let s = this.$moment(`${this.activeDate.format('MM/DD/YYYY')} ${this.addNewBehavior.noTime ? '00:00:00' : this.addNewBehavior.entry}`);
-          let data = {
-            sessionId: this.activeSessionId,
-            clientId: this.activeClientId,
-            problemId: this.formNewBehaviorId,
-            notes: this.addNewBehavior.notes,
-            duration: this.addNewBehavior.duration,
-            entry: s,
-          };
-          await sessionServicesApi.saveSessionCollectBehavior(data);
-          await this.loadCollectBehaviors();
-          this.cancelNewBehavior();
-        } catch (error) {
-          this.$toast.error(error.message || error);
-        } finally {
-          this.loading = false;
+          try {
+            await sessionServicesApi.deleteSessionCollectBehavior(t.sessionCollectBehaviorId);
+            this.loadCollectBehaviors();
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loading = false;
+          }
         }
-      },
-
-      getTotalBehaviors(problemId) {
-        let c = this.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
-        return c ? c.count : 0;
-      },
-
-      showBehaviorDetailsEvent(i) {
-        this.$set(this.showBehaviorDetails, i, !this.showBehaviorDetails[i]);
-      },
-
-      getTimelineBehavior(problemId) {
-        let arr = this.collectBehaviors.dataDetails.filter(p => p.problemId == problemId);
-        return arr;
-      },
-
-      deleteBehaviorEntry(t) {
-        this.$confirm('Do you want to delete this entry?')
-            .then(async res => {
-              if (res) {
-                this.loading = true;
-                try {
-                  await sessionServicesApi.deleteSessionCollectBehavior(t.sessionCollectBehaviorId);
-                  this.loadCollectBehaviors();
-                } catch (error) {
-                  this.$toast.error(error);
-                } finally {
-                  this.loading = false;
-                }
-              }
-            });
-      },
-
-      //replacements
-      addNewReplacementFormShow(b) {
-        this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
-        this.formNewReplacementId = b.replacement.replacementId;
-        this.addNewReplacement.completed = false;
-        this.addNewReplacement.entry = this.$moment().format('HH:mm');
-        this.openNewReplacementDialog = true;
-      },
-
-      addNewReplacementQuickEntry(b, complete) {
-        this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
-        this.formNewReplacementId = b.replacement.replacementId;
-        this.addNewReplacement.completed = complete;
-        this.addNewReplacement.noTime = true;
-        this.addNewReplacementEvent();
-      },
-
-      cancelNewReplacement() {
-        this.openNewReplacementDialog = false;
-        this.$refs.newReplacementForm.reset();
-      },
-
-      async addNewReplacementEvent() {
-        try {
-          this.loading = true;
-          let s = this.$moment(`${this.activeDate.format('MM/DD/YYYY')} ${this.addNewReplacement.noTime ? '00:00' : this.addNewReplacement.entry}`);
-          let data = {
-            sessionId: this.activeSessionId,
-            clientId: this.activeClientId,
-            replacementId: this.formNewReplacementId,
-            notes: this.addNewReplacement.notes,
-            completed: this.addNewReplacement.completed,
-            entry: s,
-          };
-          await sessionServicesApi.saveSessionCollectReplacement(data);
-          await this.loadCollectReplacements();
-          this.cancelNewReplacement();
-        } catch (error) {
-          this.$toast.error(error.message || error);
-        } finally {
-          this.loading = false;
-        }
-      },
-
-      getTotalReplacement(replacementId) {
-        let c = this.collectReplacements.dataSummary.find(s => s.replacementId === replacementId);
-        let total = c ? c.count : 0;
-        let completed = c ? c.completed : 0;
-        let percent = total == 0 ? 0 : completed / total * 100;
-        return `Trials: ${total} | Completed: ${completed} | Percent: ${percent.toFixed(0)}%`;
-      },
-
-      showReplacementDetailsEvent(i) {
-        this.$set(this.showReplacementDetails, i, !this.showReplacementDetails[i]);
-      },
-
-      getTimelineReplacement(replacementId) {
-        let arr = this.collectReplacements.dataDetails.filter(p => p.replacementId == replacementId);
-        return arr;
-      },
-
-      deleteReplacementEntry(t) {
-        this.$confirm('Do you want to delete this trial?')
-            .then(async res => {
-              if (res) {
-                this.loading = true;
-                try {
-                  await sessionServicesApi.deleteSessionCollectReplacement(t.sessionCollectReplacementId);
-                  this.loadCollectReplacements();
-                } catch (error) {
-                  this.$toast.error(error);
-                } finally {
-                  this.loading = false;
-                }
-              }
-            });
-      },
-
-      goToNotes() {
-        this.$router.push('/clients/session_notes');
-      },
-
+      });
     },
-  };
+
+    //replacements
+    addNewReplacementFormShow(b) {
+      this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
+      this.formNewReplacementId = b.replacement.replacementId;
+      this.addNewReplacement.completed = false;
+      this.addNewReplacement.entry = this.$moment().format("HH:mm");
+      this.openNewReplacementDialog = true;
+    },
+
+    addNewReplacementQuickEntry(b, complete) {
+      this.formNewReplacementTitle = b.replacement.replacementProgramDescription;
+      this.formNewReplacementId = b.replacement.replacementId;
+      this.addNewReplacement.completed = complete;
+      this.addNewReplacement.noTime = true;
+      this.addNewReplacementEvent();
+    },
+
+    cancelNewReplacement() {
+      this.openNewReplacementDialog = false;
+      this.$refs.newReplacementForm.reset();
+    },
+
+    async addNewReplacementEvent() {
+      try {
+        this.loading = true;
+        let s = this.$moment(`${this.activeDate.format("MM/DD/YYYY")} ${this.addNewReplacement.noTime ? "00:00" : this.addNewReplacement.entry}`);
+        let data = {
+          sessionId: this.activeSessionId,
+          clientId: this.activeClientId,
+          replacementId: this.formNewReplacementId,
+          notes: this.addNewReplacement.notes,
+          completed: this.addNewReplacement.completed,
+          entry: s
+        };
+        await sessionServicesApi.saveSessionCollectReplacement(data);
+        await this.loadCollectReplacements();
+        this.cancelNewReplacement();
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    getTotalReplacement(replacementId) {
+      let c = this.collectReplacements.dataSummary.find(s => s.replacementId === replacementId);
+      let total = c ? c.count : 0;
+      let completed = c ? c.completed : 0;
+      let percent = total == 0 ? 0 : (completed / total) * 100;
+      return `Trials: ${total} | Completed: ${completed} | Percent: ${percent.toFixed(0)}%`;
+    },
+
+    showReplacementDetailsEvent(i) {
+      this.$set(this.showReplacementDetails, i, !this.showReplacementDetails[i]);
+    },
+
+    getTimelineReplacement(replacementId) {
+      let arr = this.collectReplacements.dataDetails.filter(p => p.replacementId == replacementId);
+      return arr;
+    },
+
+    deleteReplacementEntry(t) {
+      this.$confirm("Do you want to delete this trial?").then(async res => {
+        if (res) {
+          this.loading = true;
+          try {
+            await sessionServicesApi.deleteSessionCollectReplacement(t.sessionCollectReplacementId);
+            this.loadCollectReplacements();
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loading = false;
+          }
+        }
+      });
+    },
+
+    goToNotes() {
+      this.$router.push("/clients/session_notes");
+    }
+  }
+};
 </script>

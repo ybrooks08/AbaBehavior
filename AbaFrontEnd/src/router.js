@@ -232,6 +232,12 @@ export default new Router({
           component: () => import(/* webpackChunkName: "VideoTutorials" */ "@/components/others/VideoTutorials"),
           meta: { rol: ["admin", "assistant", "tech", "analyst"] }
         },
+        {
+          path: '/reporting/ready-to-bill',
+          name: 'Ready2Bill',
+          component: () => import(/* webpackChunkName: "Ready2Bill" */ '@/components/reporting/Ready2Bill'),
+          meta: { rol: ['admin', 'billing'] },
+        },
       ],
     },
     { path: '*', redirect: '/' },

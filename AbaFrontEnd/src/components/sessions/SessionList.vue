@@ -248,22 +248,26 @@ export default {
       this.loadingLastSessions = true;
       try {
         this.sessions = [];
+        let sessionsLocal = [];
         const sessions = await userApi.getSessionList(this.days, this.showClosed);
-        let sessions2 = Object.freeze(sessions);
-        sessions2.forEach(e => {
+        //let sessions2 = Object.freeze(sessions);
+        sessions.forEach(e => {
           e.sessionStart = this.$moment(e.sessionStart).local();
           e.sessionEnd = this.$moment(e.sessionEnd).local();
-          this.sessions.push(e);
+          sessionsLocal.push(e);
         });
+        this.sessions = Object.freeze(sessionsLocal);
 
         this.sessionsClosed = [];
+        let sessionsClosedLocal = [];
         const sessionsClosed = await userApi.getSessionListClosedLw();
-        let sessionsClosed2 = Object.freeze(sessionsClosed);
-        sessionsClosed2.forEach(e => {
+        //let sessionsClosed2 = Object.freeze(sessionsClosed);
+        sessionsClosed.forEach(e => {
           e.sessionStart = this.$moment(e.sessionStart).local();
           e.sessionEnd = this.$moment(e.sessionEnd).local();
-          this.sessionsClosed.push(e);
+          sessionsClosedLocal.push(e);
         });
+        this.sessionsClosed = Object.freeze(sessionsClosedLocal);
       } catch (error) {
         this.$toast.error(error);
       } finally {

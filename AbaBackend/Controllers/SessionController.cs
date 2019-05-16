@@ -829,7 +829,8 @@ namespace AbaBackend.Controllers
       try
       {
         var newStatus = await _utils.ChangeSessionStatus(changeSessionStatus);
-        await _utils.NewEntryLog(changeSessionStatus.SessionId, "Status", $"Status changed to: {changeSessionStatus.SessionStatus.ToString()}");
+        if (changeSessionStatus.SessionStatus == SessionStatus.Billed) await _utils.NewEntryLog(changeSessionStatus.SessionId, "Billed", $"Session was billed.", "fa-dollar-sign", "green");
+        else await _utils.NewEntryLog(changeSessionStatus.SessionId, "Status", $"Status changed to: {changeSessionStatus.SessionStatus.ToString()}");
         return Ok(newStatus);
       }
       catch (Exception e)
@@ -865,7 +866,7 @@ namespace AbaBackend.Controllers
       {
         try
         {
-          var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+          var session = await _dbContext.Sessions.Include(i => i.Client).Include(i => i.User).FirstOrDefaultAsync(w => w.SessionId == sessionId);
           var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
           var supervisionNotes = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
           if (session.SessionType != SessionType.Supervision_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
@@ -886,10 +887,14 @@ namespace AbaBackend.Controllers
           }
 
           var to = caregiver.Email;
-          var subject = $"Please sign the session.";
-          var body = $@"<h3>Caregiver sign session:</h3><br>
-                             Please tap on following link to sign the session<br> 
-                             {url.Url}/{token}";
+          var subject = $"Please sign the {session.SessionStart.ToShortDateString()} session.";
+          var body = $@"Client: <b>{session.Client.Firstname} {session.Client.Lastname}</b><br>
+                        Units: <b>{session.TotalUnits}</b> ({(session.TotalUnits / 4).ToString("n1")}) hour(s)<br>
+                        Service by: <b>{session.User.Firstname} {session.User.Lastname}</b><br>
+                        <br>
+                        <a href=""{url.Url}/{token}"">Tap here to sign</a>
+                        <br>
+                        Thank you";
           var email = await _utils.CreateEmail(to, subject, body, MessageType.General);
           var response = await _utils.SendEmailsAsync(email);
           transaction.Commit();

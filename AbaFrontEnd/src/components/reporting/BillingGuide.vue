@@ -20,13 +20,14 @@
                     </v-list-tile-avatar>
                     <v-list-tile-content>
                       <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.firstname}} {{item.lastname}}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment('utc', "MM/DD/YYYY")}} | Code: {{item.code || 'N/A' }}</v-list-tile-sub-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment("utc", "MM/DD/YYYY")}} | Code: {{item.code || "N/A" }}</v-list-tile-sub-title>
                     </v-list-tile-content>
                   </template>
                 </v-autocomplete>
               </v-flex>
               <v-flex md12>
-                <v-select box hide-details :disabled="loading" :items="behaviorAnalysisCodes" v-model="behaviorAnalysisCodeId" label="Service" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId" :rules="[required]" required>
+                <v-select box hide-details :disabled="loading" :items="behaviorAnalysisCodes" v-model="behaviorAnalysisCodeId" label="Service" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId"
+                          :rules="[required]" required>
                   <template slot="selection" slot-scope="data">
                     <div class="input-group__selections__comma">
                       {{ data.item.description }} &nbsp;
@@ -74,17 +75,17 @@
             <v-flex xs6>
               <v-layout row wrap>
                 <v-flex class="body-2 text-xs-right" xs4>Recipient ID:</v-flex>
-                <v-flex xs8>{{report.client.memberId || 'N/A'}}</v-flex>
+                <v-flex xs8>{{report.client.memberId || "N/A"}}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>Last Name:</v-flex>
-                <v-flex xs8>{{report.client.lastname || 'N/A'}}</v-flex>
+                <v-flex xs8>{{report.client.lastname || "N/A"}}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>First Name:</v-flex>
-                <v-flex xs8>{{report.client.firstname || 'N/A'}}</v-flex>
+                <v-flex xs8>{{report.client.firstname || "N/A"}}</v-flex>
               </v-layout>
             </v-flex>
             <v-flex xs6>
               <v-layout row wrap>
                 <v-flex class="body-2 text-xs-right" xs4>Dob:</v-flex>
-                <v-flex xs8>{{report.client.dob || new Date() | moment('utc', 'MM/DD/YYYY')}}</v-flex>
+                <v-flex xs8>{{report.client.dob || new Date() | moment("utc", "MM/DD/YYYY")}}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>Patient account:</v-flex>
                 <v-flex xs8>{{report.client.code}}</v-flex>
               </v-layout>
@@ -136,10 +137,10 @@
                 </td>
                 <td>
                   <v-icon small>fa-check-circle</v-icon>
-                  {{r.dateReferral | moment('utc', 'MM/DD/YYYY')}}
+                  {{r.dateReferral | moment("utc", "MM/DD/YYYY")}}
                   <br>
                   <v-icon small>fa-times-circle</v-icon>
-                  {{r.dateExpires | moment('utc', 'MM/DD/YYYY')}}
+                  {{r.dateExpires | moment("utc", "MM/DD/YYYY")}}
                 </td>
               </tr>
             </tbody>
@@ -148,6 +149,7 @@
           <table class="v-datatable v-table theme--light print-font-small">
             <thead>
               <tr style="height: auto;">
+                <th class="text-xs-left py-0">Auth</th>
                 <th class="text-xs-left py-0">PA Number</th>
                 <th class="text-xs-left py-0">Total Units / Hours</th>
                 <th class="text-xs-left py-0">Start / End date</th>
@@ -155,6 +157,10 @@
             </thead>
             <tbody>
               <tr v-for="r in report.client.assessments" :key="('ass'+r.assessmentId)">
+                <td>
+                  <strong>{{r.behaviorAnalysisCode.hcpcs}}</strong>
+                </td>
+                <td>
                 <td>
                   <strong>{{r.paNumber}}</strong>
                 </td>
@@ -169,10 +175,10 @@
                 </td>
                 <td>
                   <v-icon small>fa-check-circle</v-icon>
-                  {{r.startDate | moment('utc', 'MM/DD/YYYY')}}
+                  {{r.startDate | moment("utc", "MM/DD/YYYY")}}
                   <br>
                   <v-icon small>fa-times-circle</v-icon>
-                  {{r.endDate | moment('utc', 'MM/DD/YYYY')}}
+                  {{r.endDate | moment("utc", "MM/DD/YYYY")}}
                 </td>
               </tr>
             </tbody>
@@ -203,32 +209,44 @@
             </tbody>
           </table>
           <v-subheader>Sessions</v-subheader>
-          <table class="v-datatable v-table theme--light print-font-small">
+          <table class="v-datatable v-table theme--light print-font-small condensed">
             <thead>
               <tr style="height: auto;">
+                <th class="text-xs-left py-0">Billing Status</th>
                 <th class="text-xs-left py-0">Date</th>
+                <th class="text-xs-left py-0">Service User</th>
                 <th class="text-xs-left py-0">Service</th>
                 <th class="text-xs-left py-0">Start / End time</th>
-                <th class="text-xs-left py-0">Total Units / Hours</th>
                 <th class="text-xs-left py-0">Place</th>
+                <th class="text-xs-left py-0">Total Units / Hours</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in sessions" :key="('session'+r.sessionId)">
+              <tr v-for="(r, i) in sessions" :key="('session'+r.sessionId)">
                 <td>
-                  <strong>{{r.sessionStart | moment('MM/DD/YYYY')}}</strong>
+                  <v-btn small v-if="r.sessionStatus !== 'Billed'" :loading="btnLoading[i]" color="primary" @click="markBilled(r, i)">Mark as billed</v-btn>
+                  <v-chip v-else label disabled color="green" text-color="white">Billed</v-chip>
+                </td>
+                <td>
+                  <strong>{{r.sessionStart | moment("MM/DD/YYYY")}}</strong>
                 </td>
                 <td>
                   <strong>{{r.userFullname}}</strong>
                 </td>
                 <td>
-                  <v-icon small>fa-check-circle</v-icon>
-                  {{r.sessionStart | moment('LT')}}
-                  <br>
-                  <v-icon small>fa-times-circle</v-icon>
-                  {{r.sessionEnd | moment('LT')}}
+                  <strong>{{r.sessionType}}</strong>
                 </td>
                 <td>
+                  <v-icon small>fa-check-circle</v-icon>
+                  {{r.sessionStart | moment("LT")}}
+                  <br>
+                  <v-icon small>fa-times-circle</v-icon>
+                  {{r.sessionEnd | moment("LT")}}
+                </td>
+                <td>
+                  <strong>{{r.pos}}</strong>
+                </td>
+                <td class="text-xs-center">
                   <strong>
                     <v-icon small>fa-star</v-icon>
                     {{r.totalUnits.toLocaleString()}}
@@ -237,11 +255,22 @@
                   <v-icon small>fa-clock</v-icon>
                   {{(r.totalUnits / 4).toLocaleString()}}
                 </td>
-                <td>
-                  <strong>{{r.pos}}</strong>
-                </td>
               </tr>
             </tbody>
+            <tfoot>
+              <tr class="grey lighten-2">
+                <td colspan="6">Total</td>
+                <td class="text-xs-center">
+                  <strong>
+                    <v-icon small>fa-star</v-icon>
+                    {{totalUnits.toLocaleString()}}
+                  </strong>
+                  <br>
+                  <v-icon small>fa-clock</v-icon>
+                  {{(totalUnits / 4).toLocaleString()}}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </v-card-text>
       </v-card>
@@ -250,28 +279,42 @@
 </template>
 
 <script>
-import clientApi from '@/services/api/ClientServices';
-import masterTableApi from '@/services/api/MasterTablesServices';
-import reportingApi from '@/services/api/ReportingServices';
+import clientApi from "@/services/api/ClientServices";
+import masterTableApi from "@/services/api/MasterTablesServices";
+import reportingApi from "@/services/api/ReportingServices";
+import sessionServicesApi from "@/services/api/SessionServices";
 
 export default {
-
   data() {
     return {
       loading: false,
       validForm: false,
       report: null,
       datePickerModel: {
-        start: this.$moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DDTHH:mm'),
-        end: this.$moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DDTHH:mm'),
+        start: this.$moment()
+            .subtract(1, "month")
+            .startOf("month")
+            .format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment()
+            .subtract(1, "month")
+            .endOf("month")
+            .format("YYYY-MM-DDTHH:mm")
       },
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       clients: [],
       selectedClientId: null,
       behaviorAnalysisCodes: [],
       behaviorAnalysisCodeId: null,
       sessions: [],
+      btnLoading: []
     };
+  },
+
+  computed: {
+    totalUnits() {
+      const totalUnits = this.sessions.length == 0 ? 0 : this.sessions.map(a => a.totalUnits).reduce((a, b) => a + b);
+      return totalUnits;
+    }
   },
 
   async mounted() {
@@ -279,11 +322,15 @@ export default {
     this.loading = true;
     try {
       this.clients = await clientApi.getClients();
-      this.clients.forEach(s => { s.fullname = `${s.firstname} ${s.lastname}` });
+      this.clients.forEach(s => {
+        s.fullname = `${s.firstname} ${s.lastname}`;
+      });
       this.behaviorAnalysisCodes = await masterTableApi.getBehaviorAnalysisCodes(true);
     } catch (error) {
       this.$toast.error(error);
-    } finally { this.loading = false; }
+    } finally {
+      this.loading = false;
+    }
   },
 
   methods: {
@@ -298,6 +345,7 @@ export default {
           e.sessionEnd = this.$moment(e.sessionEnd).local();
           this.sessions.push(e);
         });
+        console.log(this.report.client.assessments);
       } catch (error) {
         this.$toast.error(error.response.data || error.message);
       } finally {
@@ -305,9 +353,26 @@ export default {
       }
     },
 
+    async markBilled(session, index) {
+      const model = {
+        sessionId: session.sessionId,
+        sessionStatus: 6 //billed
+      };
+      this.$set(this.btnLoading, index, true);
+      try {
+        await sessionServicesApi.changeSessionStatus(model);
+        session.sessionStatus = "Billed";
+      } catch (error) {
+        console.error(error);
+        this.$toast.error(error);
+      } finally {
+        this.$set(this.btnLoading, index, false);
+      }
+    },
+
     print() {
       window.print();
     }
   }
-}
+};
 </script>

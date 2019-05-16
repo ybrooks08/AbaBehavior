@@ -59,6 +59,14 @@
         </v-list-tile-content>
       </v-list-tile>
       <v-subheader>Reports</v-subheader>
+      <v-list-tile to="/reporting/ready-to-bill" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-funnel-dollar</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Ready to bill</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-list-tile to="/reporting/billing_guide">
         <v-list-tile-action>
           <v-icon>fa-file-invoice-dollar</v-icon>

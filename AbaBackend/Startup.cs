@@ -43,11 +43,12 @@ namespace AbaBackend
       {
         options.AddPolicy("CorsPolicy",
           builder => builder
-          //.AllowAnyOrigin()
+          .AllowAnyOrigin()
                             .SetIsOriginAllowed(isOriginAllowed: _ => true)
                             .AllowAnyMethod()
                             .AllowAnyHeader()
                             .AllowCredentials());
+
       });
 
       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

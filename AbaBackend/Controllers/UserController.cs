@@ -530,7 +530,7 @@ namespace AbaBackend.Controllers
       var sessions = await _dbContext.Sessions
                                      .AsNoTracking()
                                      .Where(w => days == 0 || w.SessionStart.Date >= firstDay && w.SessionStart.Date <= today)
-                                     .Where(w => showClosed || w.SessionStatus != SessionStatus.Checked)
+                                     .Where(w => showClosed || (w.SessionStatus != SessionStatus.Checked && w.SessionStatus != SessionStatus.Billed))
                                      .Select(s => new
                                      {
                                        s.SessionId,
@@ -580,7 +580,7 @@ namespace AbaBackend.Controllers
       var sessions = await _dbContext.Sessions
                                      .AsNoTracking()
                                      .Where(w => w.SessionStart.Date >= firstDay && w.SessionStart.Date <= lastDay)
-                                     .Where(w => w.SessionStatus == SessionStatus.Checked)
+                                     .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Billed)
                                      .Select(s => new
                                      {
                                        s.SessionId,
@@ -620,7 +620,6 @@ namespace AbaBackend.Controllers
 
       return Ok(sessions);
     }
-
 
     [HttpDelete("[action]/{userId}")]
     public async Task<IActionResult> DeleteDocuments(int userId)
