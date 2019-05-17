@@ -137,16 +137,17 @@ namespace AbaBackend.Controllers
                                          SessionEnd = s.SessionEnd.ToString("u"),
                                          s.TotalUnits,
                                          SessionType = s.SessionType.ToString().Replace("_", " "),
+                                         SessionTypeCode = s.SessionType,
                                          SessionStatus = s.SessionStatus.ToString(),
                                          SessionStatusCode = s.SessionStatus,
-                                         SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+                                         SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
                                          Pos = s.Pos.ToString(),
                                          PosCode = s.Pos,
                                          s.SessionNote.Caregiver.CaregiverFullname,
+                                         CaregiverFullnameSupervision = s.SessionSupervisionNote.Caregiver.CaregiverFullname,
                                          s.Sign
                                        })
                                        .ToListAsync();
-
         return Ok(new
         {
           user,
@@ -186,7 +187,7 @@ namespace AbaBackend.Controllers
                                          SessionType = s.SessionType.ToString().Replace("_", " "),
                                          SessionStatus = s.SessionStatus.ToString(),
                                          SessionStatusCode = s.SessionStatus,
-                                         SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+                                         SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
                                          Pos = s.Pos.ToString().Replace("_", " "),
                                          PosCode = s.Pos,
                                          UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
@@ -242,7 +243,7 @@ namespace AbaBackend.Controllers
                                          SessionType = s.SessionType.ToString().Replace("_", " "),
                                          SessionStatus = s.SessionStatus.ToString(),
                                          SessionStatusCode = s.SessionStatus,
-                                         SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+                                         SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
                                          Pos = s.Pos.ToString().Replace("_", " "),
                                          PosCode = s.Pos,
                                          UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
@@ -279,7 +280,7 @@ namespace AbaBackend.Controllers
         var totalHours = 0m;
         foreach (var session in sessions)
         {
-          var sessionHours = session.TotalUnits / (decimal) 4;
+          var sessionHours = session.TotalUnits / (decimal)4;
           var sessionDriveTime = session.DriveTime;
 
           var regularHours = 0m;
@@ -349,7 +350,7 @@ namespace AbaBackend.Controllers
                                          SessionType = s.SessionType.ToString().Replace("_", " "),
                                          SessionStatus = s.SessionStatus.ToString(),
                                          SessionStatusCode = s.SessionStatus,
-                                         SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+                                         SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
                                          Pos = s.Pos.ToString().Replace("_", " "),
                                          PosCode = s.Pos,
                                          UserFullname = $"{s.User.Firstname} {s.User.Lastname}",

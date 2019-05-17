@@ -10,7 +10,7 @@
           <v-form ref="form" autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
-                <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel"/>
+                <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel" />
               </v-flex>
               <v-flex md12>
                 <v-select box hid :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]" required>
@@ -29,7 +29,7 @@
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="viewReport">Generate</v-btn>
         </v-card-actions>
       </v-card>
@@ -38,7 +38,7 @@
       <v-card>
         <v-toolbar dense dark class="secondary no-print">
           <v-toolbar-title>Service Log</v-toolbar-title>
-          <v-spacer/>
+          <v-spacer />
           <v-btn dark icon @click="print">
             <v-icon>fa-print</v-icon>
           </v-btn>
@@ -137,7 +137,7 @@
                 <td class="text-xs-center" style="vertical-align: middle;">{{s.totalUnits.toLocaleString()}}</td>
                 <td class="text-xs-center" style="vertical-align: middle;">{{(s.totalUnits / 4).toLocaleString()}}</td>
                 <td class="text-xs-center" style="vertical-align: middle;">{{s.posCode}}</td>
-                <td class="text-xs-left" style="vertical-align: middle;">{{s.caregiverFullname}}</td>
+                <td class="text-xs-left" style="vertical-align: middle;">{{s.sessionTypeCode !=3 ? s.caregiverFullname : s.caregiverFullnameSupervision}}</td>
                 <td class="text-xs-center" style="vertical-align: middle;">
                   <span v-if="!s.sign"></span>
                   <img v-else style="object-fit: contain; max-height: 20px;" :src="!s.sign || s.sign.sign">
@@ -169,25 +169,31 @@
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 // import clientApi from '@/services/api/ClientServices';
-import reportingApi from '@/services/api/ReportingServices';
+import reportingApi from "@/services/api/ReportingServices";
 
 export default {
   data() {
     return {
       loading: false,
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       validForm: false,
       datePickerModel: {
-        start: this.$moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DDTHH:mm'),
-        end: this.$moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DDTHH:mm'),
+        start: this.$moment()
+          .subtract(1, "month")
+          .startOf("month")
+          .format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment()
+          .subtract(1, "month")
+          .endOf("month")
+          .format("YYYY-MM-DDTHH:mm")
       },
       clients: [],
       clientId: null,
       report: null,
-      sessions: [],
-    }
+      sessions: []
+    };
   },
 
   computed: {
@@ -195,12 +201,12 @@ export default {
       return this.$store.getters.user;
     },
     isAdminOrManagement() {
-      return this.user.rol2 === 'admin' || this.user.rol2 === 'management';
+      return this.user.rol2 === "admin" || this.user.rol2 === "management";
     }
   },
 
   mounted() {
-    this.$store.commit('SET_ACTIVE_CLIENT', null);
+    this.$store.commit("SET_ACTIVE_CLIENT", null);
     this.loadUserClients();
 
     //remove
@@ -223,7 +229,9 @@ export default {
         this.clients = await userApi.loadUserClients();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     async viewReport() {
@@ -237,6 +245,7 @@ export default {
           e.sessionEnd = this.$moment(e.sessionEnd).local();
           this.sessions.push(e);
         });
+        console.log(this.sessions);
       } catch (error) {
         this.$toast.error(error.response.data || error.message);
       } finally {
@@ -248,6 +257,5 @@ export default {
       window.print();
     }
   }
-
-}
+};
 </script>

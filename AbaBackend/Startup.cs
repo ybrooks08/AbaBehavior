@@ -27,14 +27,14 @@ namespace AbaBackend
 {
   public class Startup
   {
-    public Startup(IConfiguration configuration, ILogger<Startup> logger)
+    public Startup(IConfiguration configuration)
     {
       Configuration = configuration;
-      _logger = logger;
+      //_logger = logger;
     }
 
     public IConfiguration Configuration { get; }
-    private readonly ILogger _logger;
+    //private readonly ILogger _logger;
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -46,8 +46,8 @@ namespace AbaBackend
           .AllowAnyOrigin()
                             .SetIsOriginAllowed(isOriginAllowed: _ => true)
                             .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials());
+                            .AllowAnyHeader());
+        //.AllowCredentials());
 
       });
 
@@ -73,14 +73,14 @@ namespace AbaBackend
               .AddJsonOptions(o => { o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; o.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Local; });
     }
 
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils, ILoggerFactory loggerFactory)
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils)
     {
       app.UseDefaultFiles();
       app.UseStaticFiles();
 
-      loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-      loggerFactory.AddDebug();
-      loggerFactory.AddAzureWebAppDiagnostics();
+      // loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+      // loggerFactory.AddDebug();
+      // loggerFactory.AddAzureWebAppDiagnostics();
 
       if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
       else app.UseHsts();
@@ -93,7 +93,7 @@ namespace AbaBackend
 
       context.Database.Migrate();
 
-      DbInitializer.CustomSeed(env, context, _logger);
+      DbInitializer.CustomSeed(env, context);
 
       RecurringJob.AddOrUpdate(() => utils.SendEmailsAsync(true), Cron.Hourly);
       RecurringJob.AddOrUpdate(() => utils.MidNightProcess(), Cron.Daily);

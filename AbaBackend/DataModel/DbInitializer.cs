@@ -10,7 +10,7 @@ namespace AbaBackend.DataModel
 {
   public class DbInitializer
   {
-    public static void CustomSeed(IHostingEnvironment env, AbaDbContext context, ILogger _logger)
+    public static void CustomSeed(IHostingEnvironment env, AbaDbContext context)
     {
       if (!context.Diagnostics.Any())
       {
@@ -18,7 +18,7 @@ namespace AbaBackend.DataModel
         {
           var file = Path.Combine(env.WebRootPath, "seed/diagnosis.txt");
           var lines = File.ReadAllLines(file);
-          _logger.LogWarning($"Seeding {lines.Length} diagnostics...");
+          Console.WriteLine($"Seeding {lines.Length} diagnostics...");
           foreach (var l in lines)
           {
             var obj = l.Replace("\"", "").Split('\t');
@@ -30,11 +30,11 @@ namespace AbaBackend.DataModel
             context.Add(diag);
           }
           context.SaveChanges();
-          _logger.LogWarning($"Done!");
+          Console.WriteLine("Done!");
         }
         catch (System.Exception e)
         {
-          _logger.LogCritical("ERROR SEEDING: " + e.Message);
+          Console.WriteLine("ERROR SEEDING: " + e.Message);
         }
 
       }

@@ -605,7 +605,8 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn :disabled="loading" @click="close" flat>{{(editDisabled ? "CLOSE" : "CANCEL")}}</v-btn>
-            <v-btn v-if="!editDisabled" :disabled="loading" :loading="loading" color="primary" @click="save">Save</v-btn>
+            <v-btn v-if="!editDisabled" :disabled="loading" :loading="loading" color="primary" @click="save(false)">Save</v-btn>
+            <v-btn v-if="!editDisabled" :disabled="loading" :loading="loading" color="success" @click="save">Save and return</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -816,20 +817,21 @@ export default {
       this.$router.push("/clients/sessions_details");
     },
 
-    async save() {
+    async save(exit = true) {
       if (this.session.sessionType === 3) {
         let work = 0;
         this.sessionSupervisionWorkWithArray.forEach(c => {
           work |= c;
         });
-
         this.session.sessionSupervisionNote.workWith = work;
       }
 
       try {
         this.loadingSession = true;
         await sessionServicesApi.editSessionNotes(this.session);
-        this.close();
+        if (exit) this.close();
+        this.$toast.success("Session saved successful");
+        this.loadSessionData();
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -903,6 +905,10 @@ export default {
             sessionStatus: 5 //checked
           };
           try {
+            if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
+              this.$toast.error("You can not check this session without a valid signature");
+              return;
+            }
             await sessionServicesApi.changeSessionStatus(model);
             this.close();
           } catch (error) {
