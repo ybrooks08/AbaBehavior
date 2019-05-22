@@ -18,6 +18,7 @@
             </v-layout>
           </v-card-text>
           <v-card-actions>
+            <small class="pl-4 grey--text">* Only reviewed and billed sessions will be reported</small>
             <v-spacer />
             <v-btn :disabled="loading" :loading="loading" color="primary" @click="viewReport">Generate</v-btn>
           </v-card-actions>
@@ -61,60 +62,60 @@
                   <th class="text-xs-left py-0">IN</th>
                   <th class="text-xs-left py-0">OUT</th>
                   <th class="text-xs-left py-0">Client</th>
-                  <th class="text-xs-left py-0">Hours/Drive</th>
-                  <th class="text-xs-center py-0">Reg</th>
-                  <th class="text-xs-center py-0">Drv</th>
-                  <th class="text-xs-center py-0">Extra</th>
-                  <th class="text-xs-center py-0">ExtDrv</th>
+                  <th class="text-xs-right py-0">Hours/Drive</th>
+                  <th class="text-xs-right py-0">Reg</th>
+                  <th class="text-xs-right py-0">Drv</th>
+                  <th class="text-xs-right py-0">Extra</th>
+                  <th class="text-xs-right py-0">ExtDrv</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="r in report" :key="('session'+r.sessionId)">
-                  <td>
-                    <v-icon small>fa-calendar</v-icon>
+                  <td class="px-1">
+                    <v-icon class="no-print" small>fa-calendar</v-icon>
                     {{r.date | moment('MM/DD/YYYY')}}
                   </td>
-                  <td>
-                    <v-icon small>fa-clock</v-icon>
+                  <td class="px-1">
+                    <v-icon class="no-print" small>fa-clock</v-icon>
                     {{r.sessionIn | moment('LT')}}
                   </td>
-                  <td>
-                    <v-icon small>fa-clock</v-icon>
+                  <td class="px-1">
+                    <v-icon class="no-print" small>fa-clock</v-icon>
                     {{r.sessionOut | moment('LT')}}
                   </td>
-                  <td class="text-xs-left">{{r.client}}</td>
-                  <td class="text-xs-right">{{r.sessionHours}}/{{r.sessionDriveTime}}</td>
-                  <td class="text-xs-right">{{r.regularHours}}</td>
-                  <td class="text-xs-right">{{r.regularDrive}}</td>
-                  <td class="text-xs-right">{{r.extraHours}}</td>
-                  <td class="text-xs-right">{{r.extraDrive}}</td>
+                  <td class="px-1 text-xs-left">{{r.client}}</td>
+                  <td class="px-1 text-xs-right">{{r.sessionHours}}/{{r.sessionDriveTime}}</td>
+                  <td class="px-1 text-xs-right">{{r.regularHours}}</td>
+                  <td class="px-1 text-xs-right">{{r.regularDrive}}</td>
+                  <td class="px-1 text-xs-right">{{r.extraHours}}</td>
+                  <td class="px-1 text-xs-right">{{r.extraDrive}}</td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr class="font-weight-medium">
-                  <td colspan="5" class="text-xs-left">Totals</td>
-                  <td class="text-xs-right">{{totalRegular}}</td>
-                  <td class="text-xs-right">{{totalRegularDrive}}</td>
-                  <td class="text-xs-right">{{totalExtraHours}}</td>
-                  <td class="text-xs-right">{{totalExtraDrive}}</td>
+                  <td class="px-1 text-xs-left" colspan="5">Totals</td>
+                  <td class="px-1 text-xs-right">{{totalRegular}}</td>
+                  <td class="px-1 text-xs-right">{{totalRegularDrive}}</td>
+                  <td class="px-1 text-xs-right">{{totalExtraHours}}</td>
+                  <td class="px-1 text-xs-right">{{totalExtraDrive}}</td>
                 </tr>
                 <tr class="font-weight-medium">
-                  <td colspan="5" class="text-xs-left">Pay rate</td>
-                  <td class="text-xs-right">${{userData.payRate.toFixed(2)}}</td>
-                  <td class="text-xs-right">${{userData.driveTimePayRate.toFixed(2)}}</td>
-                  <td class="text-xs-right">${{payExtraRate}}</td>
-                  <td class="text-xs-right">${{payDriveTimeExtraRate}}</td>
+                  <td class="px-1 text-xs-left" colspan="5">Pay rate</td>
+                  <td class="px-1 text-xs-right">${{userData.payRate.toFixed(2)}}</td>
+                  <td class="px-1 text-xs-right">${{userData.driveTimePayRate.toFixed(2)}}</td>
+                  <td class="px-1 text-xs-right">${{payExtraRate}}</td>
+                  <td class="px-1 text-xs-right">${{payDriveTimeExtraRate}}</td>
                 </tr>
                 <tr class="font-weight-medium">
-                  <td colspan="5" class="text-xs-left">Subtotal</td>
-                  <td class="text-xs-right">${{(totalRegular * userData.payRate).toFixed(2)}}</td>
-                  <td class="text-xs-right">${{(totalRegularDrive * userData.driveTimePayRate).toFixed(2)}}</td>
-                  <td class="text-xs-right">${{(totalExtraHours * payExtraRate).toFixed(2)}}</td>
-                  <td class="text-xs-right">${{(totalExtraDrive * payDriveTimeExtraRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-left" colspan="5">Subtotal</td>
+                  <td class="px-1 text-xs-right">${{(totalRegular * userData.payRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-right">${{(totalRegularDrive * userData.driveTimePayRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-right">${{(totalExtraHours * payExtraRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-right">${{(totalExtraDrive * payDriveTimeExtraRate).toFixed(2)}}</td>
                 </tr>
                 <tr class="font-weight-black black white--text">
-                  <td colspan="5" class="text-xs-left">TOTAL</td>
-                  <td colspan="4" class="text-xs-center">${{(totalRegular * userData.payRate + totalRegularDrive * userData.driveTimePayRate + totalExtraHours * payExtraRate + totalExtraDrive * payDriveTimeExtraRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-left" colspan="5">TOTAL</td>
+                  <td class="px-1 text-xs-center" colspan="4">${{(totalRegular * userData.payRate + totalRegularDrive * userData.driveTimePayRate + totalExtraHours * payExtraRate + totalExtraDrive * payDriveTimeExtraRate).toFixed(2)}}</td>
                 </tr>
               </tfoot>
             </table>
@@ -216,7 +217,9 @@ export default {
       }
     },
 
-    print() {}
+    print() {
+      window.print();
+    }
   }
 };
 </script>

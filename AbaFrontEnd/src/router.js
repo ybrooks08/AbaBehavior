@@ -164,7 +164,7 @@ export default new Router({
           path: '/reporting/rbt_ba_services_log',
           name: 'RbtBaServicesLog',
           component: () => import(/* webpackChunkName: "RbtBaServicesLog" */ '@/components/reporting/RbtBaServicesLog'),
-          meta: { rol: ['assistant', 'tech', 'management', 'admin', 'analyst'] },
+          meta: { rol: ['assistant', 'tech', 'management', 'admin', 'analyst', 'billing'] },
         },
         {
           path: '/reporting/sessions-history',

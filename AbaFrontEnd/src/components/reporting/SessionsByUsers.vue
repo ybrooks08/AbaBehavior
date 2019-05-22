@@ -3,14 +3,14 @@
     <v-flex xs12 class="no-print">
       <v-card>
         <v-toolbar dark class="secondary" fluid dense>
-          <v-toolbar-title>Sessions by user {{userId}}</v-toolbar-title>
+          <v-toolbar-title>Sessions by user</v-toolbar-title>
         </v-toolbar>
         <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
         <v-card-text class="pa-1">
           <v-form ref="form" autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
-                <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel"/>
+                <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel" />
               </v-flex>
               <v-flex md12>
                 <v-autocomplete box hid :disabled="loading" :items="users" v-model="userId" label="User" prepend-icon="fa-user" item-text="fullname" item-value="userId" :rules="[required]" required>
@@ -29,7 +29,8 @@
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-spacer/>
+          <small class="pl-4 grey--text">* Only billed sessions will be reported</small>
+          <v-spacer />
           <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="viewReport">Generate</v-btn>
         </v-card-actions>
       </v-card>
@@ -38,7 +39,7 @@
       <v-card>
         <v-toolbar dense dark class="secondary no-print">
           <v-toolbar-title>Sessions by User</v-toolbar-title>
-          <v-spacer/>
+          <v-spacer />
           <v-btn dark icon @click="print">
             <v-icon>fa-print</v-icon>
           </v-btn>
@@ -105,30 +106,36 @@
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 // import clientApi from '@/services/api/ClientServices';
-import reportingApi from '@/services/api/ReportingServices';
+import reportingApi from "@/services/api/ReportingServices";
 
 export default {
   data() {
     return {
       loading: false,
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       validForm: false,
       datePickerModel: {
-        start: this.$moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DDTHH:mm'),
-        end: this.$moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DDTHH:mm'),
+        start: this.$moment()
+          .subtract(1, "month")
+          .startOf("month")
+          .format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment()
+          .subtract(1, "month")
+          .endOf("month")
+          .format("YYYY-MM-DDTHH:mm")
       },
       users: [],
       sessions: [],
-      userId: null,
+      userId: null
     };
   },
 
   computed: {
     totalUnits() {
       return this.sessions.map(a => a.totalUnits).reduce((a, b) => a + b);
-    },
+    }
   },
 
   mounted() {
@@ -148,7 +155,9 @@ export default {
         this.users = await userApi.getUsersCanCreateSessions();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     async viewReport() {
@@ -158,7 +167,7 @@ export default {
         let sessions = await reportingApi.getSessionsByUser(this.datePickerModel.start, this.datePickerModel.end, this.userId);
 
         if (sessions.length == 0) {
-          this.$toast.info('No data');
+          this.$toast.info("No data");
           return;
         }
 
@@ -176,8 +185,7 @@ export default {
 
     print() {
       window.print();
-    },
-  },
-
+    }
+  }
 };
 </script>

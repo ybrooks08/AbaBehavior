@@ -9,7 +9,7 @@
           <v-form autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
-                <date-picker-menu v-model="datePickerModel" :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading"/>
+                <date-picker-menu v-model="datePickerModel" :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" />
                 <!-- <date-picker-menu :isLarge=true :isDark=false :btnColor="'primary'" :pickerStartInit="from" :pickerEndInit="to" :initialValue="'Last month'" @dateSelected="dateSelected" :disabled="loading" /> -->
               </v-flex>
               <v-flex xs12>
@@ -26,8 +26,7 @@
                 </v-autocomplete>
               </v-flex>
               <v-flex md12>
-                <v-select box hide-details :disabled="loading" :items="behaviorAnalysisCodes" v-model="behaviorAnalysisCodeId" label="Service" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId"
-                          :rules="[required]" required>
+                <v-select box hide-details :disabled="loading" :items="behaviorAnalysisCodes" v-model="behaviorAnalysisCodeId" label="Service" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId" :rules="[required]" required>
                   <template slot="selection" slot-scope="data">
                     <div class="input-group__selections__comma">
                       {{ data.item.description }} &nbsp;
@@ -51,7 +50,8 @@
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-spacer/>
+          <small class="pl-4 grey--text">* Only reviewed and billed sessions will be reported</small>
+          <v-spacer />
           <!-- <v-btn :loading="loading" :disabled="loading || !validForm">Clear</v-btn> -->
           <v-btn color="primary" :loading="loading" :disabled="loading || !validForm" @click="View">View</v-btn>
         </v-card-actions>
@@ -61,7 +61,7 @@
       <v-card>
         <v-toolbar dense dark class="secondary no-print">
           <v-toolbar-title>Billing guide overview</v-toolbar-title>
-          <v-spacer/>
+          <v-spacer />
           <v-btn dark icon @click="print">
             <v-icon>fa-print</v-icon>
           </v-btn>
@@ -217,8 +217,9 @@
                 <th class="text-xs-left py-0">Service User</th>
                 <th class="text-xs-left py-0">Service</th>
                 <th class="text-xs-left py-0">Start / End time</th>
-                <th class="text-xs-left py-0">Place</th>
-                <th class="text-xs-left py-0">Total Units / Hours</th>
+                <th class="text-xs-center py-0">Place</th>
+                <th class="text-xs-right py-0">Units</th>
+                <th class="text-xs-right py-0">Hours</th>
               </tr>
             </thead>
             <tbody>
@@ -246,28 +247,34 @@
                 <td>
                   <strong>{{r.pos}}</strong>
                 </td>
-                <td class="text-xs-center">
+                <td class="text-xs-right">
                   <strong>
                     <v-icon small>fa-star</v-icon>
                     {{r.totalUnits.toLocaleString()}}
                   </strong>
-                  <br>
-                  <v-icon small>fa-clock</v-icon>
-                  {{(r.totalUnits / 4).toLocaleString()}}
+                </td>
+                <td class="text-xs-right">
+                  <strong>
+                    <v-icon small>fa-clock</v-icon>
+                    {{(r.totalUnits / 4).toLocaleString()}}
+                  </strong>
                 </td>
               </tr>
             </tbody>
             <tfoot>
               <tr class="grey lighten-2">
                 <td colspan="6">Total</td>
-                <td class="text-xs-center">
+                <td class="text-xs-right">
                   <strong>
                     <v-icon small>fa-star</v-icon>
                     {{totalUnits.toLocaleString()}}
                   </strong>
-                  <br>
-                  <v-icon small>fa-clock</v-icon>
-                  {{(totalUnits / 4).toLocaleString()}}
+                </td>
+                <td class="text-xs-right">
+                  <strong>
+                    <v-icon small>fa-clock</v-icon>
+                    {{(totalUnits / 4).toLocaleString()}}
+                  </strong>
                 </td>
               </tr>
             </tfoot>
@@ -292,13 +299,13 @@ export default {
       report: null,
       datePickerModel: {
         start: this.$moment()
-            .subtract(1, "month")
-            .startOf("month")
-            .format("YYYY-MM-DDTHH:mm"),
+          .subtract(1, "month")
+          .startOf("month")
+          .format("YYYY-MM-DDTHH:mm"),
         end: this.$moment()
-            .subtract(1, "month")
-            .endOf("month")
-            .format("YYYY-MM-DDTHH:mm")
+          .subtract(1, "month")
+          .endOf("month")
+          .format("YYYY-MM-DDTHH:mm")
       },
       required: value => !!value || "This field is required.",
       clients: [],

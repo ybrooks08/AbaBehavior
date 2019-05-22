@@ -22,11 +22,14 @@
 
       <template v-slot:extension>
         <v-tabs v-model="tabModel" color="secondary">
-          <v-tab key="allSessionsTab">
+          <v-tab key="allSessionsTab" v-if="showOpen">
             Opened
           </v-tab>
+          <v-tab key="readyToReview" v-if="showOpen">
+            Ready to review
+          </v-tab>
           <v-tab key="lastWeekClosedSessions">
-            Closed LW
+            LW reviewed and billed
           </v-tab>
         </v-tabs>
       </template>
@@ -34,7 +37,7 @@
     <v-progress-linear style="position: absolute;" v-show="loadingLastSessions" :indeterminate="true" class="ma-0"></v-progress-linear>
 
     <v-tabs-items v-model="tabModel">
-      <v-tab-item key="allSessionsTab">
+      <v-tab-item key="allSessionsTab" v-if="showOpen">
         <v-card flat>
           <v-card-text class="pa-0">
             <table v-if="sessions.length > 0" class="v-datatable v-table theme--light condensed">
@@ -111,10 +114,10 @@
           </v-card-text>
         </v-card>
       </v-tab-item>
-      <v-tab-item key="lastWeekClosedSessions">
+      <v-tab-item key="readyToReview" v-if="showOpen">
         <v-card flat>
           <v-card-text class="pa-0">
-            <table v-if="sessionsClosed.length > 0" class="v-datatable v-table theme--light condensed">
+            <table v-if="sessions.length > 0" class="v-datatable v-table theme--light condensed">
               <thead>
                 <tr>
                   <th class="text-xs-center py-0 hidden-md-and-down">SessionId</th>
@@ -130,7 +133,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="r in filteredSessionsClosed" :key="('sessionClosed'+r.sessionId)">
+                <tr v-for="r in filteredSessionsReadyToReview" :key="('sessionReady'+r.sessionId)">
                   <td class="pl-2 pr-1 text-xs-center hidden-md-and-down">{{r.sessionId}}</td>
                   <td class="pl-2 pr-1">
                     <strong>{{r.clientFullname}}</strong>
@@ -188,6 +191,83 @@
           </v-card-text>
         </v-card>
       </v-tab-item>
+      <v-tab-item key="lastWeekClosedSessions">
+        <v-card flat>
+          <v-card-text class="pa-0">
+            <table v-if="sessionsClosed.length > 0" class="v-datatable v-table theme--light condensed">
+              <thead>
+                <tr>
+                  <th class="text-xs-center py-0 hidden-md-and-down">SessionId</th>
+                  <th class="text-xs-left py-0 pl-2 pr-1">Client / Code</th>
+                  <th class="text-xs-left py-0 px-1">User / Rol</th>
+                  <th class="text-xs-left py-0 px-1">Date</th>
+                  <th class="text-xs-left py-0 px-1">Status</th>
+                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Start / End</th>
+                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Type</th>
+                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Pos</th>
+                  <th class="text-xs-left py-0 px-1 hidden-xs-only">Units</th>
+                  <th v-if="showOpen"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in filteredSessionsClosed" :key="('sessionClosed'+r.sessionId)">
+                  <td class="pl-2 pr-1 text-xs-center hidden-md-and-down">{{r.sessionId}}</td>
+                  <td class="pl-2 pr-1">
+                    <strong>{{r.clientFullname}}</strong>
+                    <br>
+                    {{r.clientCode}}
+                  </td>
+                  <td class="px-1">
+                    <strong class="hidden-xs-only">{{r.userFullname}}</strong>
+                    <br class="hidden-xs-only">
+                    {{r.userRol}}
+                  </td>
+                  <td class="px-1">{{r.sessionStart | moment('MM/DD/YYYY')}}</td>
+                  <td>
+                    <v-chip class="hidden-xs-only" dark label :color="r.sessionStatusColor">{{r.sessionStatus}}</v-chip>
+                    <v-avatar tile size="28" class="hidden-sm-and-up" :color="r.sessionStatusColor">
+                      <span class="white--text headline">{{r.sessionStatus.charAt(0)}}</span>
+                    </v-avatar>
+                  </td>
+                  <td class="hidden-sm-and-down px-1 text-truncate">
+                    <v-icon color="green" small>fa-sign-in-alt</v-icon>
+                    {{r.sessionStart | moment('LT')}}
+                    <br>
+                    <v-icon color="red" small>fa-sign-out-alt</v-icon>
+                    {{r.sessionEnd | moment('LT')}}
+                  </td>
+                  <td class="hidden-sm-and-down px-1">{{r.sessionType}}</td>
+                  <td class="hidden-sm-and-down px-1">{{r.pos}}</td>
+                  <td class="px-1 hidden-xs-only">
+                    <strong>
+                      <v-icon small>fa-star</v-icon>
+                      {{r.totalUnits.toLocaleString()}}
+                    </strong>
+                    <br>
+                    <v-icon small>fa-clock</v-icon>
+                    {{(r.totalUnits / 4).toLocaleString()}}
+                  </td>
+                  <td v-if="showOpen" class="text-xs-left pr-3 pl-0 right text-no-wrap">
+                    <v-tooltip top>
+                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionNotes(r)">
+                        <v-icon color="grey darken-2">fa-notes-medical</v-icon>
+                      </v-btn>
+                      <span>View Notes</span>
+                    </v-tooltip>
+                    <v-tooltip top>
+                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionData(r)">
+                        <v-icon color="grey darken-2">fa-chart-line</v-icon>
+                      </v-btn>
+                      <span>View data</span>
+                    </v-tooltip>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <v-alert v-else type="info" :value="true">No sessions to display</v-alert>
+          </v-card-text>
+        </v-card>
+      </v-tab-item>
     </v-tabs-items>
 
   </v-card>
@@ -204,6 +284,11 @@ export default {
       type: Number,
       required: false,
       default: 30
+    },
+    showOpen: {
+      type: Boolean,
+      required: false,
+      default: true
     }
   },
 
@@ -212,6 +297,7 @@ export default {
       loadingLastSessions: false,
       sessions: [],
       sessionsClosed: [],
+      sessionsReadyToReview: [],
       showClosed: false,
       search: "",
       tabModel: null
@@ -227,6 +313,12 @@ export default {
     },
     filteredSessionsClosed: function() {
       return this.sessionsClosed.filter(item => {
+        let regex = new RegExp(this.search == null ? "" : this.search, "i");
+        return (item.userFullname ? item.userFullname.match(regex) : true) || (item.clientFullname ? item.clientFullname.match(regex) : true) || (item.sessionStatus ? item.sessionStatus.match(regex) : true);
+      });
+    },
+    filteredSessionsReadyToReview: function() {
+      return this.sessionsReadyToReview.filter(item => {
         let regex = new RegExp(this.search == null ? "" : this.search, "i");
         return (item.userFullname ? item.userFullname.match(regex) : true) || (item.clientFullname ? item.clientFullname.match(regex) : true) || (item.sessionStatus ? item.sessionStatus.match(regex) : true);
       });
@@ -268,7 +360,18 @@ export default {
           sessionsClosedLocal.push(e);
         });
         this.sessionsClosed = Object.freeze(sessionsClosedLocal);
+
+        this.sessionsReadyToReview = [];
+        let sessionsReadyToReviewLocal = [];
+        const sessionsReadyToReview = await userApi.getSessionReadyToReview();
+        sessionsReadyToReview.forEach(e => {
+          e.sessionStart = this.$moment(e.sessionStart).local();
+          e.sessionEnd = this.$moment(e.sessionEnd).local();
+          sessionsReadyToReviewLocal.push(e);
+        });
+        this.sessionsReadyToReview = Object.freeze(sessionsReadyToReviewLocal);
       } catch (error) {
+        console.error(error);
         this.$toast.error(error);
       } finally {
         this.loadingLastSessions = false;

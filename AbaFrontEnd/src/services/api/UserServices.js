@@ -146,6 +146,14 @@ export default {
     });
   },
 
+  getSessionReadyToReview() {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get("api/users/GetSessionReadyToReview")
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
   getSessionListClosedLw() {
     return new Promise((resolve, reject) => {
       Vue.axios.get("api/users/GetSessionListClosedLw")

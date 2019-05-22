@@ -74,7 +74,7 @@ namespace AbaBackend.Controllers
                                        .Where(w => w.ClientId.Equals(clientId))
                                        .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
                                        .Where(w => w.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId))
-                                       .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Billed)
+                                       .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
                                        .Select(s => new
                                        {
                                          s.SessionId,
@@ -126,7 +126,7 @@ namespace AbaBackend.Controllers
 
         var sessions = await _dbContext.Sessions
                                        .AsNoTracking()
-                                       .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Billed)
+                                       .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
                                        .Where(w => w.ClientId == clientId && w.UserId == user.UserId)
                                        .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
                                        .OrderBy(w => w.SessionStart)
@@ -228,7 +228,7 @@ namespace AbaBackend.Controllers
                                        .AsNoTracking()
                                        .Where(w => w.UserId == userId)
                                        .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
-                                       .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Billed)
+                                       .Where(w => w.SessionStatus == SessionStatus.Billed)
                                        .OrderBy(w => w.SessionStart)
                                        .Select(s => new
                                        {
@@ -271,7 +271,7 @@ namespace AbaBackend.Controllers
         var sessions = await _dbContext.Sessions
                                        .Include(i => i.Client)
                                        .Where(w => w.SessionStart.Date >= start && w.SessionStart.Date <= end)
-                                       .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Billed)
+                                       .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
                                        .Where(w => w.UserId.Equals(userId))
                                        .OrderBy(o => o.SessionStart)
                                        .ToListAsync();
@@ -287,7 +287,6 @@ namespace AbaBackend.Controllers
           var regularDrive = 0m;
           var extraHours = 0m;
           var extraDrive = 0m;
-
 
           var serviceHours = StaticUtils.CalculateWageHour(totalHours, sessionHours);
           totalHours += sessionHours;
@@ -335,7 +334,7 @@ namespace AbaBackend.Controllers
       {
         var sessions = await _dbContext.Sessions
                                        .AsNoTracking()
-                                       .Where(w => w.SessionStatus == SessionStatus.Checked)
+                                       .Where(w => w.SessionStatus == SessionStatus.Reviewed)
                                        .OrderByDescending(w => w.SessionStart)
                                        .Select(s => new
                                        {

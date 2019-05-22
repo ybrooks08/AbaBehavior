@@ -244,7 +244,7 @@
                 <v-card-text class="pa-1">
                   <table v-if="assessments.length !== 0" class="v-datatable v-table theme--light">
                     <tbody>
-                      <tr v-for="item in assessments" :key="item.assessmentId" :class="{'red lighten-5 grey--text': !$moment().startOf('day').isBetween($moment(item.startDate), $moment(item.endDate), null, '[]')}">
+                      <tr v-for="item in assessments" :key="item.assessmentId" :class="{'red lighten-5 grey--text': !$moment().utc().startOf('day').isBetween($moment(item.startDate).utc(), $moment(item.endDate).utc(), null, '[]')}">
                         <td class="text-xs-left px-1 hidden-xs-only" style="width: 60px;">
                           <v-avatar>
                             <v-icon large>fa-briefcase-medical</v-icon>

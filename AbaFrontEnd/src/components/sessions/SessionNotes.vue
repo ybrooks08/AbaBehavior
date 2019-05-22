@@ -41,7 +41,7 @@
                     <v-list-tile-title>Send sign form to caregiver</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-else-if="!isBilled" @click="deleteSign">
+                <v-list-tile v-else-if="!isBilled && !isReviewed" @click="deleteSign">
                   <v-list-tile-action>
                     <span class="fa-stack">
                       <v-icon medium>fa-signature fa-stack-2x</v-icon>
@@ -52,7 +52,7 @@
                     <v-list-tile-title>Delete sign</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-if="isAdminOrLeadOrAssistant &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5) && !isBilled" @click="markAsChecked">
+                <v-list-tile v-if="isAdminOrLeadOrAssistant &&  (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5) && !isBilled && !isReviewed" @click="markAsChecked">
                   <v-list-tile-action>
                     <v-icon medium>fa-check-circle</v-icon>
                   </v-list-tile-action>
@@ -93,6 +93,17 @@
                     </v-list-tile-content>
                   </v-list-tile>
                 </template>
+                <template v-else-if="isAdmin && (!sessionDetailed || sessionDetailed.sessionStatusCode === 6)">
+                  <v-divider></v-divider>
+                  <v-list-tile @click="reopenSession">
+                    <v-list-tile-action>
+                      <v-icon medium>fa-lock-open</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-content>
+                      <v-list-tile-title>Reopen session</v-list-tile-title>
+                    </v-list-tile-content>
+                  </v-list-tile>
+                </template>
                 <v-list-tile @click="goToData">
                   <v-list-tile-action>
                     <v-icon medium>fa-chart-line</v-icon>
@@ -101,6 +112,17 @@
                     <v-list-tile-title>Data collection</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
+                <template v-if="isChecked && isAdmin">
+                  <v-divider></v-divider>
+                  <v-list-tile @click="markAsReviewed">
+                    <v-list-tile-action>
+                      <v-icon medium>fa-search-dollar</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-content>
+                      <v-list-tile-title>Reviewed (ready to bill)</v-list-tile-title>
+                    </v-list-tile-content>
+                  </v-list-tile>
+                </template>
               </v-list>
             </v-menu>
 
@@ -700,11 +722,14 @@ export default {
     loading() {
       return this.loadingRiskBehaviorCodes || this.loadingCaregivers || this.loadingParticipationLevelCodes || this.loadingSession;
     },
-    editDisabled() {
-      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6;
-    },
     isBilled() {
       return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 6;
+    },
+    isChecked() {
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5;
+    },
+    isReviewed() {
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 7;
     },
     user() {
       return this.$store.getters.user;
@@ -717,6 +742,9 @@ export default {
     },
     isAdminOrLeadOrAssistant() {
       return this.user.rol2 === "admin" || this.user.rol2 === "analyst" || this.user.rol2 === "assistant";
+    },
+    editDisabled() {
+      return !this.sessionDetailed || (this.sessionDetailed.sessionStatusCode === 5 && !this.isAdmin) || this.sessionDetailed.sessionStatusCode === 6 || this.sessionDetailed.sessionStatusCode === 7;
     },
     isMobile() {
       return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
@@ -909,6 +937,23 @@ export default {
               this.$toast.error("You can not check this session without a valid signature");
               return;
             }
+            await sessionServicesApi.changeSessionStatus(model);
+            this.close();
+          } catch (error) {
+            this.$toast.error(error);
+          }
+        }
+      });
+    },
+
+    async markAsReviewed() {
+      this.$confirm("Are you sure you want to mark as Reviewed and ready to bill this session?").then(async res => {
+        if (res) {
+          const model = {
+            sessionId: this.activeSessionId,
+            sessionStatus: 7 //checked
+          };
+          try {
             await sessionServicesApi.changeSessionStatus(model);
             this.close();
           } catch (error) {

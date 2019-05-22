@@ -42,6 +42,14 @@
           <v-list-tile-title>Time sheet</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/reporting/rbt_ba_services_log" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-clipboard-list</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Services Logs</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
   </div>
 </template>

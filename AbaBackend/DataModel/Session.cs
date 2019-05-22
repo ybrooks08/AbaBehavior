@@ -33,7 +33,8 @@ namespace AbaBackend.DataModel
     Cancelled,  // N/A for now
     Reopen,   // maybe when delete the whole service log all session with checked or billed go to waiting
     Checked,   //ready to be billed or signed
-    Billed    //last stage of the session. CAN NOT UNDO
+    Billed,    //last stage of the session. CAN NOT UNDO
+    Reviewed
   }
 
   public enum SessionStatusColors
@@ -45,6 +46,7 @@ namespace AbaBackend.DataModel
     cyan,
     teal,
     pink,
+    lime
   }
 
   public class Session

@@ -229,7 +229,7 @@ export default {
       return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
     },
     editDisabled() {
-      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6;
+      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6 || this.sessionDetailed.sessionStatusCode === 7;
     }
   },
 

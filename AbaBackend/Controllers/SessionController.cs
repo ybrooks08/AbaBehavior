@@ -309,7 +309,7 @@ namespace AbaBackend.Controllers
       try
       {
         //if (!ModelState.IsValid) return BadRequest(ModelState.Values.SelectMany(e => e.Errors.Select(s => s.ErrorMessage)).FirstOrDefault());
-        _dbContext.Update(session).Property(s => s.SessionStatus).CurrentValue = SessionStatus.Edited;
+        if (session.SessionStatus != SessionStatus.Checked) _dbContext.Update(session).Property(s => s.SessionStatus).CurrentValue = SessionStatus.Edited;
 
         if (session.SessionType == SessionType.Supervision_BCABA)
         {

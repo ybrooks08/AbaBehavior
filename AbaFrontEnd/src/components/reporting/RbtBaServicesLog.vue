@@ -29,6 +29,7 @@
           </v-form>
         </v-card-text>
         <v-card-actions>
+          <small class="pl-4 grey--text">* Only checked, reviewed and billed sessions will be reported</small>
           <v-spacer />
           <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="viewReport">Generate</v-btn>
         </v-card-actions>

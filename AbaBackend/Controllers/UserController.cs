@@ -414,7 +414,7 @@ namespace AbaBackend.Controllers
                                       .OrderBy(o => o.ClientName)
                                       .ToListAsync();
 
-        if (user.RolId == 1)
+        if (user.RolId == 1 || user.RolId == 7)
           clients = await _dbContext.Clients
                                     .Where(w => w.Active)
                                     .Select(s => new
@@ -530,7 +530,53 @@ namespace AbaBackend.Controllers
       var sessions = await _dbContext.Sessions
                                      .AsNoTracking()
                                      .Where(w => days == 0 || w.SessionStart.Date >= firstDay && w.SessionStart.Date <= today)
-                                     .Where(w => showClosed || (w.SessionStatus != SessionStatus.Checked && w.SessionStatus != SessionStatus.Billed))
+                                     .Where(w => showClosed || (w.SessionStatus != SessionStatus.Reviewed && w.SessionStatus != SessionStatus.Billed && w.SessionStatus != SessionStatus.Checked))
+                                     .Select(s => new
+                                     {
+                                       s.SessionId,
+                                       SessionStart = s.SessionStart.ToString("u"),
+                                       SessionEnd = s.SessionEnd.ToString("u"),
+                                       UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+                                       UserRol = s.User.Rol.RolShortName,
+                                       s.ClientId,
+                                       s.UserId,
+                                       ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+                                       CLientCode = s.Client.Code,
+                                       s.TotalUnits,
+                                       SessionType = Enum.GetName(typeof(SessionType), s.SessionType).Replace("_", " "),
+                                       Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
+                                       EnumStatus = s.SessionStatus,
+                                       SessionStatus = s.SessionStatus.ToString(),
+                                       SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
+                                     })
+                                     .OrderByDescending(o => o.SessionStart)
+                                     .ThenBy(o => o.ClientFullname)
+                                     .ToListAsync();
+
+      var user = await _utils.GetCurrentUser();
+      //if (user.Rol.RolShortName == "admin") return Ok(sessions);
+      if (user.Rol.RolShortName == "tech") sessions = sessions.Where(s => s.UserId == user.UserId).ToList();
+      if (user.Rol.RolShortName == "assistant")
+      {
+        var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId).Select(s => s.ClientId).ToListAsync();
+        sessions = sessions.Where(s => myClients.Contains(s.ClientId) && s.UserRol != "analyst").ToList();
+      }
+
+      if (user.Rol.RolShortName == "analyst")
+      {
+        var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId && w.Active).Select(s => s.ClientId).ToListAsync();
+        sessions = sessions.Where(s => myClients.Contains(s.ClientId)).ToList();
+      }
+
+      return Ok(sessions);
+    }
+
+    [HttpGet("[action]")]
+    public async Task<IActionResult> GetSessionReadyToReview()
+    {
+      var sessions = await _dbContext.Sessions
+                                     .AsNoTracking()
+                                     .Where(w => w.SessionStatus == SessionStatus.Checked)
                                      .Select(s => new
                                      {
                                        s.SessionId,
@@ -580,7 +626,7 @@ namespace AbaBackend.Controllers
       var sessions = await _dbContext.Sessions
                                      .AsNoTracking()
                                      .Where(w => w.SessionStart.Date >= firstDay && w.SessionStart.Date <= lastDay)
-                                     .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Billed)
+                                     .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
                                      .Select(s => new
                                      {
                                        s.SessionId,
