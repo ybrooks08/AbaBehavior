@@ -71,7 +71,7 @@
                     </v-list-tile-content>
                   </v-list-tile>
                 </template>
-                <template v-if="!editDisabled && isAdminOrLead && (isAdminOrLead && (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5))">
+                <template v-if="!editDisabled && isAdminOrLeadOrAssistant && (isAdminOrLeadOrAssistant && (!sessionDetailed || sessionDetailed.sessionStatusCode !== 5))">
                   <v-divider></v-divider>
                   <v-list-tile @click="deleteSession">
                     <v-list-tile-action>

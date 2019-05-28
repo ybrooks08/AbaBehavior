@@ -120,7 +120,7 @@ export default new Router({
           path: '/clients/edit_monthly_note',
           name: 'MonthlyNote',
           component: () => import(/* webpackChunkName: "MonthlyNote" */ '@/components/sessions/MonthlyNote'),
-          meta: { rol: ['analyst'] },
+          meta: { rol: ['analyst', 'assistant'] },
         },
         {
           path: '/clients/new_training',
@@ -218,7 +218,13 @@ export default new Router({
           path: "/reporting/monthly-notes",
           name: "MonthlyNotes",
           component: () => import(/* webpackChunkName: "MonthlyNotes" */ "@/components/reporting/MonthlyNotes"),
-          meta: { rol: ["admin", "analyst"] }
+          meta: { rol: ["admin", "analyst", "assistant"] }
+        },
+        {
+          path: "/reporting/monthly-week-data",
+          name: "MonthlyWeekData",
+          component: () => import(/* webpackChunkName: "MonthlyWeekData" */ "@/components/reporting/MonthlyWeekData"),
+          meta: { rol: ["admin", "analyst", "assistant"] }
         },
         {
           path: "/clients/caregiver_data_collection",

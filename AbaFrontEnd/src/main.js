@@ -39,6 +39,8 @@ Vue.use(Vuetify, {
     'edit': 'fa-edit',
     'dropdown': 'fa-caret-down',
     'expand': 'fa-chevron-down',
+    'prev': 'fa-angle-left',
+    'next': 'fa-angle-right'
   }
 });
 

@@ -45,7 +45,7 @@
               <v-list-tile-title>Caregiver data collection</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile v-if="user.rol2 === 'analyst'" to="/clients/edit_monthly_note">
+          <v-list-tile v-if="user.rol2 === 'analyst' || user.rol2 === 'assistant'" to="/clients/edit_monthly_note">
             <v-list-tile-action>
               <v-icon medium>fa-calendar-alt</v-icon>
             </v-list-tile-action>

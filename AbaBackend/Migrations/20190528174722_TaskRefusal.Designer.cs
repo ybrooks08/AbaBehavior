@@ -4,14 +4,16 @@ using AbaBackend.DataModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AbaBackend.Migrations
 {
     [DbContext(typeof(AbaDbContext))]
-    partial class AbaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190528174722_TaskRefusal")]
+    partial class TaskRefusal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2052,8 +2054,6 @@ namespace AbaBackend.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ClientId");
-
-                    b.Property<bool>("Completed");
 
                     b.Property<int>("Duration");
 

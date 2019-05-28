@@ -99,7 +99,7 @@ namespace AbaBackend.DataModel
         new ProblemBehavior { ProblemId = 1, ProblemBehaviorDescription = "Temper Tantrum" },
         new ProblemBehavior { ProblemId = 2, ProblemBehaviorDescription = "Elopement" },
         new ProblemBehavior { ProblemId = 3, ProblemBehaviorDescription = "Defiant behavior" },
-        new ProblemBehavior { ProblemId = 4, ProblemBehaviorDescription = "Task Refusal" },
+        new ProblemBehavior { ProblemId = 4, ProblemBehaviorDescription = "Task Refusal", isPorcent = true },
         new ProblemBehavior { ProblemId = 5, ProblemBehaviorDescription = "Physical Aggression " },
         new ProblemBehavior { ProblemId = 6, ProblemBehaviorDescription = "Verbal aggression" },
         new ProblemBehavior { ProblemId = 7, ProblemBehaviorDescription = "Self Injury Behavior" },

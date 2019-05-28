@@ -111,14 +111,24 @@
           <v-list-tile-title>Time sheet</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
-      <v-list-tile v-if="isLead" to="/reporting/monthly-notes" active-class="blue lighten-4">
-        <v-list-tile-action>
-          <v-icon>fa-calendar-alt</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
-          <v-list-tile-title>Monthly notes</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
+      <template v-if="isLead || isAssistant">
+        <v-list-tile to="/reporting/monthly-notes" active-class="blue lighten-4">
+          <v-list-tile-action>
+            <v-icon>fa-calendar-alt</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Monthly notes</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile to="/reporting/monthly-week-data" active-class="blue lighten-4">
+          <v-list-tile-action>
+            <v-icon>fa-table</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Monthly/Week data</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </template>
       <v-subheader>Documents and resources</v-subheader>
       <v-list-tile to="/video_tutorials">
         <v-list-tile-action>
@@ -158,6 +168,9 @@ export default {
     },
     isLead() {
       return this.$store.getters.user.rol2 === "analyst";
+    },
+    isAssistant() {
+      return this.$store.getters.user.rol2 === "assistant";
     }
   },
 

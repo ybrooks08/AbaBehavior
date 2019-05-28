@@ -4,8 +4,8 @@
       <v-toolbar-title>Sessions</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-text-field v-model="search" placeholder="Search" prepend-icon="fa-search" clearable hide-details single-line solo-inverted></v-text-field>
-      <!-- <v-menu class="mr-0" bottom left :disabled="loadingLastSessions">
-        <v-btn slot="activator" icon :disabled="loadingLastSessions">
+      <!-- <v-menu class="mr-0" bottom left :disabled="loading">
+        <v-btn slot="activator" icon :disabled="loading">
           <v-icon>fa-ellipsis-v</v-icon>
         </v-btn>
         <v-list>
@@ -34,237 +34,27 @@
         </v-tabs>
       </template>
     </v-toolbar>
-    <v-progress-linear style="position: absolute;" v-show="loadingLastSessions" :indeterminate="true" class="ma-0"></v-progress-linear>
+    <!-- <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear> -->
 
     <v-tabs-items v-model="tabModel">
       <v-tab-item key="allSessionsTab" v-if="showOpen">
         <v-card flat>
           <v-card-text class="pa-0">
-            <table v-if="sessions.length > 0" class="v-datatable v-table theme--light condensed">
-              <thead>
-                <tr>
-                  <th class="text-xs-center py-0 hidden-md-and-down">SessionId</th>
-                  <th class="text-xs-left py-0 pl-2 pr-1">Client / Code</th>
-                  <th class="text-xs-left py-0 px-1">User / Rol</th>
-                  <th class="text-xs-left py-0 px-1">Date</th>
-                  <th class="text-xs-left py-0 px-1">Status</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Start / End</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Type</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Pos</th>
-                  <th class="text-xs-left py-0 px-1 hidden-xs-only">Units</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="r in filteredSessions" :key="('session'+r.sessionId)">
-                  <td class="pl-2 pr-1 text-xs-center hidden-md-and-down">{{r.sessionId}}</td>
-                  <td class="pl-2 pr-1">
-                    <strong>{{r.clientFullname}}</strong>
-                    <br>
-                    {{r.clientCode}}
-                  </td>
-                  <td class="px-1">
-                    <strong class="hidden-xs-only">{{r.userFullname}}</strong>
-                    <br class="hidden-xs-only">
-                    {{r.userRol}}
-                  </td>
-                  <td class="px-1">{{r.sessionStart | moment('MM/DD/YYYY')}}</td>
-                  <td>
-                    <v-chip class="hidden-xs-only" dark label :color="r.sessionStatusColor">{{r.sessionStatus}}</v-chip>
-                    <v-avatar tile size="28" class="hidden-sm-and-up" :color="r.sessionStatusColor">
-                      <span class="white--text headline">{{r.sessionStatus.charAt(0)}}</span>
-                    </v-avatar>
-                  </td>
-                  <td class="hidden-sm-and-down px-1 text-truncate">
-                    <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                    {{r.sessionStart | moment('LT')}}
-                    <br>
-                    <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                    {{r.sessionEnd | moment('LT')}}
-                  </td>
-                  <td class="hidden-sm-and-down px-1">{{r.sessionType}}</td>
-                  <td class="hidden-sm-and-down px-1">{{r.pos}}</td>
-                  <td class="px-1 hidden-xs-only">
-                    <strong>
-                      <v-icon small>fa-star</v-icon>
-                      {{r.totalUnits.toLocaleString()}}
-                    </strong>
-                    <br>
-                    <v-icon small>fa-clock</v-icon>
-                    {{(r.totalUnits / 4).toLocaleString()}}
-                  </td>
-                  <td class="text-xs-left pr-3 pl-0 right text-no-wrap">
-                    <v-tooltip top>
-                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionNotes(r)">
-                        <v-icon color="grey darken-2">fa-notes-medical</v-icon>
-                      </v-btn>
-                      <span>View Notes</span>
-                    </v-tooltip>
-                    <v-tooltip top>
-                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionData(r)">
-                        <v-icon color="grey darken-2">fa-chart-line</v-icon>
-                      </v-btn>
-                      <span>View data</span>
-                    </v-tooltip>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <v-alert v-else type="info" :value="true">No sessions to display</v-alert>
+            <session-list-table :search="search" :items="sessions" :loading="loading"></session-list-table>
           </v-card-text>
         </v-card>
       </v-tab-item>
       <v-tab-item key="readyToReview" v-if="showOpen">
         <v-card flat>
           <v-card-text class="pa-0">
-            <table v-if="sessions.length > 0" class="v-datatable v-table theme--light condensed">
-              <thead>
-                <tr>
-                  <th class="text-xs-center py-0 hidden-md-and-down">SessionId</th>
-                  <th class="text-xs-left py-0 pl-2 pr-1">Client / Code</th>
-                  <th class="text-xs-left py-0 px-1">User / Rol</th>
-                  <th class="text-xs-left py-0 px-1">Date</th>
-                  <th class="text-xs-left py-0 px-1">Status</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Start / End</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Type</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Pos</th>
-                  <th class="text-xs-left py-0 px-1 hidden-xs-only">Units</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="r in filteredSessionsReadyToReview" :key="('sessionReady'+r.sessionId)">
-                  <td class="pl-2 pr-1 text-xs-center hidden-md-and-down">{{r.sessionId}}</td>
-                  <td class="pl-2 pr-1">
-                    <strong>{{r.clientFullname}}</strong>
-                    <br>
-                    {{r.clientCode}}
-                  </td>
-                  <td class="px-1">
-                    <strong class="hidden-xs-only">{{r.userFullname}}</strong>
-                    <br class="hidden-xs-only">
-                    {{r.userRol}}
-                  </td>
-                  <td class="px-1">{{r.sessionStart | moment('MM/DD/YYYY')}}</td>
-                  <td>
-                    <v-chip class="hidden-xs-only" dark label :color="r.sessionStatusColor">{{r.sessionStatus}}</v-chip>
-                    <v-avatar tile size="28" class="hidden-sm-and-up" :color="r.sessionStatusColor">
-                      <span class="white--text headline">{{r.sessionStatus.charAt(0)}}</span>
-                    </v-avatar>
-                  </td>
-                  <td class="hidden-sm-and-down px-1 text-truncate">
-                    <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                    {{r.sessionStart | moment('LT')}}
-                    <br>
-                    <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                    {{r.sessionEnd | moment('LT')}}
-                  </td>
-                  <td class="hidden-sm-and-down px-1">{{r.sessionType}}</td>
-                  <td class="hidden-sm-and-down px-1">{{r.pos}}</td>
-                  <td class="px-1 hidden-xs-only">
-                    <strong>
-                      <v-icon small>fa-star</v-icon>
-                      {{r.totalUnits.toLocaleString()}}
-                    </strong>
-                    <br>
-                    <v-icon small>fa-clock</v-icon>
-                    {{(r.totalUnits / 4).toLocaleString()}}
-                  </td>
-                  <td class="text-xs-left pr-3 pl-0 right text-no-wrap">
-                    <v-tooltip top>
-                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionNotes(r)">
-                        <v-icon color="grey darken-2">fa-notes-medical</v-icon>
-                      </v-btn>
-                      <span>View Notes</span>
-                    </v-tooltip>
-                    <v-tooltip top>
-                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionData(r)">
-                        <v-icon color="grey darken-2">fa-chart-line</v-icon>
-                      </v-btn>
-                      <span>View data</span>
-                    </v-tooltip>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <v-alert v-else type="info" :value="true">No sessions to display</v-alert>
+            <session-list-table :search="search" :items="sessionsReadyToReview" :loading="loading"></session-list-table>
           </v-card-text>
         </v-card>
       </v-tab-item>
       <v-tab-item key="lastWeekClosedSessions">
         <v-card flat>
           <v-card-text class="pa-0">
-            <table v-if="sessionsClosed.length > 0" class="v-datatable v-table theme--light condensed">
-              <thead>
-                <tr>
-                  <th class="text-xs-center py-0 hidden-md-and-down">SessionId</th>
-                  <th class="text-xs-left py-0 pl-2 pr-1">Client / Code</th>
-                  <th class="text-xs-left py-0 px-1">User / Rol</th>
-                  <th class="text-xs-left py-0 px-1">Date</th>
-                  <th class="text-xs-left py-0 px-1">Status</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Start / End</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Type</th>
-                  <th class="text-xs-left py-0 px-1 hidden-sm-and-down">Pos</th>
-                  <th class="text-xs-left py-0 px-1 hidden-xs-only">Units</th>
-                  <th v-if="showOpen"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="r in filteredSessionsClosed" :key="('sessionClosed'+r.sessionId)">
-                  <td class="pl-2 pr-1 text-xs-center hidden-md-and-down">{{r.sessionId}}</td>
-                  <td class="pl-2 pr-1">
-                    <strong>{{r.clientFullname}}</strong>
-                    <br>
-                    {{r.clientCode}}
-                  </td>
-                  <td class="px-1">
-                    <strong class="hidden-xs-only">{{r.userFullname}}</strong>
-                    <br class="hidden-xs-only">
-                    {{r.userRol}}
-                  </td>
-                  <td class="px-1">{{r.sessionStart | moment('MM/DD/YYYY')}}</td>
-                  <td>
-                    <v-chip class="hidden-xs-only" dark label :color="r.sessionStatusColor">{{r.sessionStatus}}</v-chip>
-                    <v-avatar tile size="28" class="hidden-sm-and-up" :color="r.sessionStatusColor">
-                      <span class="white--text headline">{{r.sessionStatus.charAt(0)}}</span>
-                    </v-avatar>
-                  </td>
-                  <td class="hidden-sm-and-down px-1 text-truncate">
-                    <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                    {{r.sessionStart | moment('LT')}}
-                    <br>
-                    <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                    {{r.sessionEnd | moment('LT')}}
-                  </td>
-                  <td class="hidden-sm-and-down px-1">{{r.sessionType}}</td>
-                  <td class="hidden-sm-and-down px-1">{{r.pos}}</td>
-                  <td class="px-1 hidden-xs-only">
-                    <strong>
-                      <v-icon small>fa-star</v-icon>
-                      {{r.totalUnits.toLocaleString()}}
-                    </strong>
-                    <br>
-                    <v-icon small>fa-clock</v-icon>
-                    {{(r.totalUnits / 4).toLocaleString()}}
-                  </td>
-                  <td v-if="showOpen" class="text-xs-left pr-3 pl-0 right text-no-wrap">
-                    <v-tooltip top>
-                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionNotes(r)">
-                        <v-icon color="grey darken-2">fa-notes-medical</v-icon>
-                      </v-btn>
-                      <span>View Notes</span>
-                    </v-tooltip>
-                    <v-tooltip top>
-                      <v-btn slot="activator" icon class="mx-0" @click.stop="sessionData(r)">
-                        <v-icon color="grey darken-2">fa-chart-line</v-icon>
-                      </v-btn>
-                      <span>View data</span>
-                    </v-tooltip>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <v-alert v-else type="info" :value="true">No sessions to display</v-alert>
+            <session-list-table :search="search" :items="sessionsClosed" :loading="loading"></session-list-table>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -275,6 +65,7 @@
 
 <script>
 import userApi from "@/services/api/UserServices";
+import sessionListTable from "@/components/sessions/SessionListTable";
 
 export default {
   name: "SessionList",
@@ -292,9 +83,13 @@ export default {
     }
   },
 
+  components: {
+    sessionListTable
+  },
+
   data() {
     return {
-      loadingLastSessions: false,
+      loading: false,
       sessions: [],
       sessionsClosed: [],
       sessionsReadyToReview: [],
@@ -302,27 +97,6 @@ export default {
       search: "",
       tabModel: null
     };
-  },
-
-  computed: {
-    filteredSessions: function() {
-      return this.sessions.filter(item => {
-        let regex = new RegExp(this.search == null ? "" : this.search, "i");
-        return (item.userFullname ? item.userFullname.match(regex) : true) || (item.clientFullname ? item.clientFullname.match(regex) : true) || (item.sessionStatus ? item.sessionStatus.match(regex) : true);
-      });
-    },
-    filteredSessionsClosed: function() {
-      return this.sessionsClosed.filter(item => {
-        let regex = new RegExp(this.search == null ? "" : this.search, "i");
-        return (item.userFullname ? item.userFullname.match(regex) : true) || (item.clientFullname ? item.clientFullname.match(regex) : true) || (item.sessionStatus ? item.sessionStatus.match(regex) : true);
-      });
-    },
-    filteredSessionsReadyToReview: function() {
-      return this.sessionsReadyToReview.filter(item => {
-        let regex = new RegExp(this.search == null ? "" : this.search, "i");
-        return (item.userFullname ? item.userFullname.match(regex) : true) || (item.clientFullname ? item.clientFullname.match(regex) : true) || (item.sessionStatus ? item.sessionStatus.match(regex) : true);
-      });
-    }
   },
 
   watch: {
@@ -337,7 +111,7 @@ export default {
 
   methods: {
     async getLastSessions() {
-      this.loadingLastSessions = true;
+      this.loading = true;
       try {
         this.sessions = [];
         let sessionsLocal = [];
@@ -374,7 +148,7 @@ export default {
         console.error(error);
         this.$toast.error(error);
       } finally {
-        this.loadingLastSessions = false;
+        this.loading = false;
       }
     },
 

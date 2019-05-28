@@ -25,4 +25,16 @@ public static class DateTimeExtensions
 
     return dt.AddDays(-1 * diff).Date;
   }
+
+  public static DateTime GetNextDay(this DateTime start, DayOfWeek day)
+  {
+    var daysToAdd = ((int)day - (int)start.DayOfWeek + 7) % 7;
+    return start.AddDays(daysToAdd);
+  }
+
+  public static DateTime GetPrevDay(this DateTime start, DayOfWeek day)
+  {
+    var daysToRemove = ((int)day - (int)start.DayOfWeek - 7) % 7;
+    return start.AddDays(daysToRemove);
+  }
 }

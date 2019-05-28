@@ -58,10 +58,49 @@
             <v-flex xs10>
               <h4>MONTHLY REPORT</h4>
               <v-divider></v-divider>
-              <span>
-                Client: <strong>{{getClientName()}}</strong><br>
-                Month: <strong>{{note.monthlyNoteDate | moment("MMMM, YYYY")}}</strong>
-              </span>
+              <table class="v-datatable v-table theme--light print-font-small condensed">
+                <tr>
+                  <td class="px-1 text-xs-right">Client:</td>
+                  <td class="px-1 text-xs-left">{{client.firstname}} {{client.lastname}}</td>
+                  <td class="px-1 text-xs-right">Code:</td>
+                  <td class="px-1 text-xs-left">{{client.code}}</td>
+                </tr>
+                <tr>
+                  <td class="px-1 text-xs-right">Dob:</td>
+                  <td class="px-1 text-xs-left">{{client.dob | moment("utc", "LL")}}</td>
+                  <td class="px-1 text-xs-right">RecipientId: </td>
+                  <td class="px-1 text-xs-left">{{client.memberNo}}</td>
+                </tr>
+                <tr>
+                  <td class="px-1 text-xs-right">Monthly report:</td>
+                  <td class="px-1 text-xs-left"><strong>{{note.monthlyNoteDate | moment("utc", "MMMM, YYYY")}}</strong></td>
+                  <td class="px-1 text-xs-right">
+                    <span v-if="clientAsistant.length > 0">Assistant:</span>
+                  </td>
+                  <td class="px-1 text-xs-left">
+                    <template v-for="u in clientAsistant">
+                      <span :key="'user' + u.userId">{{u.firstname}} {{u.lastname}}</span>
+                      <br :key="'br'+u.userId">
+                    </template>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 text-xs-right">RBT:</td>
+                  <td class="px-1 text-xs-left">
+                    <template v-for="u in clientRbt">
+                      <span :key="'user' + u.userId">{{u.firstname}} {{u.lastname}}</span>
+                      <br :key="'br'+u.userId">
+                    </template>
+                  </td>
+                  <td class="px-1 text-xs-right">Analyst:</td>
+                  <td class="px-1 text-xs-left">
+                    <template v-for="u in clientAnalyst">
+                      <span :key="'user' + u.userId">{{u.firstname}} {{u.lastname}}</span>
+                      <br :key="'br'+u.userId">
+                    </template>
+                  </td>
+                </tr>
+              </table>
             </v-flex>
             <v-flex xs12>
               <table>
@@ -113,7 +152,7 @@
                   </p>
                   <p class="ma-0">
                     <v-icon small>{{note.reassessmentNextMonth ? "fa-check-circle green--text" : "fa-times-circle red--text"}}</v-icon>
-                    Re-assessment bext month
+                    Re-assessment next month
                   </p>
                   <p class="ma-0">
                     <v-icon small>{{note.refer2OtherServices ? "fa-check-circle green--text" : "fa-times-circle red--text"}}</v-icon>
@@ -141,8 +180,12 @@ export default {
     return {
       loading: false,
       clients: [],
+      clientRbt: [],
+      clientAnalyst: [],
+      clientAsistant: [],
       clientId: null,
       notes: [],
+      client: null,
       monthlyNoteId: null,
       note: null
     };
@@ -169,6 +212,7 @@ export default {
     async clientChanged(clientId) {
       this.notes = [];
       this.note = null;
+      this.monthlyNoteId = null;
       this.loading = true;
       try {
         this.notes = await userApi.getClientMonthlyNotes(clientId);
@@ -183,17 +227,19 @@ export default {
       this.loading = true;
       try {
         this.note = null;
-        this.note = await userApi.getClientMonthlyNote(monthlyNoteId);
+        const data = await userApi.getClientMonthlyNote(monthlyNoteId);
+        console.log(data);
+        this.note = data.note;
+        this.client = data.client;
+        this.clientRbt = this.client.assignments.filter(f => f.rolId === 4);
+        this.clientAnalyst = this.client.assignments.filter(f => f.rolId === 2);
+        this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
       } catch (error) {
+        console.error(error);
         this.$toast.error(error);
       } finally {
         this.loading = false;
       }
-    },
-
-    getClientName() {
-      const name = this.clients.find(s => s.clientId === this.clientId).clientName;
-      return name;
     },
 
     breakLine(s) {

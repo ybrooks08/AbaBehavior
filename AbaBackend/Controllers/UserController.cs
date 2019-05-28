@@ -625,7 +625,7 @@ namespace AbaBackend.Controllers
       var lastDay = firstDay.AddDays(6);
       var sessions = await _dbContext.Sessions
                                      .AsNoTracking()
-                                     .Where(w => w.SessionStart.Date >= firstDay && w.SessionStart.Date <= lastDay)
+                                     //  .Where(w => w.SessionStart.Date >= firstDay && w.SessionStart.Date <= lastDay)
                                      .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
                                      .Select(s => new
                                      {
@@ -831,7 +831,22 @@ namespace AbaBackend.Controllers
       try
       {
         var note = await _dbContext.MonthlyNotes.FirstOrDefaultAsync(w => w.MonthlyNoteId == monthlyNoteId);
-        return Ok(note);
+        var client = await _dbContext.Clients
+                                      .Where(f => f.ClientId == note.ClientId)
+                                      .Select(s => new
+                                      {
+                                        s.Dob,
+                                        Code = s.Code ?? "N/A",
+                                        s.MemberNo,
+                                        s.Firstname,
+                                        s.Lastname,
+                                        Assignments = s.Assignments.Where(w => w.Active).Select(q => q.User)
+                                      }).FirstOrDefaultAsync();
+        return Ok(new
+        {
+          note,
+          client
+        });
       }
       catch (Exception e)
       {

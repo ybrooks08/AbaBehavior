@@ -85,7 +85,15 @@ export default {
       search: "",
       loading: false,
       showInactive: false,
-      headers: [{ text: "", align: "center", value: "gender", class: "px-0 hidden-xs-only", width: 30, sortable: false }, { text: "Firstname", align: "left", value: "firstname", class: "px-1" }, { text: "Lastname", align: "left", value: "lastname", class: "px-1" }, { text: "DOB", align: "left", value: "dob", class: "px-1 hidden-xs-only" }, { text: "Address", align: "left", value: "address", class: "px-1 hidden-sm-and-down" }, { text: "Active", align: "left", value: "active", class: "px-1", sortable: false }, { text: "Actions", align: "left", value: "active2", class: "px-1", sortable: false }],
+      headers: [
+        { text: "", align: "center", value: "gender", class: "px-0 hidden-xs-only", width: 30, sortable: false },
+        { text: "Firstname", align: "left", value: "firstname", class: "px-1" },
+        { text: "Lastname", align: "left", value: "lastname", class: "px-1" },
+        { text: "DOB", align: "left", value: "dob", class: "px-1 hidden-xs-only" },
+        { text: "Address", align: "left", value: "address", class: "px-1 hidden-sm-and-down" },
+        { text: "Active", align: "left", value: "active", class: "px-1", sortable: false },
+        { text: "Actions", align: "left", value: "active2", class: "px-1", sortable: false }
+      ],
       pagination: {
         sortBy: "firstname"
       }

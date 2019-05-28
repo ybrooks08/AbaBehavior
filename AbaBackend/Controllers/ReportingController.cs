@@ -327,6 +327,140 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpGet("[action]/{yearMonth}/{clientId}")]
+    public async Task<IActionResult> GetMonthWeekData(DateTime yearMonth, int clientId)
+    {
+      try
+      {
+        var endMonth = yearMonth.AddMonths(1).AddDays(-1);
+        var start = yearMonth.GetPrevDay(DayOfWeek.Sunday);
+        var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
+
+        var totalWeeks = ((end - start).Days + 1) / 7;
+
+        var problems = await _utils.GetClientBehaviors(clientId);
+        var rowsProblems = new List<List<Object>>();
+
+        foreach (var problem in problems)
+        {
+          var newRow = new List<Object>
+          {
+            problem.ProblemBehavior.ProblemBehaviorDescription
+          };
+
+          var monthStart = start;
+          var monthEnd = end;
+          int sum = 0;
+          while (monthStart < end)
+          {
+            var weekStart = monthStart;
+            var weekEnd = monthStart.AddDays(6);
+
+            var mainData = await _dbContext.SessionCollectBehaviors
+                                     .Where(w => w.ClientId == clientId && w.ProblemId == problem.ProblemId)
+                                     .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
+                                     .CountAsync();
+            var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
+                                      .Where(w => w.ClientId == clientId && w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
+                                      .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(q => q.Count))
+                                      .FirstOrDefaultAsync();
+
+            var totalWeek = mainData + (mainDataCaregiverCollect ?? 0);
+            sum += totalWeek;
+            newRow.Add(totalWeek);
+            monthStart = monthStart.AddDays(7);
+          }
+          newRow.Add(sum);
+          newRow.Add((sum / (decimal)totalWeeks).ToString("n0"));
+          rowsProblems.Add(newRow);
+        }
+
+        var hStart = start;
+        var headers = new List<string> { "Problem" };
+        while (hStart < end)
+        {
+          var weekStart = hStart;
+          var weekEnd = hStart.AddDays(6);
+          headers.Add($"{weekStart.ToShortDateString()}<br>{weekEnd.ToShortDateString()}");
+          hStart = hStart.AddDays(7);
+        }
+        headers.Add("Total");
+        headers.Add("Average");
+
+        var replacements = await _utils.GetClientReplacements(clientId);
+        var rowsReplacements = new List<List<Object>>();
+
+        foreach (var replacement in replacements)
+        {
+          var newRow = new List<Object>
+          {
+            replacement.Replacement.ReplacementProgramDescription
+          };
+
+          var monthStart = start;
+          var monthEnd = end;
+          decimal sumTotal = 0;
+          while (monthStart < end)
+          {
+            var weekStart = monthStart;
+            var weekEnd = monthStart.AddDays(6);
+
+            var mainDataCount = await _dbContext.SessionCollectReplacements
+                                      .Where(w => w.ClientId == clientId && w.ReplacementId == replacement.ReplacementId)
+                                      .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
+                                      .CountAsync();
+
+            var mainDataCompleted = await _dbContext.SessionCollectReplacements
+                                      .Where(w => w.ClientId == clientId && w.ReplacementId == replacement.ReplacementId)
+                                      .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
+                                      .Where(w => w.Completed)
+                                      .CountAsync();
+
+            var caregiverReplacements = await _dbContext.CaregiverDataCollections
+                                       .Where(w => w.ClientId == clientId && w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
+                                       .GroupBy(g => 0)
+                                       .Select(s => new
+                                       {
+                                         TotalTrial = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalTrial)),
+                                         TotalCompleted = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalCompleted))
+                                       }).FirstOrDefaultAsync();
+
+            mainDataCount += caregiverReplacements?.TotalTrial ?? 0;
+            mainDataCompleted += caregiverReplacements?.TotalCompleted ?? 0;
+            var percent = mainDataCount == 0 ? 0 : mainDataCompleted / (decimal)mainDataCount * 100;
+            sumTotal += percent;
+            newRow.Add($"{percent:n0}");
+            monthStart = monthStart.AddDays(7);
+          }
+          var replacementAve = sumTotal / totalWeeks;
+          newRow.Add($"{replacementAve:n0}");
+          rowsReplacements.Add(newRow);
+        }
+
+        var headersReplacement = new List<string> { "Replacement" };
+        while (start < end)
+        {
+          var weekStart = start;
+          var weekEnd = start.AddDays(6);
+          headersReplacement.Add($"{weekStart.ToShortDateString()}<br>{weekEnd.ToShortDateString()}");
+          start = start.AddDays(7);
+        }
+        headersReplacement.Add("Average");
+
+        return Ok(new
+        {
+          rowsProblems,
+          rowsReplacements,
+          headers,
+          headersReplacement
+        });
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
     [HttpGet("[action]")]
     public async Task<IActionResult> GetSessionsReady2Bill()
     {

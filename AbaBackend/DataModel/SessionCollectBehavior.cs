@@ -11,6 +11,7 @@ namespace AbaBackend.DataModel
     public DateTime Entry { get; set; }
     public string Notes { get; set; }
     public int Duration { get; set; }
+    public bool Completed { get; set; } = false;
     public ProblemBehavior Behavior { get; set; }
   }
 }
