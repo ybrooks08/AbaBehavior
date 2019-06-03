@@ -7,7 +7,7 @@
         <v-card flat class="grey lighten-3">
           <v-card-text class="pa-1">
             <v-list dense subheader>
-              <v-list-tile :disabled="loading" v-for="p in clientProblems" :key="p.clientProblemId">
+              <v-list-tile :disabled="loading" v-for="p in clientProblems" :key="p.clientProblemId" :class="p.active ? '':'red lighten-5'">
                 <v-list-tile-avatar>
                   <v-icon>fa-frown</v-icon>
                 </v-list-tile-avatar>
@@ -25,7 +25,17 @@
                 <v-list-tile-action>
                   <v-tooltip top>
                     <template #activator="data">
-                      <v-btn icon :disabled="problemFormShow" @click.stop="updateClientProblem(p)" v-on="data.on">
+                      <v-btn icon :disabled="problemFormShow" @click.stop="toggleClientProblem(p)" v-on="data.on">
+                        <v-icon :color="p.active ? 'green':'red'">{{p.active ? 'fa-check-circle':'fa-exclamation-circle'}}</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Enable/Disabled</span>
+                  </v-tooltip>
+                </v-list-tile-action>
+                <v-list-tile-action>
+                  <v-tooltip top>
+                    <template #activator="data">
+                      <v-btn icon :disabled="problemFormShow || !p.active" @click.stop="updateClientProblem(p)" v-on="data.on">
                         <v-icon small color="grey">fa-pen</v-icon>
                       </v-btn>
                     </template>
@@ -35,7 +45,7 @@
                 <v-list-tile-action>
                   <v-tooltip top>
                     <template #activator="data">
-                      <v-btn icon :disabled="problemFormShow" @click.stop="showProblemSto(p)" v-on="data.on">
+                      <v-btn icon :disabled="problemFormShow || !p.active" @click.stop="showProblemSto(p)" v-on="data.on">
                         <v-icon small color="grey">fa-medal</v-icon>
                       </v-btn>
                     </template>
@@ -88,7 +98,7 @@
         <v-card flat class="grey lighten-3">
           <v-card-text class="pa-1">
             <v-list dense subheader>
-              <v-list-tile :disabled="loading" v-for="p in clientReplacements" :key="p.clientReplacementId">
+              <v-list-tile :disabled="loading" v-for="p in clientReplacements" :key="p.clientReplacementId" :class="p.active ? '':'red lighten-5'">
                 <v-list-tile-avatar>
                   <v-icon>fa-registered</v-icon>
                 </v-list-tile-avatar>
@@ -103,6 +113,16 @@
                     <span v-if="p.baselineTo">to {{p.baselineTo | moment("utc","MM/DD/YYYY")}}</span>
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
+                <v-list-tile-action>
+                  <v-tooltip top>
+                    <template #activator="data">
+                      <v-btn icon :disabled="replacementFormShow" @click.stop="toggleClientReplacement(p)" v-on="data.on">
+                        <v-icon :color="p.active ? 'green':'red'">{{p.active ? 'fa-check-circle':'fa-exclamation-circle'}}</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Enable/Disabled</span>
+                  </v-tooltip>
+                </v-list-tile-action>
                 <v-list-tile-action>
                   <v-tooltip top>
                     <template #activator="data">
@@ -309,6 +329,32 @@ export default {
         .utc()
         .format("MM/DD/YYYY");
       this.problemFormShow = true;
+    },
+
+    async toggleClientProblem(p) {
+      p.active = !p.active;
+      try {
+        this.loadingProblems = true;
+        await clientApi.toggleClientProblem(p);
+      } catch (error) {
+        p.active = !p.active;
+        this.$toast.error(error);
+      } finally {
+        this.loadingProblems = false;
+      }
+    },
+
+    async toggleClientReplacement(p) {
+      p.active = !p.active;
+      try {
+        this.loadingReplacements = true;
+        await clientApi.toggleClientReplacement(p);
+      } catch (error) {
+        p.active = !p.active;
+        this.$toast.error(error);
+      } finally {
+        this.loadingReplacements = false;
+      }
     },
 
     cancelProblemForm() {

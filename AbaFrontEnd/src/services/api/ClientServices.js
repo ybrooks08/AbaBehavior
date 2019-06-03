@@ -297,4 +297,20 @@ export default {
         .catch(error => reject(error.response.data || error.message));
     });
   },
+
+  toggleClientProblem(p) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/clients/ToggleClientProblem', p)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  toggleClientReplacement(p) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/clients/ToggleClientReplacement', p)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
 };

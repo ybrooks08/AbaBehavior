@@ -992,5 +992,35 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpPost("[action]")]
+    public async Task<IActionResult> ToggleClientProblem([FromBody] ClientProblem problem)
+    {
+      try
+      {
+        _dbContext.Update(problem);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> ToggleClientReplacement([FromBody] ClientReplacement replacement)
+    {
+      try
+      {
+        _dbContext.Update(replacement);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
   }
 }

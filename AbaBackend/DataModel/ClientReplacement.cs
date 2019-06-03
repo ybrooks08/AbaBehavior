@@ -11,6 +11,7 @@ namespace AbaBackend.DataModel
     public DateTime? BaselineFrom { get; set; }
     public DateTime? BaselineTo { get; set; }
     public int? BaselinePercent { get; set; }
+    public bool Active { get; set; }
     public ReplacementProgram Replacement { get; set; }
     public List<ClientReplacementSto> STOs { get; set; }
   }

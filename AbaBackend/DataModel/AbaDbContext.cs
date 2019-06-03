@@ -70,6 +70,14 @@ namespace AbaBackend.DataModel
                   .HasForeignKey(s => s.UserId)
                   .OnDelete(DeleteBehavior.Restrict);
 
+      modelBuilder.Entity<ClientProblem>()
+                  .Property(b => b.Active)
+                  .HasDefaultValue(true);
+
+      modelBuilder.Entity<ClientReplacement>()
+                  .Property(b => b.Active)
+                  .HasDefaultValue(true);
+
       //Seed
       var salt = Encoding.ASCII.GetBytes("INITIAL-SALT-HERE");//Guid.NewGuid().ToByteArray();
       var hash = new PasswordHasher();

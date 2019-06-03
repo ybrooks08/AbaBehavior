@@ -450,7 +450,7 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<List<ClientProblem>> GetClientBehaviors(int clientId)
     {
       var behaviors = await _dbContext.ClientProblems
-                                      .Where(w => w.ClientId == clientId)
+                                      .Where(w => w.ClientId == clientId && w.Active)
                                       .Include(i => i.ProblemBehavior)
                                       .OrderBy(o => o.ProblemBehavior.ProblemBehaviorDescription)
                                       .ToListAsync();
@@ -460,7 +460,7 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<List<ClientReplacement>> GetClientReplacements(int clientId)
     {
       var replacements = await _dbContext.ClientReplacements
-                                         .Where(w => w.ClientId == clientId)
+                                         .Where(w => w.ClientId == clientId && w.Active)
                                          .Include(i => i.Replacement)
                                          .OrderBy(o => o.Replacement.ReplacementProgramDescription)
                                          .ToListAsync();
