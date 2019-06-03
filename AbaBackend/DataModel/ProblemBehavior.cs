@@ -10,6 +10,6 @@ namespace AbaBackend.DataModel
     [MaxLength(100)]
     public string ProblemBehaviorDescription { get; set; }
     public bool Active { get; set; } = true;
-    public bool isPorcent { get; set; } = false;
+    public bool IsPercent { get; set; } = false;
   }
 }

@@ -15,7 +15,7 @@
             <v-list-tile-content>
               <v-list-tile-title class="body-2">
                 Get
-                <span class="purple--text font-weight-black">{{p.percent}} or more</span> in
+                <span class="purple--text font-weight-black">{{p.percent}}% or more</span> in
                 <span class="purple--text font-weight-black">{{p.weeks}}</span> consecutive week(s)
               </v-list-tile-title>
               <v-list-tile-sub-title>
@@ -66,7 +66,7 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-spacer/>
+        <v-spacer />
         <v-btn :disabled="loading" :loading="loading" color="primary" @click="$emit('closed')">Close</v-btn>
       </v-card-actions>
     </v-card>
@@ -74,18 +74,18 @@
 </template>
 
 <script>
-import clientApi from '@/services/api/ClientServices';
+import clientApi from "@/services/api/ClientServices";
 
 export default {
   props: {
     open: {
       type: Boolean,
       required: true,
-      default: false,
+      default: false
     },
     data: {
-      type: Object,
-    },
+      type: Object
+    }
   },
 
   mounted() {
@@ -94,7 +94,7 @@ export default {
 
   data() {
     return {
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       loading: false,
       clientReplacementStos: [],
       formShow: false,
@@ -102,8 +102,8 @@ export default {
       clientReplacementSto: {
         clientReplacementStoId: null,
         percent: null,
-        weeks: null,
-      },
+        weeks: null
+      }
     };
   },
 
@@ -128,17 +128,16 @@ export default {
     },
 
     async deleteSto(clientReplacementStoId) {
-      this.$confirm('Do you want to delete this STO?')
-        .then(async res => {
-          if (res) {
-            try {
-              await clientApi.deleteClientReplacementSto(clientReplacementStoId);
-              await this.loadClientReplacementStos();
-            } catch (error) {
-              this.$toast.error(error.message || error);
-            }
+      this.$confirm("Do you want to delete this STO?").then(async res => {
+        if (res) {
+          try {
+            await clientApi.deleteClientReplacementSto(clientReplacementStoId);
+            await this.loadClientReplacementStos();
+          } catch (error) {
+            this.$toast.error(error.message || error);
           }
-        });
+        }
+      });
     },
 
     async loadClientReplacementStos() {
@@ -161,9 +160,11 @@ export default {
         this.loadClientReplacementStos();
       } catch (error) {
         this.$toast.error(error.message);
-      } finally { this.loading = false; }
-    },
-  },
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
 };
 </script>
 

@@ -21,16 +21,23 @@
                   <v-card-title primary-title class="pa-2 text-no-wrap text-truncate">
                     <div>
                       <div class="headline">{{b.problemBehavior.problemBehaviorDescription}}</div>
-                      <div>Total: {{getTotalBehaviors(b.problemBehavior.problemId)}}</div>
+                      <div>{{getTotalBehaviors(b.problemBehavior.problemId)}}</div>
                     </div>
                   </v-card-title>
                   <v-card-actions>
                     <v-btn :disabled="editDisabled" color="secondary" @click="addNewBehaviorFormShow(b)">NEW ENTRY</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn :disabled="editDisabled" fab dark small color="success" @click="addNewBehaviorQuickEntry(b)">
+                    <v-btn v-if="!b.problemBehavior.isPercent" :disabled="editDisabled" fab dark small color="success" @click="addNewBehaviorQuickEntry(b)">
                       <v-icon dark>fa-bolt</v-icon>
                     </v-btn>
-                    <!--<v-spacer></v-spacer>-->
+                    <template v-else>
+                      <v-btn :disabled="editDisabled" fab dark small color="success" @click="addNewBehaviorQuickEntry(b, false)">
+                        <v-icon>fa-thumbs-up</v-icon>
+                      </v-btn>
+                      <v-btn :disabled="editDisabled" fab dark small color="error" @click="addNewBehaviorQuickEntry(b, true)">
+                        <v-icon>fa-thumbs-down</v-icon>
+                      </v-btn>
+                    </template>
                     <v-btn icon @click="showBehaviorDetailsEvent(index)">
                       <v-icon small>{{ showBehaviorDetails[index] ? 'fa-chevron-down' : 'fa-chevron-up' }}</v-icon>
                     </v-btn>
@@ -39,13 +46,17 @@
                     <v-card-text class="px-0" v-show="showBehaviorDetails[index]">
                       <v-divider></v-divider>
                       <v-timeline align-top dense>
-                        <v-timeline-item color="green" small v-for="t in getTimelineBehavior(b.problemBehavior.problemId)" :key="'t'+t.sessionCollectBehaviorId">
+                        <v-timeline-item :color="!t.behavior.isPercent ? 'blue': t.completed ? 'red':'green'" small v-for="t in getTimelineBehavior(b.problemBehavior.problemId)" :key="'t'+t.sessionCollectBehaviorId">
                           <v-layout pt-3>
                             <v-flex xs3>
                               <strong>{{t.entry | moment('LT')}}</strong>
                             </v-flex>
                             <v-flex xs7>
-                              <strong>Duration: {{t.duration ? `${t.duration} secs` : 'N/A'}}</strong>
+                              <strong v-if="!t.behavior.isPercent">Duration: {{t.duration ? `${t.duration} secs` : 'N/A'}}</strong>
+                              <strong v-else>
+                                Ocurred:
+                                <span :class="t.completed ? 'red--text':'green--text'">{{t.completed ? 'YES' : 'NO'}}</span>
+                              </strong>
                               <div class="caption">{{t.notes}}</div>
                             </v-flex>
                             <v-flex xs2 class="pl-0">
@@ -159,6 +170,7 @@
                     <v-subheader class="pl-0">Duration (secs):</v-subheader>
                     <v-slider v-model="addNewBehavior.duration" thumb-label prepend-icon="fa-stopwatch" min="0" max="60" :disabled="loading" class="mt-0"></v-slider>
                   </div>
+                  <v-switch v-if="addNewBehavior.isPercent" label="Ocurred?" v-model="addNewBehavior.completed"></v-switch>
                   <v-textarea box hide-details :disabled="loading" label="Notes" auto-grow v-model="addNewBehavior.notes"></v-textarea>
                 </v-flex>
               </v-layout>
@@ -229,7 +241,7 @@ export default {
       return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
     },
     editDisabled() {
-      return !this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6 || this.sessionDetailed.sessionStatusCode === 7;
+      return false; //!this.sessionDetailed || this.sessionDetailed.sessionStatusCode === 5 || this.sessionDetailed.sessionStatusCode === 6 || this.sessionDetailed.sessionStatusCode === 7;
     }
   },
 
@@ -250,7 +262,9 @@ export default {
         noTime: false,
         entry: null,
         duration: 0,
-        notes: null
+        notes: null,
+        completed: false,
+        isPercent: false
       },
 
       validNewReplacementForm: false,
@@ -317,13 +331,18 @@ export default {
       this.formNewBehaviorId = b.problemBehavior.problemId;
       this.addNewBehavior.duration = 0;
       this.addNewBehavior.entry = this.$moment().format("HH:mm");
+      this.addNewBehavior.isPercent = b.problemBehavior.isPercent;
+      console.log(b);
+      console.log(this.addNewBehavior);
       this.openNewBehaviorDialog = true;
+      ``;
     },
 
-    addNewBehaviorQuickEntry(b) {
+    addNewBehaviorQuickEntry(b, completed = false) {
       this.formNewBehaviorId = b.problemBehavior.problemId;
       this.addNewBehavior.duration = 0;
       this.addNewBehavior.noTime = true;
+      this.addNewBehavior.completed = completed;
       this.addNewBehaviorEvent();
     },
 
@@ -342,6 +361,7 @@ export default {
           problemId: this.formNewBehaviorId,
           notes: this.addNewBehavior.notes,
           duration: this.addNewBehavior.duration,
+          completed: this.addNewBehavior.completed,
           entry: s
         };
         await sessionServicesApi.saveSessionCollectBehavior(data);
@@ -356,7 +376,14 @@ export default {
 
     getTotalBehaviors(problemId) {
       let c = this.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
-      return c ? c.count : 0;
+      if (c && !c.isPercent) return `Total: ${c ? c.count : 0}`;
+      else if (c && c.isPercent) {
+        let total = c ? c.count : 0;
+        let completed = c ? c.completed : 0;
+        let percent = total == 0 ? 0 : (completed / total) * 100;
+        return `Total: ${total} | Occurred: ${completed} | Percent: ${percent.toFixed(0)}%`;
+      }
+      return "Total: 0";
     },
 
     showBehaviorDetailsEvent(i) {

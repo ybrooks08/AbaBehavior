@@ -350,7 +350,7 @@ namespace AbaBackend.Controllers
 
           var monthStart = start;
           var monthEnd = end;
-          int sum = 0;
+          decimal sum = 0;
           while (monthStart < end)
           {
             var weekStart = monthStart;
@@ -360,18 +360,32 @@ namespace AbaBackend.Controllers
                                      .Where(w => w.ClientId == clientId && w.ProblemId == problem.ProblemId)
                                      .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
                                      .CountAsync();
+            var mainDataCompleted = await _dbContext.SessionCollectBehaviors
+                                      .Where(w => w.ClientId == clientId && w.ProblemId == problem.ProblemId)
+                                      .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
+                                      .Where(w => w.Completed)
+                                      .CountAsync();
             var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
                                       .Where(w => w.ClientId == clientId && w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
                                       .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(q => q.Count))
                                       .FirstOrDefaultAsync();
 
-            var totalWeek = mainData + (mainDataCaregiverCollect ?? 0);
-            sum += totalWeek;
-            newRow.Add(totalWeek);
+            if (!problem.ProblemBehavior.IsPercent)
+            {
+              var totalWeek = mainData + (mainDataCaregiverCollect ?? 0);
+              sum += totalWeek;
+              newRow.Add(totalWeek);
+            }
+            else
+            {
+              var percent = mainData == 0 ? 0 : mainDataCompleted / (decimal)mainData;
+              sum += percent * 100;
+              newRow.Add($"{percent:p0}");
+            }
             monthStart = monthStart.AddDays(7);
           }
-          newRow.Add(sum);
-          newRow.Add((sum / (decimal)totalWeeks).ToString("n0"));
+          newRow.Add(!problem.ProblemBehavior.IsPercent ? sum.ToString() : "-");
+          newRow.Add((sum / (decimal)totalWeeks).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
           rowsProblems.Add(newRow);
         }
 
@@ -429,11 +443,11 @@ namespace AbaBackend.Controllers
             mainDataCompleted += caregiverReplacements?.TotalCompleted ?? 0;
             var percent = mainDataCount == 0 ? 0 : mainDataCompleted / (decimal)mainDataCount * 100;
             sumTotal += percent;
-            newRow.Add($"{percent:n0}");
+            newRow.Add($"{percent:n0}%");
             monthStart = monthStart.AddDays(7);
           }
           var replacementAve = sumTotal / totalWeeks;
-          newRow.Add($"{replacementAve:n0}");
+          newRow.Add($"{replacementAve:n0}%");
           rowsReplacements.Add(newRow);
         }
 

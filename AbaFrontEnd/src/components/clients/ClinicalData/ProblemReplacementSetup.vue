@@ -17,7 +17,7 @@
                     <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>
                   </v-list-tile-title>
                   <v-list-tile-sub-title>
-                    Baseline: {{p.baselineCount || "N/A"}},
+                    Baseline: {{p.baselineCount || "N/A"}}{{p.problemBehavior.isPercent ? '%':''}}
                     <span v-if="p.baselineFrom">From {{p.baselineFrom | moment("utc", "MM/DD/YYYY")}}</span>&nbsp;
                     <span v-if="p.baselineTo">to {{p.baselineTo | moment("utc", "MM/DD/YYYY")}}</span>
                   </v-list-tile-sub-title>
@@ -98,7 +98,7 @@
                     <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>
                   </v-list-tile-title>
                   <v-list-tile-sub-title>
-                    Baseline: {{p.baselinePercent || "N/A"}},
+                    Baseline: {{p.baselinePercent || "N/A"}}%
                     <span v-if="p.baselineFrom">From {{p.baselineFrom | moment("utc","MM/DD/YYYY")}}</span>&nbsp;
                     <span v-if="p.baselineTo">to {{p.baselineTo | moment("utc","MM/DD/YYYY")}}</span>
                   </v-list-tile-sub-title>
@@ -201,7 +201,8 @@ export default {
         baselineCount: null,
         baselineFrom: null,
         baselineTo: null,
-        clientId: this.clientId
+        clientId: this.clientId,
+        isPercent: false
       },
 
       problemStoDialogShow: false,

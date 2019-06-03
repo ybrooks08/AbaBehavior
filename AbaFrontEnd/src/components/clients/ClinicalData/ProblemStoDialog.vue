@@ -16,7 +16,7 @@
             <v-list-tile-content>
               <v-list-tile-title class="body-2">
                 Get
-                <span class="purple--text font-weight-black">{{p.quantity}} or less</span> in
+                <span class="purple--text font-weight-black">{{p.quantity}}{{isPercent ? '% or more':' or less'}}</span> in
                 <span class="purple--text font-weight-black">{{p.weeks}}</span> consecutive week(s)
               </v-list-tile-title>
               <v-list-tile-sub-title>
@@ -43,10 +43,10 @@
           <v-form ref="form" autocomplete="off" v-model="formValid">
             <v-layout row wrap>
               <v-flex xs12 md2>
-                <v-subheader style="float: right;">Frecuency</v-subheader>
+                <v-subheader style="float: right;">{{isPercent ? 'Percent':'Frecuency'}}</v-subheader>
               </v-flex>
               <v-flex xs12 md3>
-                <v-text-field ref="focusInput" solo hide-details v-model="clientProblemSto.quantity" type="number" :rules="[required]" required append-icon="fa-frown fa-sm"></v-text-field>
+                <v-text-field ref="focusInput" solo hide-details v-model="clientProblemSto.quantity" type="number" :rules="[required]" required :append-icon="isPercent ? 'fa-percent fa-sm':'fa-frown fa-sm'"></v-text-field>
               </v-flex>
               <v-flex xs12 md1>
                 <v-subheader>in</v-subheader>
@@ -67,7 +67,7 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-spacer/>
+        <v-spacer />
         <v-btn :disabled="loading" :loading="loading" color="primary" @click="$emit('closed')">Close</v-btn>
       </v-card-actions>
     </v-card>
@@ -75,18 +75,18 @@
 </template>
 
 <script>
-import clientApi from '@/services/api/ClientServices';
+import clientApi from "@/services/api/ClientServices";
 
 export default {
   props: {
     open: {
       type: Boolean,
       required: true,
-      default: false,
+      default: false
     },
     data: {
-      type: Object,
-    },
+      type: Object
+    }
   },
 
   mounted() {
@@ -95,7 +95,7 @@ export default {
 
   data() {
     return {
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       loading: false,
       clientProblemStos: [],
       formShow: false,
@@ -103,9 +103,15 @@ export default {
       clientProblemSto: {
         clientProblemStoId: null,
         quantity: null,
-        weeks: null,
-      },
+        weeks: null
+      }
     };
+  },
+
+  computed: {
+    isPercent() {
+      return this.data.problemBehavior.isPercent;
+    }
   },
 
   methods: {
@@ -129,17 +135,16 @@ export default {
     },
 
     async deleteSto(clientProblemStoId) {
-      this.$confirm('Do you want to delete this STO?')
-        .then(async res => {
-          if (res) {
-            try {
-              await clientApi.deleteClientProblemSto(clientProblemStoId);
-              await this.loadClientProblemStos();
-            } catch (error) {
-              this.$toast.error(error.message || error);
-            }
+      this.$confirm("Do you want to delete this STO?").then(async res => {
+        if (res) {
+          try {
+            await clientApi.deleteClientProblemSto(clientProblemStoId);
+            await this.loadClientProblemStos();
+          } catch (error) {
+            this.$toast.error(error.message || error);
           }
-        });
+        }
+      });
     },
 
     async loadClientProblemStos() {
@@ -162,9 +167,11 @@ export default {
         this.loadClientProblemStos();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
-    },
-  },
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
 };
 </script>
 

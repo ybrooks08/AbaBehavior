@@ -441,6 +441,9 @@ namespace AbaBackend.Controllers
           var calWeekEnd = calWeekStart.AddDays(6);
           var problemsCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
                                       .Count(w => w.ProblemId == problem.ProblemId);
+          var problemsComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
+                                          .Where(w => w.ProblemId == problem.ProblemId)
+                                          .Count(w => w.Completed);
           var caregiverProblemsCount = mainDataCaregiverCollect
                                        .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
                                        .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(s1 => s1.Count)).Sum();
@@ -448,7 +451,12 @@ namespace AbaBackend.Controllers
 
           //todo arreglar esto
           //data.Add(problemsCount == 0 ? null : (int?)problemsCount);
-          data.Add(problemsCount);
+          if (!problem.ProblemBehavior.IsPercent) data.Add(problemsCount);
+          else
+          {
+            var percent = problemsCount == 0 ? 0 : problemsComplete / (decimal)problemsCount * 100;
+            data.Add((int?)Math.Round(percent));
+          }
 
           var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
           foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
@@ -459,7 +467,7 @@ namespace AbaBackend.Controllers
         dataSet.Add(new MultiSerieChart
         {
           Data = data,
-          Name = problem.ProblemBehavior.ProblemBehaviorDescription
+          Name = problem.ProblemBehavior.ProblemBehaviorDescription + (problem.ProblemBehavior.IsPercent ? "(%)" : "")
         });
       }
 
@@ -556,7 +564,7 @@ namespace AbaBackend.Controllers
           var percent = replacementCount == 0 ? 0 : replacementComplete / (decimal)replacementCount * 100;
 
           //todo arreglar esto
-          data.Add((int?)percent);
+          data.Add((int?)Math.Round(percent));
           //data.Add(replacementCount == 0 ? null : (int?)percent);
 
           var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
@@ -938,7 +946,9 @@ namespace AbaBackend.Controllers
                           {
                             s.Key.ProblemId,
                             s.Key.Behavior.ProblemBehaviorDescription,
-                            Count = s.Count()
+                            s.Key.Behavior.IsPercent,
+                            Count = s.Count(),
+                            Completed = s.Count(c => c.Completed)
                           })
                           .OrderBy(o => o.ProblemBehaviorDescription)
                           .ToList();
