@@ -242,7 +242,7 @@ export default {
       return this.user.rol2 === "admin" || this.user.rol2 === "billing" || this.user.rol2 === "management";
     },
     totalUnits() {
-      return this.report.sessions.map(a => a.totalUnits).reduce((a, b) => a + b);
+      return this.report.sessions.length > 0 ? this.report.sessions.map(a => a.totalUnits).reduce((a, b) => a + b) : 0;
     }
   },
 
