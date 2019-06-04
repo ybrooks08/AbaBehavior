@@ -106,9 +106,9 @@ export default {
     });
   },
 
-  loadUserClients() {
+  loadUserClients(userId = -1) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/users/get-clients-for-user`)
+      Vue.axios.get(`api/users/get-clients-for-user/${userId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });

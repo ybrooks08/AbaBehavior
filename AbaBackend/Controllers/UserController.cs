@@ -392,12 +392,12 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpGet("get-clients-for-user")]
-    public async Task<IActionResult> GetClientsForUser()
+    [HttpGet("get-clients-for-user/{userId?}")]
+    public async Task<IActionResult> GetClientsForUser(int userId = -1)
     {
       try
       {
-        var user = await _utils.GetCurrentUser();
+        var user = userId == -1 ? await _utils.GetCurrentUser() : await _utils.GetUserById(userId);
         var clients = await _dbContext.Assignments
                                       .Where(w => w.UserId.Equals(user.UserId))
                                       .Select(s => new

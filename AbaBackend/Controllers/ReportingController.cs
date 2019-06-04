@@ -100,15 +100,15 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpGet("[action]/{from}/{to}/{clientId}")]
-    public async Task<IActionResult> GetServiceLog(string from, string to, int clientId)
+    [HttpGet("[action]/{from}/{to}/{clientId}/{userId?}")]
+    public async Task<IActionResult> GetServiceLog(string from, string to, int clientId, int userId = -1)
     {
       try
       {
         var fromDate = Convert.ToDateTime(from).Date;
         var toDate = Convert.ToDateTime(to).Date;
 
-        var user = await _utils.GetCurrentUser();
+        var user = userId == -1 ? await _utils.GetCurrentUser() : await _utils.GetUserById(userId);
 
         var client = await _dbContext.Clients
                                      .AsNoTracking()

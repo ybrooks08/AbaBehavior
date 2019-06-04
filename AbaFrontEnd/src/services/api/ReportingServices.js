@@ -10,9 +10,9 @@ export default {
     });
   },
 
-  getServiceLog(from, to, clientId) {
+  getServiceLog(from, to, clientId, userId = -1) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/reporting/GetServiceLog/${from}/${to}/${clientId}`)
+      Vue.axios.get(`api/reporting/GetServiceLog/${from}/${to}/${clientId}/${userId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message))
     });

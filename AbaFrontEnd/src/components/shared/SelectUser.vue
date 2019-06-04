@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 
 export default {
   props: {
@@ -30,7 +30,7 @@ export default {
     return {
       loading: false,
       users: [],
-      userId: this.value,
+      userId: this.value
     };
   },
 
@@ -46,13 +46,15 @@ export default {
         this.users = await userApi.getUsersCanCreateSessions();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     onSelectUser() {
-      this.$emit('input', this.userId);
+      this.$emit("input", this.userId);
+      this.$emit("change", this.userId);
     }
-  },
-
+  }
 };
 </script>

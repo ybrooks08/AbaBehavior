@@ -12,7 +12,10 @@
               <v-flex xs12>
                 <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel" />
               </v-flex>
-              <v-flex md12>
+              <v-flex xs12 sm6 v-if="isAdminOrBillingOrManagement">
+                <select-user v-model="userId" @change="changedUser()"></select-user>
+              </v-flex>
+              <v-flex xs12 sm6>
                 <v-select box hid :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]" required>
                   <template slot="item" slot-scope="{ item }">
                     <v-list-tile-avatar>
@@ -76,7 +79,7 @@
                   <br>
                   <span>{{report.client.firstname}} {{report.client.lastname}}</span>
                 </td>
-                <td rowspan="3">
+                <td>
                   <small>Physician(s) name:</small>
                   <br>
                   <template v-for="r in report.client.referrals">
@@ -96,14 +99,7 @@
                   <br>
                   <span>{{report.client.code}}</span>
                 </td>
-              </tr>
-              <tr>
-                <td>
-                  <small>License number:</small>
-                  <br>
-                  <span>{{report.user.npi}}</span>
-                </td>
-                <td>
+                <td rowspan="2">
                   <small>PA Number(s):</small>
                   <br>
                   <span>
@@ -113,6 +109,28 @@
                     </label>
                   </span>
                 </td>
+              </tr>
+              <tr>
+                <td>
+                  <small>License number:</small>
+                  <br>
+                  <span>{{report.user.licenseNo}}</span>
+                </td>
+                <td>
+                  <small>Npi:</small>
+                  <br>
+                  <span>{{report.user.npi}}</span>
+                </td>
+                <!-- <td>
+                  <small>PA Number(s):</small>
+                  <br>
+                  <span>
+                    <label v-for="a in report.client.assessments" :key="a.paNumber">
+                      <template v-if="report.client.assessments.length > 1">|</template>
+                      {{a.paNumber}}
+                    </label>
+                  </span>
+                </td> -->
               </tr>
             </table>
           </div>
@@ -144,15 +162,29 @@
                   <img v-else style="object-fit: contain; max-height: 20px;" :src="!s.sign || s.sign.sign">
                 </td>
               </tr>
-              <tr>
-                <td colspan="8">&nbsp;</td>
+
+              <tr class="grey lighten-2">
+                <td colspan="3">Total</td>
+                <td class="px-1 text-xs-center">
+                  {{totalUnits.toLocaleString()}}
+                </td>
+                <td class="px-1 text-xs-center">
+                  {{(totalUnits / 4).toLocaleString()}}
+                </td>
+                <td colspan="3"></td>
               </tr>
+
+              <!-- <tr>
+                <td colspan="8">&nbsp;</td>
+              </tr> -->
               <tr>
                 <td style="height: 50px !important;" colspan="6">
-                  <small>BA/RBT Signature:</small>
+                  <small>Signature:</small>
                   <br>
                   <span v-if="!report.user.userSign"></span>
                   <img v-else class="ml-2" style="object-fit: contain; max-height: 30px;" :src="report.user.userSign.sign">
+                  <br>
+                  <strong>{{report.user.firstname}} {{report.user.lastname}}, {{report.user.rol.rolName}}</strong>
                 </td>
                 <td style="height: 50px !important;" colspan="2">
                   <small>Date:</small>
@@ -190,6 +222,7 @@ export default {
           .endOf("month")
           .format("YYYY-MM-DDTHH:mm")
       },
+      userId: null,
       clients: [],
       clientId: null,
       report: null,
@@ -197,24 +230,25 @@ export default {
     };
   },
 
+  components: {
+    SelectUser: () => import(/* webpackChunkName: "SelectUser" */ "@/components/shared/SelectUser")
+  },
+
   computed: {
     user() {
       return this.$store.getters.user;
     },
-    isAdminOrManagement() {
-      return this.user.rol2 === "admin" || this.user.rol2 === "management";
+    isAdminOrBillingOrManagement() {
+      return this.user.rol2 === "admin" || this.user.rol2 === "billing" || this.user.rol2 === "management";
+    },
+    totalUnits() {
+      return this.report.sessions.map(a => a.totalUnits).reduce((a, b) => a + b);
     }
   },
 
   mounted() {
     this.$store.commit("SET_ACTIVE_CLIENT", null);
-    this.loadUserClients();
-
-    //remove
-    // this.clientId = 2;
-    // this.datePickerModel.start = "2017-08-01";
-    // this.datePickerModel.end = "2018-12-31";
-    // this.viewReport();
+    if (!this.isAdminOrBillingOrManagement) this.loadUserClients();
   },
 
   methods: {
@@ -227,7 +261,7 @@ export default {
       this.clients = [];
       this.loading = true;
       try {
-        this.clients = await userApi.loadUserClients();
+        this.clients = await userApi.loadUserClients(this.isAdminOrBillingOrManagement ? this.userId : -1);
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -240,18 +274,21 @@ export default {
         this.loading = true;
         this.sessions = [];
         this.report = null;
-        this.report = await reportingApi.getServiceLog(this.datePickerModel.start, this.datePickerModel.end, this.clientId);
+        this.report = await reportingApi.getServiceLog(this.datePickerModel.start, this.datePickerModel.end, this.clientId, this.isAdminOrBillingOrManagement ? this.userId : -1);
         this.report.sessions.forEach(e => {
           e.sessionStart = this.$moment(e.sessionStart).local();
           e.sessionEnd = this.$moment(e.sessionEnd).local();
           this.sessions.push(e);
         });
-        console.log(this.sessions);
       } catch (error) {
         this.$toast.error(error.response.data || error.message);
       } finally {
         this.loading = false;
       }
+    },
+
+    async changedUser() {
+      await this.loadUserClients();
     },
 
     print() {
