@@ -1,13 +1,11 @@
 <template>
   <v-container grid-list-xs pa-0>
-    <template v-if="chartOptions.series.length === 0">
+    <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
+    <template v-if="chartOptions.series.length === 0 && !loading">
       <v-alert :value="true" type="warning">No data to show</v-alert>
     </template>
     <template v-if="chartOptions.series.length > 0">
       <v-layout row wrap>
-        <v-flex class="text-xs-center">
-          <v-progress-circular style="position: absolute; z-index: 343948394" v-show="loading" indeterminate></v-progress-circular>
-        </v-flex>
         <v-flex xs12>
           <highcharts ref="hc" v-show="finish" :options="chartOptions"></highcharts>
         </v-flex>
@@ -53,8 +51,8 @@ import sessionServicesApi from "@/services/api/SessionServices";
 export default {
   props: {
     behaviorId: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
       required: false
     },
     dateStart: {
