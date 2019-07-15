@@ -25,7 +25,6 @@ namespace AbaBackend.Infrastructure.Utils
     Task MidNightProcess();
     Task<bool> SendEmailsAsync(bool sendGlobal = true);
     Task<Response> SendEmailsAsync(Email email);
-    // Task<ChartNoteData> GetNotesForChart(int clientId, int lastWeeks, ChartNoteType chartNoteType);
     Task<string> CheckUserSessionOverlap(DateTime dateStart, DateTime dateEnd, int userId);
     Task<string> CheckSessionOverlapSameDayClient(DateTime dateStart, DateTime dateEnd, int clientId);
     Task<(string Color, string Text)> ChangeSessionStatus(ChangeSessionStatus changeSessionStatus);
@@ -33,8 +32,8 @@ namespace AbaBackend.Infrastructure.Utils
     Task UpdateClientProblemStos(int clientProblemId);
     Task UpdateClientReplacementStos(int periodClientReplacementId);
     Task<(bool isValid, DateTime start, DateTime end)> GetClientWholePeriod(int clientId);
-    Task<List<ClientProblem>> GetClientBehaviors(int clientId);
-    Task<List<ClientReplacement>> GetClientReplacements(int clientId);
+    Task<List<ClientProblem>> GetClientBehaviors(int clientId, bool onlyActive = true);
+    Task<List<ClientReplacement>> GetClientReplacements(int clientId, bool onlyActive = true);
     Task AddSessionProblemNotes(int sessionId, int clientId);
     Task NewEntryLog(int sessionId, string title, string description, string icon = "fa-info-circle", string iconColor = "blue");
     Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId);

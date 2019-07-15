@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
+using AbaBackend.Infrastructure.Extensions;
 using AbaBackend.Model.Session;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +19,6 @@ using SendGrid.Helpers.Mail;
 
 namespace AbaBackend.Infrastructure.Utils
 {
-
   public class Utils : IUtils
   {
     private readonly AbaDbContext _dbContext;
@@ -37,10 +37,10 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<User> GetUserByUsername(string username)
     {
       var user = await _dbContext.Users
-                                 .Include(i => i.Rol)
-                                 .ThenInclude(t => t.BehaviorAnalysisCode)
-                                 .Include(i => i.UserSign)
-                                 .FirstOrDefaultAsync(w => w.Username.Equals(username));
+        .Include(i => i.Rol)
+        .ThenInclude(t => t.BehaviorAnalysisCode)
+        .Include(i => i.UserSign)
+        .FirstOrDefaultAsync(w => w.Username.Equals(username));
       return user;
     }
 
@@ -60,8 +60,8 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<bool> CheckAssignmentClientActive(int userId, int clientId)
     {
       var assignments = await _dbContext.Assignments
-                                        .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.Active)
-                                        .FirstOrDefaultAsync();
+        .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.Active)
+        .FirstOrDefaultAsync();
       if (assignments == null) return false;
       return true;
     }
@@ -69,10 +69,10 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<List<Assessment>> GetClientValidAssessmentsForUser(DateTime date, int clientId, User user)
     {
       var assessments = await _dbContext.Assessments
-                                        .Where(w => w.ClientId.Equals(clientId))
-                                        .Where(w => w.BehaviorAnalysisCodeId.Equals(user.Rol.BehaviorAnalysisCodeId))
-                                        .Where(w => date.Date >= w.StartDate.Date && date.Date <= w.EndDate.Date)
-                                        .ToListAsync();
+        .Where(w => w.ClientId.Equals(clientId))
+        .Where(w => w.BehaviorAnalysisCodeId.Equals(user.Rol.BehaviorAnalysisCodeId))
+        .Where(w => date.Date >= w.StartDate.Date && date.Date <= w.EndDate.Date)
+        .ToListAsync();
       return assessments;
     }
 
@@ -80,16 +80,16 @@ namespace AbaBackend.Infrastructure.Utils
     {
       if (user == null) return 0;
       date = date ?? DateTime.Today;
-      var assessments = await GetClientValidAssessmentsForUser((DateTime)date, clientId, user);
+      var assessments = await GetClientValidAssessmentsForUser((DateTime) date, clientId, user);
       var lastAssessment = assessments.OrderByDescending(o => o.EndDate).FirstOrDefault();
       if (lastAssessment == null || lastAssessment.TotalUnits <= 0) return 0;
 
       var unitsSum = await _dbContext.Sessions
-                                     .Where(w => w.SessionStart.Date >= lastAssessment.StartDate.Date && w.SessionStart.Date <= lastAssessment.EndDate.Date)
-                                     .Where(w => w.ClientId.Equals(clientId))
-                                     .Where(w => w.BehaviorAnalysisCodeId.Equals(user.Rol.BehaviorAnalysisCodeId))
-                                     .Select(s => s.TotalUnits)
-                                     .SumAsync();
+        .Where(w => w.SessionStart.Date >= lastAssessment.StartDate.Date && w.SessionStart.Date <= lastAssessment.EndDate.Date)
+        .Where(w => w.ClientId.Equals(clientId))
+        .Where(w => w.BehaviorAnalysisCodeId.Equals(user.Rol.BehaviorAnalysisCodeId))
+        .Select(s => s.TotalUnits)
+        .SumAsync();
 
       var available = lastAssessment.TotalUnits - unitsSum;
 
@@ -113,19 +113,19 @@ namespace AbaBackend.Infrastructure.Utils
     internal async Task CreateDocumentsEmails(int days)
     {
       var documents = await _dbContext.DocumentsUsers
-                                      .Where(w => EF.Functions.DateDiffDay(DateTime.Today, w.Expires != null ? Convert.ToDateTime(w.Expires).Date : new DateTime(2999, 1, 1).Date) == days && w.Active)
-                                      .Where(w => w.User.Active)
-                                      .Select(s => new
-                                      {
-                                        UserEmail = s.User.Email,
-                                        UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
-                                        s.User.Rol.RolName,
-                                        s.Document.DocumentName,
-                                        s.Document.DocumentGroup.GroupName,
-                                        s.Expires,
-                                        Days = EF.Functions.DateDiffDay(DateTime.Today, Convert.ToDateTime(s.Expires).Date)
-                                      })
-                                      .ToListAsync();
+        .Where(w => EF.Functions.DateDiffDay(DateTime.Today, w.Expires != null ? Convert.ToDateTime(w.Expires).Date : new DateTime(2999, 1, 1).Date) == days && w.Active)
+        .Where(w => w.User.Active)
+        .Select(s => new
+        {
+          UserEmail = s.User.Email,
+          UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+          s.User.Rol.RolName,
+          s.Document.DocumentName,
+          s.Document.DocumentGroup.GroupName,
+          s.Expires,
+          Days = EF.Functions.DateDiffDay(DateTime.Today, Convert.ToDateTime(s.Expires).Date)
+        })
+        .ToListAsync();
 
       foreach (var doc in documents)
       {
@@ -144,20 +144,20 @@ namespace AbaBackend.Infrastructure.Utils
     internal async Task CreateReferralsEmails(int days)
     {
       var referrals = await _dbContext.Referrals
-                                      .Where(w => EF.Functions.DateDiffDay(DateTime.Today, w.DateExpires.Date) == days)
-                                      .Where(w => w.Client.Active)
-                                      .Where(w => w.Active)
-                                      .Select(s => new
-                                      {
-                                        ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
-                                        s.Client.Code,
-                                        s.ReferralFullname,
-                                        s.Specialty,
-                                        s.DateReferral,
-                                        s.DateExpires,
-                                        Days = EF.Functions.DateDiffDay(DateTime.Today, s.DateExpires.Date)
-                                      })
-                                      .ToListAsync();
+        .Where(w => EF.Functions.DateDiffDay(DateTime.Today, w.DateExpires.Date) == days)
+        .Where(w => w.Client.Active)
+        .Where(w => w.Active)
+        .Select(s => new
+        {
+          ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+          s.Client.Code,
+          s.ReferralFullname,
+          s.Specialty,
+          s.DateReferral,
+          s.DateExpires,
+          Days = EF.Functions.DateDiffDay(DateTime.Today, s.DateExpires.Date)
+        })
+        .ToListAsync();
       foreach (var referr in referrals)
       {
         var to = ""; //referr.UserEmail;
@@ -175,18 +175,18 @@ namespace AbaBackend.Infrastructure.Utils
     internal async Task CreateAssessmentEmails(int days)
     {
       var assessments = await _dbContext.Assessments
-                                        .Where(w => (EF.Functions.DateDiffDay(DateTime.Today, w.EndDate.Date) == days) && w.BehaviorAnalysisCode.Checkable)
-                                        .Where(w => w.Client.Active)
-                                        .Select(s => new
-                                        {
-                                          ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
-                                          s.TotalUnits,
-                                          s.StartDate,
-                                          s.EndDate,
-                                          Days = EF.Functions.DateDiffDay(DateTime.Today, s.EndDate.Date),
-                                          s.BehaviorAnalysisCode
-                                        })
-                                        .ToListAsync();
+        .Where(w => (EF.Functions.DateDiffDay(DateTime.Today, w.EndDate.Date) == days) && w.BehaviorAnalysisCode.Checkable)
+        .Where(w => w.Client.Active)
+        .Select(s => new
+        {
+          ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+          s.TotalUnits,
+          s.StartDate,
+          s.EndDate,
+          Days = EF.Functions.DateDiffDay(DateTime.Today, s.EndDate.Date),
+          s.BehaviorAnalysisCode
+        })
+        .ToListAsync();
       foreach (var assess in assessments)
       {
         var to = ""; //referr.UserEmail;
@@ -237,9 +237,9 @@ namespace AbaBackend.Infrastructure.Utils
       try
       {
         var pendingEmails = await _dbContext.Emails
-                                            .Where(w => w.Sent == null)
-                                            .OrderBy(w => w.EmailId)
-                                            .ToListAsync();
+          .Where(w => w.Sent == null)
+          .OrderBy(w => w.EmailId)
+          .ToListAsync();
         if (!pendingEmails.Any()) return false;
         from = _configuration["Email:From"];
         toGlobal = _configuration["Email:GlobalEmail"];
@@ -305,9 +305,9 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var maxUnits = Convert.ToInt32(_configuration["Session:MaxUnitsClientSessionByDay"]);
       var allSessionsUnits = await _dbContext.Sessions
-                                             .Where(w => w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date))
-                                             .Select(s => s.TotalUnits)
-                                             .SumAsync();
+        .Where(w => w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date))
+        .Select(s => s.TotalUnits)
+        .SumAsync();
       var totalUnitsToCreate = allSessionsUnits + totalUnits;
       if (totalUnitsToCreate > maxUnits) return $"You can't create this session because client exceeds the {maxUnits} units per day.";
       return "ok";
@@ -317,9 +317,9 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var maxUnits = Convert.ToInt32(_configuration["Session:MaxUnitsUserSessionByDay"]);
       var allSessionsUnits = await _dbContext.Sessions
-                                             .Where(w => w.UserId.Equals(userId) && w.SessionStart.Date.Equals(date.Date))
-                                             .Select(s => s.TotalUnits)
-                                             .SumAsync();
+        .Where(w => w.UserId.Equals(userId) && w.SessionStart.Date.Equals(date.Date))
+        .Select(s => s.TotalUnits)
+        .SumAsync();
       var totalUnitsToCreate = allSessionsUnits + totalUnits;
       if (totalUnitsToCreate > maxUnits) return $"You can't create this session because exceeds the {maxUnits} units per day.";
       return "ok";
@@ -330,9 +330,9 @@ namespace AbaBackend.Infrastructure.Utils
       var user = await GetCurrentUser();
       var maxUnits = Convert.ToInt32(_configuration[$"Session:MaxUnitsByClient{user.Rol.BehaviorAnalysisCode.Hcpcs}"]);
       var allSessionsUnits = await _dbContext.Sessions
-                                             .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date))
-                                             .Select(s => s.TotalUnits)
-                                             .SumAsync();
+        .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date))
+        .Select(s => s.TotalUnits)
+        .SumAsync();
       var totalUnitsToCreate = allSessionsUnits + totalUnits;
       if (totalUnitsToCreate > maxUnits) return $"You can't create any session because exceeds the {maxUnits} units per client and day.";
       return "ok";
@@ -343,9 +343,9 @@ namespace AbaBackend.Infrastructure.Utils
       var user = await GetCurrentUser();
       var maxUnits = Convert.ToInt32(_configuration[$"Session:MaxUnitsByClientInSchool"]);
       var allSessionsUnits = await _dbContext.Sessions
-                                             .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date) && w.Pos.Equals(Pos.School))
-                                             .Select(s => s.TotalUnits)
-                                             .SumAsync();
+        .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date) && w.Pos.Equals(Pos.School))
+        .Select(s => s.TotalUnits)
+        .SumAsync();
       var totalUnitsToCreate = allSessionsUnits + totalUnits;
       if (totalUnitsToCreate > maxUnits) return $"You can't create this session because exceeds the {maxUnits} units per client in the school.";
       return "ok";
@@ -354,9 +354,9 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<string> CheckUserSessionOverlap(DateTime dateStart, DateTime dateEnd, int userId)
     {
       var allSessionsOverlapping = await _dbContext.Sessions
-                                                   .Where(w => w.UserId.Equals(userId))
-                                                   .Where(w => w.SessionStart < dateEnd.ToUniversalTime() && dateStart.ToUniversalTime() < w.SessionEnd)
-                                                   .ToListAsync();
+        .Where(w => w.UserId.Equals(userId))
+        .Where(w => w.SessionStart < dateEnd.ToUniversalTime() && dateStart.ToUniversalTime() < w.SessionEnd)
+        .ToListAsync();
       if (allSessionsOverlapping.Any()) return "You cannot overlap sessions";
       return "ok";
     }
@@ -364,9 +364,9 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<string> CheckSessionOverlapSameDayClient(DateTime dateStart, DateTime dateEnd, int clientId)
     {
       var allSessionsOverlapping = await _dbContext.Sessions
-                                                   .Where(w => w.ClientId.Equals(clientId))
-                                                   .Where(w => w.SessionStart < dateEnd.ToUniversalTime() && dateStart.ToUniversalTime() < w.SessionEnd)
-                                                   .ToListAsync();
+        .Where(w => w.ClientId.Equals(clientId))
+        .Where(w => w.SessionStart < dateEnd.ToUniversalTime() && dateStart.ToUniversalTime() < w.SessionEnd)
+        .ToListAsync();
       if (allSessionsOverlapping.Any()) return "You cannot overlap sessions with same client";
       return "ok";
     }
@@ -381,26 +381,26 @@ namespace AbaBackend.Infrastructure.Utils
       var session = await _dbContext.Sessions.FirstAsync(w => w.SessionId == changeSessionStatus.SessionId);
       session.SessionStatus = changeSessionStatus.SessionStatus;
       await _dbContext.SaveChangesAsync();
-      return (changeSessionStatus.SessionStatus.ToString(), ((SessionStatusColors)changeSessionStatus.SessionStatus).ToString());
+      return (changeSessionStatus.SessionStatus.ToString(), ((SessionStatusColors) changeSessionStatus.SessionStatus).ToString());
     }
 
     public async Task<int> GetUserExpiredDocumentsCount(int userId = 0)
     {
       userId = userId == 0 ? (await GetCurrentUser()).UserId : userId;
       var count = await _dbContext
-                        .DocumentsUsers
-                        .Where(w => w.Document.DocumentExpires)
-                        .Where(w => w.Expires < DateTime.Today)
-                        .Where(w => w.UserId == userId)
-                        .CountAsync();
+        .DocumentsUsers
+        .Where(w => w.Document.DocumentExpires)
+        .Where(w => w.Expires < DateTime.Today)
+        .Where(w => w.UserId == userId)
+        .CountAsync();
       return count;
     }
 
     public async Task UpdateClientProblemStos(int clientProblemId)
     {
       var clientProblem = await _dbContext.ClientProblems
-                                          .Include(i => i.STOs)
-                                          .FirstOrDefaultAsync(w => w.ClientProblemId == clientProblemId);
+        .Include(i => i.STOs)
+        .FirstOrDefaultAsync(w => w.ClientProblemId == clientProblemId);
       var period = await GetClientWholePeriod(clientProblem.ClientId);
       var stos = clientProblem.STOs.OrderBy(o => o.ClientProblemStoId).ToList();
 
@@ -420,8 +420,8 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task UpdateClientReplacementStos(int clientReplacementId)
     {
       var clientReplacement = await _dbContext.ClientReplacements
-                                                    .Include(i => i.STOs)
-                                                    .FirstOrDefaultAsync(w => w.ClientReplacementId == clientReplacementId);
+        .Include(i => i.STOs)
+        .FirstOrDefaultAsync(w => w.ClientReplacementId == clientReplacementId);
       var period = await GetClientWholePeriod(clientReplacement.ClientId);
       var stos = clientReplacement.STOs.OrderBy(o => o.ClientReplacementStoId).ToList();
 
@@ -447,23 +447,23 @@ namespace AbaBackend.Infrastructure.Utils
       return (true, start, end);
     }
 
-    public async Task<List<ClientProblem>> GetClientBehaviors(int clientId)
+    public async Task<List<ClientProblem>> GetClientBehaviors(int clientId, bool onlyActive = true)
     {
       var behaviors = await _dbContext.ClientProblems
-                                      .Where(w => w.ClientId == clientId && w.Active)
-                                      .Include(i => i.ProblemBehavior)
-                                      .OrderBy(o => o.ProblemBehavior.ProblemBehaviorDescription)
-                                      .ToListAsync();
+        .Where(w => w.ClientId == clientId && (!onlyActive || w.Active))
+        .Include(i => i.ProblemBehavior)
+        .OrderBy(o => o.ProblemBehavior.ProblemBehaviorDescription)
+        .ToListAsync();
       return behaviors;
     }
 
-    public async Task<List<ClientReplacement>> GetClientReplacements(int clientId)
+    public async Task<List<ClientReplacement>> GetClientReplacements(int clientId, bool onlyActive = true)
     {
       var replacements = await _dbContext.ClientReplacements
-                                         .Where(w => w.ClientId == clientId && w.Active)
-                                         .Include(i => i.Replacement)
-                                         .OrderBy(o => o.Replacement.ReplacementProgramDescription)
-                                         .ToListAsync();
+        .Where(w => w.ClientId == clientId && (!onlyActive || w.Active))
+        .Include(i => i.Replacement)
+        .OrderBy(o => o.Replacement.ReplacementProgramDescription)
+        .ToListAsync();
       return replacements;
     }
 
@@ -509,7 +509,6 @@ namespace AbaBackend.Infrastructure.Utils
           await _dbContext.SaveChangesAsync();
         }
       }
-
     }
 
     public async Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId)
@@ -540,7 +539,7 @@ namespace AbaBackend.Infrastructure.Utils
         beginMonth = beginMonth.AddMonths(1);
       }
 
-      Object[] dataset = { new OkObjectResult(new { data, name = "progress" }).Value };
+      Object[] dataset = {new OkObjectResult(new {data, name = "progress"}).Value};
       //var dataset = new OkObjectResult(new {data, name = "progress"}).Value;
 
       var a = new OkObjectResult
@@ -549,13 +548,13 @@ namespace AbaBackend.Infrastructure.Utils
         {
           chartOptions = new
           {
-            xAxis = new { categories = legend, title = new { text = "Months" }, crosshair = true },
+            xAxis = new {categories = legend, title = new {text = "Months"}, crosshair = true},
             series = dataset,
-            title = new { text = provider },
-            chart = new { type = "column" },
-            yAxis = new { title = new { text = "Percent" }, max = 100, min = 0 },
-            plotOptions = new { column = new { minPointLength = 2 } },
-            legend = new { enabled = false }
+            title = new {text = provider},
+            chart = new {type = "column"},
+            yAxis = new {title = new {text = "Percent"}, max = 100, min = 0},
+            plotOptions = new {column = new {minPointLength = 2}},
+            legend = new {enabled = false}
           }
         }
       ).Value;
@@ -581,7 +580,7 @@ namespace AbaBackend.Infrastructure.Utils
 
     public async Task<string> GetFullDataForSystemLog(Module who, int valueId)
     {
-      var name = "";
+      string name;
       switch (who)
       {
         case Module.Client:
@@ -596,16 +595,17 @@ namespace AbaBackend.Infrastructure.Utils
           name = "N/A";
           break;
       }
+
       return name;
     }
 
     public async Task<User> GetUserById(int userId)
     {
       var user = await _dbContext.Users
-                .Include(i => i.Rol)
-                .ThenInclude(t => t.BehaviorAnalysisCode)
-                .Include(i => i.UserSign)
-                .FirstOrDefaultAsync(w => w.UserId.Equals(userId));
+        .Include(i => i.Rol)
+        .ThenInclude(t => t.BehaviorAnalysisCode)
+        .Include(i => i.UserSign)
+        .FirstOrDefaultAsync(w => w.UserId.Equals(userId));
       return user;
     }
   }

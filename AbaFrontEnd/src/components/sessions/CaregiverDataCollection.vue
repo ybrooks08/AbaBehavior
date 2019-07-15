@@ -11,7 +11,8 @@
             <v-form ref="form" v-model="validForm">
               <v-layout row wrap>
                 <v-flex xs12 md6>
-                  <v-text-field ref="formDateSelect" box required label="Collection date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" data-vv-name="dateSelected" :rules="errors.collect('dateSelected')" v-validate="'required|date_format:MM/dd/yyyy'" @change="dateChanged" @blur="dateBlur" />
+                  <v-text-field ref="formDateSelect" box required label="Collection date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" data-vv-name="dateSelected" :rules="errors.collect('dateSelected')"
+                                v-validate="'required|date_format:MM/dd/yyyy'" @change="dateChanged" @blur="dateBlur"/>
                 </v-flex>
                 <v-flex xs12 md6>
                   <v-select box :disabled="loading" label="Caregiver" v-model="mainData.caregiverId" :items="caregivers" :rules="[required]"></v-select>
@@ -25,7 +26,8 @@
                       <tr v-for="(p, index) in mainData.caregiverDataCollectionProblems" :key="'beh'+index">
                         <td class="text-xs-left" style="width: 50%">{{getProblemName(p.problemId)}}</td>
                         <td class="text-xs-right px-1">
-                          <v-text-field append-icon="fa-flag fa-sm" prepend-inner-icon="fa-frown" box hide-actions hide-details label="Count" v-model="p.count" clearable :data-vv-name="'count'+index" :rules="errors.collect('count'+index)" v-validate="'numeric'"></v-text-field>
+                          <v-text-field append-icon="fa-flag fa-sm" prepend-inner-icon="fa-frown" box hide-actions hide-details label="Count" v-model="p.count" clearable :data-vv-name="'count'+index" :rules="errors.collect('count'+index)"
+                                        v-validate="'numeric'"></v-text-field>
                         </td>
                       </tr>
                     </tbody>
@@ -40,10 +42,12 @@
                       <tr v-for="(p, index) in mainData.caregiverDataCollectionReplacements" :key="'beh'+index">
                         <td class="text-xs-left" style="width: 50%">{{getReplacementName(p.replacementId)}}</td>
                         <td class="text-xs-right px-1">
-                          <v-text-field prepend-inner-icon="fa-sign-language" box hide-actions hide-details label="Trials" v-model="p.totalTrial" clearable :data-vv-name="'repTotal'+index" :rules="errors.collect('repTotal'+index)" v-validate="'numeric'"></v-text-field>
+                          <v-text-field prepend-inner-icon="fa-sign-language" box hide-actions hide-details label="Trials" v-model="p.totalTrial" clearable :data-vv-name="'repTotal'+index" :rules="errors.collect('repTotal'+index)"
+                                        v-validate="'numeric'"></v-text-field>
                         </td>
                         <td class="text-xs-right px-1">
-                          <v-text-field prepend-inner-icon="fa-thumbs-up" box hide-actions hide-details label="Completed" v-model="p.totalCompleted" clearable :data-vv-name="'repComp'+index" :rules="errors.collect('repComp'+index)" v-validate="'numeric|max_value:'+p.totalTrial"></v-text-field>
+                          <v-text-field prepend-inner-icon="fa-thumbs-up" box hide-actions hide-details label="Completed" v-model="p.totalCompleted" clearable :data-vv-name="'repComp'+index" :rules="errors.collect('repComp'+index)"
+                                        v-validate="'numeric|max_value:'+p.totalTrial"></v-text-field>
                         </td>
                       </tr>
                     </tbody>
@@ -109,8 +113,8 @@ export default {
         this.loading = true;
         this.caregivers = await clientApi.getClientCaregivers(this.activeClientId);
         const dateStr = this.$moment(this.dateSelected, "MM/DD/YYYY").format("YYYY-MM-DD");
-        this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId);
-        this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId);
+        this.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.activeClientId, false);
+        this.clientReplacements = await sessionServicesApi.getClientReplacements(this.activeClientId, false);
         this.mainData = await sessionServicesApi.getCaregiverCollectionData(dateStr, this.activeClientId);
       } catch (error) {
         console.error(error);

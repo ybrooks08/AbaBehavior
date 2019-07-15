@@ -15,6 +15,7 @@ namespace AbaBackend.DataModel
 
   public enum OversightSessionSupervision
   {
+    Unknow = 0,
     Satisfactory = 1,
     Needs_improvements = 2,
     Unsatisfactory = 3,
@@ -60,5 +61,6 @@ namespace AbaBackend.DataModel
     public string Recommendations { get; set; }
     public bool Validation { get; set; }
     public DateTime? NextScheduledDate { get; set; }
+    public string RejectNotes { get; set; }
   }
 }

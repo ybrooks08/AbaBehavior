@@ -60,6 +60,15 @@ export default {
   padding-left: 5px;
 }
 
+.table-horizontal {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-horizontal tr {
+  border-bottom: 1px dotted rgb(207, 207, 207) !important;
+}
+
 @media print {
   * {
     background: transparent !important;

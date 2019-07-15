@@ -11,9 +11,8 @@ namespace AbaBackend.DataModel
     public DateTime? BaselineFrom { get; set; }
     public DateTime? BaselineTo { get; set; }
     public int? BaselineCount { get; set; }
-    public bool Active { get; set; }
+    public bool Active { get; set; } = true;
     public ProblemBehavior ProblemBehavior { get; set; }
     public List<ClientProblemSto> STOs { get; set; }
   }
 }
-

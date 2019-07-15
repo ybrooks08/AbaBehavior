@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
+using AbaBackend.Infrastructure.Collection;
+using AbaBackend.Infrastructure.Extensions;
 using AbaBackend.Infrastructure.Reporting;
 using AbaBackend.Infrastructure.Reporting.Sessions;
 using AbaBackend.Infrastructure.Utils;
@@ -32,17 +34,19 @@ namespace AbaBackend.Controllers
   [Route("api/session")]
   public class SessionController : Controller
   {
-    private readonly AbaDbContext _dbContext;
-    private IUtils _utils;
-    private readonly IConfiguration _configuration;
-    private IHostingEnvironment _env;
+    readonly AbaDbContext _dbContext;
+    IUtils _utils;
+    readonly IConfiguration _configuration;
+    IHostingEnvironment _env;
+    readonly ICollection _collection;
 
-    public SessionController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env)
+    public SessionController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env, ICollection collection)
     {
       _dbContext = context;
       _utils = utils;
       _configuration = configuration;
       _env = env;
+      _collection = collection;
     }
 
     [HttpPost("add-session")]
@@ -80,9 +84,9 @@ namespace AbaBackend.Controllers
           if (session.SessionType == SessionType.Supervision_BCABA)
           {
             var bcaba = await _dbContext.Clients
-                        .Where(w => w.ClientId.Equals(session.ClientId))
-                        .Where(w => w.Assignments.Count(w1 => w1.User.Rol.BehaviorAnalysisCode.Hcpcs == "H2012") > 0)
-                        .ToListAsync();
+              .Where(w => w.ClientId.Equals(session.ClientId))
+              .Where(w => w.Assignments.Count(w1 => w1.User.Rol.BehaviorAnalysisCode.Hcpcs == "H2012") > 0)
+              .ToListAsync();
             if (bcaba.Count == 0) throw new Exception("Client haven't any BCBAB service/user.");
           }
 
@@ -123,18 +127,46 @@ namespace AbaBackend.Controllers
 
           if (session.SessionType != SessionType.Supervision_BCABA)
           {
-            var note = new SessionNote { SessionId = session.SessionId };
+            var note = new SessionNote {SessionId = session.SessionId};
             await _dbContext.SessionNotes.AddAsync(note);
             await _dbContext.SaveChangesAsync();
           }
           else
           {
-            var note = new SessionSupervisionNote { SessionId = session.SessionId };
+            var note = new SessionSupervisionNote {SessionId = session.SessionId};
             await _dbContext.AddAsync(note);
             await _dbContext.SaveChangesAsync();
           }
 
           if (session.SessionType == SessionType.BA_Service) await _utils.AddSessionProblemNotes(session.SessionId, client.ClientId);
+
+          var problems = await _utils.GetClientBehaviors(session.ClientId);
+          foreach (var p in problems)
+          {
+            await _dbContext.SessionCollectBehaviorsV2.AddAsync(new SessionCollectBehaviorV2
+            {
+              SessionId = session.SessionId,
+              ClientId = session.ClientId,
+              NoData = true,
+              ProblemId = p.ProblemId
+            });
+          }
+
+          await _dbContext.SaveChangesAsync();
+
+          var replacements = await _utils.GetClientReplacements(session.ClientId);
+          foreach (var r in replacements)
+          {
+            await _dbContext.SessionCollectReplacementsV2.AddAsync(new SessionCollectReplacementV2
+            {
+              SessionId = session.SessionId,
+              ClientId = session.ClientId,
+              NoData = true,
+              ReplacementId = r.ReplacementId
+            });
+          }
+
+          await _dbContext.SaveChangesAsync();
 
           await _utils.NewEntryLog(session.SessionId, "Created", "Session was created", "fa-info", "purple");
 
@@ -155,33 +187,33 @@ namespace AbaBackend.Controllers
       {
         var date = Convert.ToDateTime(dateStr);
         var sessions = await _dbContext
-                          .Sessions
-                          .OrderBy(o => o.SessionStart)
-                          .Where(w => w.SessionStart.Date.Equals(date.Date) || w.SessionEnd.Date.Equals(date.Date))
-                          .Where(w => w.ClientId.Equals(clientId))
-                          .Select(s => new
-                          {
-                            id = s.SessionId,
-                            start = s.SessionStart,
-                            end = s.SessionEnd,
-                            content = s.BehaviorAnalysisCode.Hcpcs,
-                            Color = s.BehaviorAnalysisCode.Color,
-                            Code = s.BehaviorAnalysisCode.Hcpcs,
-                            s.User,
-                            className = $"white--text v-card--hover  pa-0 ma-0 {s.BehaviorAnalysisCode.Color}",
-                            SessionType = Enum.GetName(typeof(SessionType), s.SessionType),
-                            s.TotalUnits,
-                            Pos = s.Pos.ToString().Replace("_", " "),//Enum.GetName(typeof(Pos), s.Pos),
-                            SessionStatus = s.SessionStatus.ToString(),
-                            SessionStatusCode = s.SessionStatus,
-                            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-                            // SessionStartNumber = s.SessionStart.ConvertTimeToNumber(),
-                            // SessionEndNumber = s.SessionEnd.ConvertTimeToNumber(),
-                            // s.User.Rol,
-                            s.BehaviorAnalysisCode,
-                            // 
-                          })
-                          .ToListAsync();
+          .Sessions
+          .OrderBy(o => o.SessionStart)
+          .Where(w => w.SessionStart.Date.Equals(date.Date) || w.SessionEnd.Date.Equals(date.Date))
+          .Where(w => w.ClientId.Equals(clientId))
+          .Select(s => new
+          {
+            id = s.SessionId,
+            start = s.SessionStart,
+            end = s.SessionEnd,
+            content = s.BehaviorAnalysisCode.Hcpcs,
+            Color = s.BehaviorAnalysisCode.Color,
+            Code = s.BehaviorAnalysisCode.Hcpcs,
+            s.User,
+            className = $"white--text v-card--hover  pa-0 ma-0 {s.BehaviorAnalysisCode.Color}",
+            SessionType = Enum.GetName(typeof(SessionType), s.SessionType),
+            s.TotalUnits,
+            Pos = s.Pos.ToString().Replace("_", " "), //Enum.GetName(typeof(Pos), s.Pos),
+            SessionStatus = s.SessionStatus.ToString(),
+            SessionStatusCode = s.SessionStatus,
+            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            // SessionStartNumber = s.SessionStart.ConvertTimeToNumber(),
+            // SessionEndNumber = s.SessionEnd.ConvertTimeToNumber(),
+            // s.User.Rol,
+            s.BehaviorAnalysisCode,
+            // 
+          })
+          .ToListAsync();
         return Ok(sessions);
       }
       catch (Exception e)
@@ -196,15 +228,15 @@ namespace AbaBackend.Controllers
       try
       {
         var session = await _dbContext
-                          .Sessions
-                          .AsNoTracking()
-                          .Where(w => w.SessionId.Equals(sessionId))
-                          .Include(i => i.SessionNote)
-                          .Include(i => i.User).ThenInclude(t => t.UserSign)
-                          .Include(i => i.SessionSupervisionNote)
-                          .Include(i => i.SessionProblemNotes).ThenInclude(i => i.ProblemBehavior)
-                          .Include(i => i.SessionProblemNotes).ThenInclude(i => i.SessionProblemNoteReplacements).ThenInclude(d => d.ReplacementProgram)
-                          .FirstOrDefaultAsync();
+          .Sessions
+          .AsNoTracking()
+          .Where(w => w.SessionId.Equals(sessionId))
+          .Include(i => i.SessionNote).ThenInclude(i => i.Caregiver)
+          .Include(i => i.User).ThenInclude(t => t.UserSign)
+          .Include(i => i.SessionSupervisionNote)
+          .Include(i => i.SessionProblemNotes).ThenInclude(i => i.ProblemBehavior)
+          .Include(i => i.SessionProblemNotes).ThenInclude(i => i.SessionProblemNoteReplacements).ThenInclude(d => d.ReplacementProgram)
+          .FirstOrDefaultAsync();
         return Ok(session);
       }
       catch (Exception e)
@@ -219,39 +251,166 @@ namespace AbaBackend.Controllers
       try
       {
         var session = await _dbContext
-                          .Sessions
-                          .AsNoTracking()
-                          .Where(w => w.SessionId.Equals(sessionId))
-                          .Select(s => new
-                          {
-                            s.SessionId,
-                            SessionStart = s.SessionStart.ToString("u"),
-                            SessionEnd = s.SessionEnd.ToString("u"),
-                            s.TotalUnits,
-                            SessionType = s.SessionType.ToString().Replace("_", " "),
-                            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
-                            ClientCode = s.Client.Code ?? "N/A",
-                            SessionStatus = s.SessionStatus.ToString(),
-                            SessionStatusCode = s.SessionStatus,
-                            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-                            Pos = s.Pos.ToString().Replace("_", " "),
-                            PosCode = s.Pos,
-                            s.BehaviorAnalysisCode.Description,
-                            s.BehaviorAnalysisCode.Hcpcs,
-                            s.Sign,
-                            s.DriveTime,
-                            SessionLogs = s.SessionLogs.Select(l => new
-                            {
-                              l.Entry,
-                              l.Icon,
-                              l.Title,
-                              l.Description,
-                              l.IconColor,
-                              l.SessionLogId,
-                              l.User
-                            }).OrderByDescending(o => o.Entry)
-                          })
-                          .FirstOrDefaultAsync();
+          .Sessions
+          .AsNoTracking()
+          .Where(w => w.SessionId.Equals(sessionId))
+          .Select(s => new
+          {
+            s.SessionId,
+            SessionStart = s.SessionStart.ToString("u"),
+            SessionEnd = s.SessionEnd.ToString("u"),
+            s.TotalUnits,
+            SessionType = s.SessionType.ToString().Replace("_", " "),
+            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+            ClientCode = s.Client.Code ?? "N/A",
+            SessionStatus = s.SessionStatus.ToString(),
+            SessionStatusCode = s.SessionStatus,
+            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            Pos = s.Pos.ToString().Replace("_", " "),
+            PosCode = s.Pos,
+            s.BehaviorAnalysisCode.Description,
+            s.BehaviorAnalysisCode.Hcpcs,
+            s.Sign,
+            s.DriveTime,
+            SessionLogs = s.SessionLogs.Select(l => new
+            {
+              l.Entry,
+              l.Icon,
+              l.Title,
+              l.Description,
+              l.IconColor,
+              l.SessionLogId,
+              l.User
+            }).OrderByDescending(o => o.Entry)
+          })
+          .FirstOrDefaultAsync();
+        return Ok(session);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{sessionId}")]
+    public async Task<IActionResult> GetSessionForPrint(int sessionId)
+    {
+      try
+      {
+        var session = await _dbContext
+          .Sessions
+          .AsNoTracking()
+          .Where(w => w.SessionId.Equals(sessionId))
+          .Select(s => new
+          {
+            s.ClientId,
+            ClientName = $"{s.Client.Firstname} {s.Client.Lastname}",
+            SessionStart = s.SessionStart.ToString("u"),
+            SessionEnd = s.SessionEnd.ToString("u"),
+            UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+            UserLicense = s.User.LicenseNo,
+            s.User.UserSign,
+            s.User.UserId,
+            UserRol = s.User.Rol.RolName,
+            UserRolShort = s.User.Rol.RolShortName,
+            s.TotalUnits,
+            ClientCode = s.Client.Code ?? "N/A",
+            Pos = s.Pos.ToString().Replace('_', ' '),
+            PosNum = s.Pos,
+            SessionType = s.SessionType.ToString().Replace('_', ' '),
+            SessionTypeNum = s.SessionType,
+            Service = s.User.Rol.BehaviorAnalysisCode.Hcpcs,
+            ServiceDescription = s.User.Rol.BehaviorAnalysisCode.Description,
+            s.DriveTime,
+            Caregiver = s.SessionType == SessionType.Supervision_BCABA ? $"{s.SessionSupervisionNote.Caregiver.CaregiverFullname}" : $"{s.SessionNote.Caregiver.CaregiverFullname}",
+            CaregiverType = s.SessionType == SessionType.Supervision_BCABA ? $"{s.SessionSupervisionNote.Caregiver.CaregiverType.Description}" : $"{s.SessionNote.Caregiver.CaregiverType.Description}",
+            CaregiverNote = s.SessionType == SessionType.Supervision_BCABA ? $"{s.SessionSupervisionNote.CaregiverNote}" : $"{s.SessionNote.CaregiverNote}",
+            CaregiverTraining = s.SessionType == SessionType.Caregiver_Trainer
+              ? new OkObjectResult(new
+              {
+                s.SessionNote.CaregiverTrainingObservationFeedback,
+                s.SessionNote.CaregiverTrainingParentCaregiverTraining,
+                s.SessionNote.CaregiverTrainingCompetencyCheck,
+                s.SessionNote.CaregiverTrainingOther,
+                s.SessionNote.CaregiverTrainingSummary
+              }).Value
+              : null,
+            SupervisionNote = s.SessionType == SessionType.Supervision_BCABA
+              ? new OkObjectResult(new
+              {
+                s.SessionSupervisionNote.isDirectSession,
+                s.SessionSupervisionNote.WorkWith,
+                s.SessionSupervisionNote.BriefObservation,
+                s.SessionSupervisionNote.BriefReplacement,
+                s.SessionSupervisionNote.BriefGeneralization,
+                s.SessionSupervisionNote.BriefBCaBaTraining,
+                s.SessionSupervisionNote.BriefInService,
+                s.SessionSupervisionNote.BriefInServiceSubject,
+                s.SessionSupervisionNote.BriefOther,
+                s.SessionSupervisionNote.BriefOtherDescription,
+                s.SessionSupervisionNote.OversightFollowUpBool,
+                OversightFollowUp = s.SessionSupervisionNote.OversightFollowUp.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightDesigningBool,
+                OversightDesigning = s.SessionSupervisionNote.OversightDesigning.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightContributingBool,
+                OversightContributing = s.SessionSupervisionNote.OversightContributing.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightAnalyzingBool,
+                OversightAnalyzing = s.SessionSupervisionNote.OversightAnalyzing.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightGoalsBool,
+                OversightGoals = s.SessionSupervisionNote.OversightGoals.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightMakingDecisionsBool,
+                OversightMakingDecisions = s.SessionSupervisionNote.OversightMakingDecisions.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightModelingBool,
+                OversightModeling = s.SessionSupervisionNote.OversightModeling.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightResponseBool,
+                OversightResponse = s.SessionSupervisionNote.OversightResponse.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.OversightOverallBool,
+                OversightOverall = s.SessionSupervisionNote.OversightOverall.ToString().Replace('_', ' '),
+                s.SessionSupervisionNote.CommentsRelated,
+                s.SessionSupervisionNote.Recommendations,
+                s.SessionSupervisionNote.Validation,
+                s.SessionSupervisionNote.NextScheduledDate
+              }).Value
+              : null,
+            SessionNote = s.SessionType == SessionType.BA_Service
+              ? new OkObjectResult(new
+              {
+                RiskBehavior = s.SessionNote.RiskBehavior != 0 ? s.SessionNote.RiskBehavior.ToString() : "Undefined",
+                CrisisInvolved = s.SessionNote.RiskBehaviorCrisisInvolved,
+                CrisisInvolvedExplain = s.SessionNote.RiskBehaviorExplain,
+                s.SessionNote.ReinforcersEdibles,
+                s.SessionNote.ReinforcersNonEdibles,
+                s.SessionNote.ReinforcersOthers,
+                s.SessionNote.ReinforcersResult,
+                ParticipationLevel = s.SessionNote.ParticipationLevel != 0 ? s.SessionNote.ParticipationLevel.ToString() : "Undefined",
+                s.SessionNote.ProgressNotes,
+                s.SessionNote.FeedbackCaregiver,
+                s.SessionNote.FeedbackCaregiverExplain,
+                s.SessionNote.FeedbackOtherServices,
+                s.SessionNote.FeedbackOtherServicesExplain,
+                s.SessionNote.SummaryDirectObservation,
+                s.SessionNote.SummaryObservationFeedback,
+                s.SessionNote.SummaryImplementedReduction,
+                s.SessionNote.SummaryImplementedReplacement,
+                s.SessionNote.SummaryGeneralization,
+                s.SessionNote.SummaryCommunication,
+                s.SessionNote.SummaryOther,
+                Problems = s.SessionProblemNotes.Select(w => new
+                {
+                  Problem = w.ProblemBehavior.ProblemBehaviorDescription,
+                  w.DuringWichActivities,
+                  w.ReplacementInterventionsUsed,
+                  SessionProblemReplacements = w.SessionProblemNoteReplacements.Where(q => q.Active).Select(q => q.ReplacementProgram.ReplacementProgramDescription).OrderBy(o => o).ToList()
+                }).OrderBy(o => o.Problem).ToList(),
+                DataCollection = new OkObjectResult(new
+                {
+                  s.SessionCollectBehaviors,
+                  s.SessionCollectReplacements
+                }).Value
+              }).Value
+              : null
+          })
+          .FirstOrDefaultAsync();
         return Ok(session);
       }
       catch (Exception e)
@@ -275,14 +434,14 @@ namespace AbaBackend.Controllers
       try
       {
         var sessions = await _dbContext.Sessions
-                      .Where(w => w.ClientId.Equals(clientId))
-                      .GroupBy(g => new { g.SessionStart.Date, g.BehaviorAnalysisCode.Color })
-                      .Select(s => new
-                      {
-                        s.Key.Date,
-                        s.Key.Color
-                      })
-                      .ToListAsync();
+          .Where(w => w.ClientId.Equals(clientId))
+          .GroupBy(g => new {g.SessionStart.Date, g.BehaviorAnalysisCode.Color})
+          .Select(s => new
+          {
+            s.Key.Date,
+            s.Key.Color
+          })
+          .ToListAsync();
 
         dynamic obj = new List<JObject>();
         var colors = sessions.Select(s => s.Color).Distinct().ToList();
@@ -295,6 +454,7 @@ namespace AbaBackend.Controllers
           a.dates = new JArray(sessions.Where(w => w.Color.Equals(color)).Select(s => s.Date).ToArray());
           obj.Add(a);
         }
+
         return Ok(obj);
       }
       catch (Exception e)
@@ -332,6 +492,7 @@ namespace AbaBackend.Controllers
             }
           }
         }
+
         await _dbContext.SaveChangesAsync();
         await _utils.NewEntryLog(session.SessionId, "Edited", "Session notes was edited");
         return Ok();
@@ -349,9 +510,9 @@ namespace AbaBackend.Controllers
       {
         var date = Convert.ToDateTime(dateStr);
         var monthlyLookUp = await _dbContext.MonthlyNotes
-                            .Where(w => w.ClientId.Equals(clientId))
-                            .Where(w => w.Year == date.Year && w.Month == date.Month)
-                            .FirstOrDefaultAsync();
+          .Where(w => w.ClientId.Equals(clientId))
+          .Where(w => w.Year == date.Year && w.Month == date.Month)
+          .FirstOrDefaultAsync();
         if (monthlyLookUp == null)
         {
           var newMonthlyNote = new MonthlyNote
@@ -365,6 +526,7 @@ namespace AbaBackend.Controllers
           await _dbContext.SaveChangesAsync();
           monthlyLookUp = newMonthlyNote;
         }
+
         return Ok(monthlyLookUp);
       }
       catch (Exception e)
@@ -391,219 +553,235 @@ namespace AbaBackend.Controllers
     }
 
     [HttpGet("[action]/{clientId}/{problemId?}/{dateStart?}/{dateEnd?}")]
-    public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, int problemId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
+    public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, string problemId = "0", DateTime? dateStart = null, DateTime? dateEnd = null)
     {
-      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-      var mainData = await _dbContext.SessionCollectBehaviors
-                                     .Where(w => w.ClientId == clientId)
-                                     .Where(w => problemId == 0 || w.ProblemId == problemId)
-                                     .Include(i => i.Behavior)
-                                     .ToListAsync();
-      var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
-                                                     .Where(w => w.ClientId == clientId)
-                                                     .Include(i => i.CaregiverDataCollectionProblems)
-                                                     .ToListAsync();
-
-      var notes = await _dbContext.ClientChartNotes
-                                  .Where(w => w.ClientId == clientId)
-                                  .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
-                                  .OrderBy(o => o.ChartNoteDate)
-                                  .ToListAsync();
-
-      var problemsUnique = await _utils.GetClientBehaviors(clientId);
-      if (problemId != 0) problemsUnique = problemsUnique.Where(w => w.ProblemId == problemId).ToList();
-
-      var dataSet = new List<MultiSerieChart>();
-      var plotLines = new List<PlotLine>();
-
-      var firstWeekStart = dateStart ?? currentPeriod.start;
-      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      var lastWeekEnd = dateEnd ?? DateTime.Today;
-      while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-      var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
-
-      var legend = new List<string> { "Base", "" };
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
-
-      foreach (var problem in problemsUnique)
-      {
-        var baseLine = await _dbContext.ClientProblems
-                                       .Where(w => w.ProblemId == problem.ProblemId && w.ClientId == clientId)
-                                       .Select(s => s.BaselineCount)
-                                       .FirstOrDefaultAsync();
-
-        var data = new List<int?> { baseLine, null };
-
-        var calWeekStart = firstWeekStart;
-        for (int i = 0; i < totalWeeks; i++)
-        {
-          var calWeekEnd = calWeekStart.AddDays(6);
-          var problemsCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                      .Count(w => w.ProblemId == problem.ProblemId);
-          var problemsComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                          .Where(w => w.ProblemId == problem.ProblemId)
-                                          .Count(w => w.Completed);
-          var caregiverProblemsCount = mainDataCaregiverCollect
-                                       .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
-                                       .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(s1 => s1.Count)).Sum();
-          problemsCount += caregiverProblemsCount ?? 0;
-
-          //todo arreglar esto
-          //data.Add(problemsCount == 0 ? null : (int?)problemsCount);
-          if (!problem.ProblemBehavior.IsPercent) data.Add(problemsCount);
-          else
-          {
-            var percent = problemsCount == 0 ? 0 : problemsComplete / (decimal)problemsCount * 100;
-            data.Add((int?)Math.Round(percent));
-          }
-
-          var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
-          foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
-
-          calWeekStart = calWeekStart.AddDays(7);
-        }
-
-        dataSet.Add(new MultiSerieChart
-        {
-          Data = data,
-          Name = problem.ProblemBehavior.ProblemBehaviorDescription + (problem.ProblemBehavior.IsPercent ? "(%)" : "")
-        });
-      }
-
-      var calWeekStartLegend = firstWeekStart;
-      for (int i = 0; i < totalWeeks; i++)
-      {
-        var calWeekEnd = calWeekStartLegend.AddDays(6);
-        legend.Add(calWeekEnd.ToString("M/d/yy"));
-        calWeekStartLegend = calWeekStartLegend.AddDays(7);
-      }
-
-      return Ok(new
-      {
-        chartOptions = new
-        {
-          xAxis = new { categories = legend, plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
-          series = dataSet,
-          title = new { text = "" },
-          chart = new { type = "line", height = problemId == 0 ? null : "350" },
-          tooltip = new { shared = true },
-          yAxis = new { title = new { text = "Count" } },
-          legend = new { enabled = problemId == 0 },
-          exporting = new { chartOptions = new { title = new { text = problemId == 0 ? "" : problemsUnique.First().ProblemBehavior.ProblemBehaviorDescription } } }
-        },
-        notes
-      });
+      var problems = problemId == "0" ? new List<int>() : problemId.Split(',').Select(int.Parse).ToList();
+      var chartData = await _collection.GetClientBehaviorChart(clientId, problems, dateStart, dateEnd);
+      return Ok(chartData);
     }
+
+    // [HttpGet("[action]/{clientId}/{problemId?}/{dateStart?}/{dateEnd?}")]
+    // public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, int problemId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
+    // {
+    //   var currentPeriod = await _utils.GetClientWholePeriod(clientId);
+    //   var mainData = await _dbContext.SessionCollectBehaviors
+    //     .Where(w => w.ClientId == clientId)
+    //     .Where(w => problemId == 0 || w.ProblemId == problemId)
+    //     .Include(i => i.Behavior)
+    //     .ToListAsync();
+    //   var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
+    //     .Where(w => w.ClientId == clientId)
+    //     .Include(i => i.CaregiverDataCollectionProblems)
+    //     .ToListAsync();
+    //
+    //   var notes = await _dbContext.ClientChartNotes
+    //     .Where(w => w.ClientId == clientId)
+    //     .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
+    //     .OrderBy(o => o.ChartNoteDate)
+    //     .ToListAsync();
+    //
+    //   var problemsUnique = await _utils.GetClientBehaviors(clientId);
+    //   if (problemId != 0) problemsUnique = problemsUnique.Where(w => w.ProblemId == problemId).ToList();
+    //
+    //   var dataSet = new List<MultiSerieChart>();
+    //   var plotLines = new List<PlotLine>();
+    //
+    //   var firstWeekStart = dateStart ?? currentPeriod.start;
+    //   firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+    //   var lastWeekEnd = dateEnd ?? DateTime.Today;
+    //   while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
+    //   var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
+    //
+    //   var legend = new List<string> {"Base", ""};
+    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Baseline"}, Value = 0, Color = "Blue", DashStyle = "ShortDot"});
+    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Start"}, Value = 2, Color = "Green", DashStyle = "ShortDot"});
+    //
+    //   foreach (var problem in problemsUnique)
+    //   {
+    //     var baseLine = await _dbContext.ClientProblems
+    //       .Where(w => w.ProblemId == problem.ProblemId && w.ClientId == clientId)
+    //       .Select(s => s.BaselineCount)
+    //       .FirstOrDefaultAsync();
+    //
+    //     var data = new List<int?> {baseLine, null};
+    //
+    //     var calWeekStart = firstWeekStart;
+    //     for (int i = 0; i < totalWeeks; i++)
+    //     {
+    //       var calWeekEnd = calWeekStart.AddDays(6);
+    //       var problemsCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
+    //         .Count(w => w.ProblemId == problem.ProblemId);
+    //       var problemsComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
+    //         .Where(w => w.ProblemId == problem.ProblemId)
+    //         .Count(w => w.Completed);
+    //       var caregiverProblemsCount = mainDataCaregiverCollect
+    //         .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
+    //         .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(s1 => s1.Count)).Sum();
+    //       problemsCount += caregiverProblemsCount ?? 0;
+    //
+    //       //todo arreglar esto
+    //       //data.Add(problemsCount == 0 ? null : (int?)problemsCount);
+    //       if (!problem.ProblemBehavior.IsPercent) data.Add(problemsCount);
+    //       else
+    //       {
+    //         var percent = problemsCount == 0 ? 0 : problemsComplete / (decimal) problemsCount * 100;
+    //         data.Add((int?) Math.Round(percent));
+    //       }
+    //
+    //       var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
+    //       foreach (var n in notesWeek) plotLines.Add(new PlotLine {Label = new Label {Text = n.Title}, Value = i + 2});
+    //
+    //       calWeekStart = calWeekStart.AddDays(7);
+    //     }
+    //
+    //     dataSet.Add(new MultiSerieChart
+    //     {
+    //       Data = data,
+    //       Name = problem.ProblemBehavior.ProblemBehaviorDescription + (problem.ProblemBehavior.IsPercent ? "(%)" : "")
+    //     });
+    //   }
+    //
+    //   var calWeekStartLegend = firstWeekStart;
+    //   for (int i = 0; i < totalWeeks; i++)
+    //   {
+    //     var calWeekEnd = calWeekStartLegend.AddDays(6);
+    //     legend.Add(calWeekEnd.ToString("M/d/yy"));
+    //     calWeekStartLegend = calWeekStartLegend.AddDays(7);
+    //   }
+    //
+    //   return Ok(new
+    //   {
+    //     chartOptions = new
+    //     {
+    //       xAxis = new {categories = legend, plotLines, title = new {text = "Weeks (label is last day of week)"}, crosshair = true},
+    //       series = dataSet,
+    //       title = new {text = ""},
+    //       chart = new {type = "line", height = problemId == 0 ? null : "350"},
+    //       tooltip = new {shared = true},
+    //       yAxis = new {title = new {text = "Count"}},
+    //       legend = new {enabled = problemId == 0},
+    //       exporting = new {chartOptions = new {title = new {text = problemId == 0 ? "" : problemsUnique.First().ProblemBehavior.ProblemBehaviorDescription}}}
+    //     },
+    //     notes
+    //   });
+    // }
 
     [HttpGet("[action]/{clientId}/{replacementId?}/{dateStart?}/{dateEnd?}")]
-    public async Task<IActionResult> GetReplacementProgramChart(int clientId, int replacementId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
+    public async Task<IActionResult> GetReplacementProgramChart(int clientId, string replacementId = "0", DateTime? dateStart = null, DateTime? dateEnd = null)
     {
-      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-      var mainData = await _dbContext.SessionCollectReplacements
-                                     .Where(w => w.ClientId == clientId)
-                                     .Where(w => replacementId == 0 || w.ReplacementId == replacementId)
-                                     .Include(i => i.Replacement)
-                                     .ToListAsync();
-      var notes = await _dbContext.ClientChartNotes
-                                  .Where(w => w.ClientId == clientId)
-                                  .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
-                                  .OrderBy(o => o.ChartNoteDate)
-                                  .ToListAsync();
-      var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
-                                                     .Where(w => w.ClientId == clientId)
-                                                     .Include(i => i.CaregiverDataCollectionReplacements)
-                                                     .ToListAsync();
-
-      var replacementUnique = await _utils.GetClientReplacements(clientId);
-      if (replacementId != 0) replacementUnique = replacementUnique.Where(w => w.ReplacementId == replacementId).ToList();
-      var dataSet = new List<MultiSerieChart>();
-      var plotLines = new List<PlotLine>();
-
-      var firstWeekStart = dateStart ?? currentPeriod.start;
-      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      var lastWeekEnd = dateEnd ?? DateTime.Today;
-      while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-      var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
-
-      var legend = new List<string> { "Base", "" };
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = 0, Color = "Blue", DashStyle = "ShortDot" });
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Start" }, Value = 2, Color = "Green", DashStyle = "ShortDot" });
-
-      foreach (var replacement in replacementUnique)
-      {
-        var baseLine = await _dbContext.ClientReplacements
-                                       .Where(w => w.ReplacementId == replacement.ReplacementId && w.ClientId == clientId)
-                                       .Select(s => s.BaselinePercent)
-                                       .FirstOrDefaultAsync();
-
-        var data = new List<int?> { baseLine, null };
-
-        var calWeekStart = firstWeekStart;
-        for (int i = 0; i < totalWeeks; i++)
-        {
-          var calWeekEnd = calWeekStart.AddDays(6);
-          var replacementCount = mainData
-                                 .Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                 .Count(w => w.ReplacementId == replacement.ReplacementId);
-          var replacementComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-                                            .Where(w => w.ReplacementId == replacement.ReplacementId)
-                                            .Count(w => w.Completed);
-          var caregiverReplacements = mainDataCaregiverCollect
-                                       .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
-                                       .GroupBy(g => 0)
-                                       .Select(s => new
-                                       {
-                                         TotalTrial = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalTrial)),
-                                         TotalCompleted = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalCompleted))
-                                       }).FirstOrDefault();
-
-          replacementCount += caregiverReplacements?.TotalTrial ?? 0;
-          replacementComplete += caregiverReplacements?.TotalCompleted ?? 0;
-
-          var percent = replacementCount == 0 ? 0 : replacementComplete / (decimal)replacementCount * 100;
-
-          //todo arreglar esto
-          data.Add((int?)Math.Round(percent));
-          //data.Add(replacementCount == 0 ? null : (int?)percent);
-
-          var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
-          foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
-
-          calWeekStart = calWeekStart.AddDays(7);
-        }
-
-        dataSet.Add(new MultiSerieChart
-        {
-          Data = data,
-          Name = replacement.Replacement.ReplacementProgramDescription
-        });
-      }
-
-      var calWeekStartLegend = firstWeekStart;
-      for (int i = 0; i < totalWeeks; i++)
-      {
-        var calWeekEnd = calWeekStartLegend.AddDays(6);
-        legend.Add(calWeekEnd.ToString("M/d/yy"));
-        calWeekStartLegend = calWeekStartLegend.AddDays(7);
-      }
-
-      return Ok(new
-      {
-        chartOptions = new
-        {
-          xAxis = new { categories = legend, plotLines = plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
-          series = dataSet,
-          title = new { text = "" },
-          chart = new { type = "line", height = replacementId == 0 ? null : "350" },
-          tooltip = new { shared = true },
-          yAxis = new { title = new { text = "Trials percent" } },
-          legend = new { enabled = replacementId == 0 },
-          exporting = new { chartOptions = new { title = new { text = replacementId == 0 ? "" : replacementUnique.First().Replacement.ReplacementProgramDescription } } }
-        },
-        notes
-      });
+      var replacements = replacementId == "0" ? new List<int>() : replacementId.Split(',').Select(int.Parse).ToList();
+      var chartData = await _collection.GetClientReplacementChart(clientId, replacements, dateStart, dateEnd);
+      return Ok(chartData);
     }
+
+    // [HttpGet("[action]/{clientId}/{replacementId?}/{dateStart?}/{dateEnd?}")]
+    // public async Task<IActionResult> GetReplacementProgramChart(int clientId, int replacementId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
+    // {
+    //   var currentPeriod = await _utils.GetClientWholePeriod(clientId);
+    //   var mainData = await _dbContext.SessionCollectReplacements
+    //     .Where(w => w.ClientId == clientId)
+    //     .Where(w => replacementId == 0 || w.ReplacementId == replacementId)
+    //     .Include(i => i.Replacement)
+    //     .ToListAsync();
+    //   var notes = await _dbContext.ClientChartNotes
+    //     .Where(w => w.ClientId == clientId)
+    //     .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
+    //     .OrderBy(o => o.ChartNoteDate)
+    //     .ToListAsync();
+    //   var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
+    //     .Where(w => w.ClientId == clientId)
+    //     .Include(i => i.CaregiverDataCollectionReplacements)
+    //     .ToListAsync();
+    //
+    //   var replacementUnique = await _utils.GetClientReplacements(clientId);
+    //   if (replacementId != 0) replacementUnique = replacementUnique.Where(w => w.ReplacementId == replacementId).ToList();
+    //   var dataSet = new List<MultiSerieChart>();
+    //   var plotLines = new List<PlotLine>();
+    //
+    //   var firstWeekStart = dateStart ?? currentPeriod.start;
+    //   firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+    //   var lastWeekEnd = dateEnd ?? DateTime.Today;
+    //   while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
+    //   var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
+    //
+    //   var legend = new List<string> {"Base", ""};
+    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Baseline"}, Value = 0, Color = "Blue", DashStyle = "ShortDot"});
+    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Start"}, Value = 2, Color = "Green", DashStyle = "ShortDot"});
+    //
+    //   foreach (var replacement in replacementUnique)
+    //   {
+    //     var baseLine = await _dbContext.ClientReplacements
+    //       .Where(w => w.ReplacementId == replacement.ReplacementId && w.ClientId == clientId)
+    //       .Select(s => s.BaselinePercent)
+    //       .FirstOrDefaultAsync();
+    //
+    //     var data = new List<int?> {baseLine, null};
+    //
+    //     var calWeekStart = firstWeekStart;
+    //     for (int i = 0; i < totalWeeks; i++)
+    //     {
+    //       var calWeekEnd = calWeekStart.AddDays(6);
+    //       var replacementCount = mainData
+    //         .Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
+    //         .Count(w => w.ReplacementId == replacement.ReplacementId);
+    //       var replacementComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
+    //         .Where(w => w.ReplacementId == replacement.ReplacementId)
+    //         .Count(w => w.Completed);
+    //       var caregiverReplacements = mainDataCaregiverCollect
+    //         .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
+    //         .GroupBy(g => 0)
+    //         .Select(s => new
+    //         {
+    //           TotalTrial = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalTrial)),
+    //           TotalCompleted = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalCompleted))
+    //         }).FirstOrDefault();
+    //
+    //       replacementCount += caregiverReplacements?.TotalTrial ?? 0;
+    //       replacementComplete += caregiverReplacements?.TotalCompleted ?? 0;
+    //
+    //       var percent = replacementCount == 0 ? 0 : replacementComplete / (decimal) replacementCount * 100;
+    //
+    //       //todo arreglar esto
+    //       data.Add((int?) Math.Round(percent));
+    //       //data.Add(replacementCount == 0 ? null : (int?)percent);
+    //
+    //       var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
+    //       foreach (var n in notesWeek) plotLines.Add(new PlotLine {Label = new Label {Text = n.Title}, Value = i + 2});
+    //
+    //       calWeekStart = calWeekStart.AddDays(7);
+    //     }
+    //
+    //     dataSet.Add(new MultiSerieChart
+    //     {
+    //       Data = data,
+    //       Name = replacement.Replacement.ReplacementProgramDescription
+    //     });
+    //   }
+    //
+    //   var calWeekStartLegend = firstWeekStart;
+    //   for (int i = 0; i < totalWeeks; i++)
+    //   {
+    //     var calWeekEnd = calWeekStartLegend.AddDays(6);
+    //     legend.Add(calWeekEnd.ToString("M/d/yy"));
+    //     calWeekStartLegend = calWeekStartLegend.AddDays(7);
+    //   }
+    //
+    //   return Ok(new
+    //   {
+    //     chartOptions = new
+    //     {
+    //       xAxis = new {categories = legend, plotLines = plotLines, title = new {text = "Weeks (label is last day of week)"}, crosshair = true},
+    //       series = dataSet,
+    //       title = new {text = ""},
+    //       chart = new {type = "line", height = replacementId == 0 ? null : "350"},
+    //       tooltip = new {shared = true},
+    //       yAxis = new {title = new {text = "Trials percent"}},
+    //       legend = new {enabled = replacementId == 0},
+    //       exporting = new {chartOptions = new {title = new {text = replacementId == 0 ? "" : replacementUnique.First().Replacement.ReplacementProgramDescription}}}
+    //     },
+    //     notes
+    //   });
+    // }
 
     [HttpPost("add-edit-chart-note")]
     public async Task<IActionResult> AddEditChartNote([FromBody] ClientChartNote note)
@@ -616,6 +794,7 @@ namespace AbaBackend.Controllers
           _dbContext.ClientChartNotes.Attach(note);
           _dbContext.Entry(note).State = EntityState.Modified;
         }
+
         await _dbContext.SaveChangesAsync();
         return Ok();
       }
@@ -631,16 +810,16 @@ namespace AbaBackend.Controllers
       try
       {
         var note = await _dbContext.ClientChartNotes
-                  .Select(s => new
-                  {
-                    s.ClientChartNoteId,
-                    s.ClientId,
-                    s.ChartNoteType,
-                    s.Title,
-                    s.Note,
-                    ChartNoteDate = s.ChartNoteDate.ToString("MM/dd/yyyy")
-                  })
-                  .FirstOrDefaultAsync(s => s.ClientChartNoteId.Equals(id));
+          .Select(s => new
+          {
+            s.ClientChartNoteId,
+            s.ClientId,
+            s.ChartNoteType,
+            s.Title,
+            s.Note,
+            ChartNoteDate = s.ChartNoteDate.ToString("MM/dd/yyyy")
+          })
+          .FirstOrDefaultAsync(s => s.ClientChartNoteId.Equals(id));
         if (note == null) throw new Exception("Note not found");
         return Ok(note);
       }
@@ -656,7 +835,7 @@ namespace AbaBackend.Controllers
       try
       {
         var note = await _dbContext.ClientChartNotes
-                  .FirstOrDefaultAsync(s => s.ClientChartNoteId.Equals(id));
+          .FirstOrDefaultAsync(s => s.ClientChartNoteId.Equals(id));
         if (note == null) throw new Exception("Note not found");
         _dbContext.ClientChartNotes.Remove(note);
         await _dbContext.SaveChangesAsync();
@@ -692,9 +871,9 @@ namespace AbaBackend.Controllers
       try
       {
         var comp = await _dbContext.CompetencyChecks
-                  .Include(i => i.EvaluationBy)
-                  .Include(i => i.CompetencyCheckClientParams).ThenInclude(i => i.CompetencyCheckParam)
-                  .FirstOrDefaultAsync(s => s.CompetencyCheckId.Equals(id));
+          .Include(i => i.EvaluationBy)
+          .Include(i => i.CompetencyCheckClientParams).ThenInclude(i => i.CompetencyCheckParam)
+          .FirstOrDefaultAsync(s => s.CompetencyCheckId.Equals(id));
         if (comp == null)
         {
           var compParams = await _dbContext.CompetencyCheckParams.OrderBy(o => o.CompetencyCheckType).ThenBy(o => o.CompetencyCheckParamId).ToListAsync();
@@ -708,10 +887,12 @@ namespace AbaBackend.Controllers
             };
             compClientParams.Add(entry);
           }
+
           comp = new CompetencyCheck();
           comp.Date = DateTime.Today;
           comp.CompetencyCheckClientParams = compClientParams;
         }
+
         return Ok(comp);
       }
       catch (System.Exception e)
@@ -729,7 +910,7 @@ namespace AbaBackend.Controllers
         if (comp.CompetencyCheckType == CompetencyCheckType.Caregiver && comp.CaregiverId == null) throw new Exception("You must select a valid Caregiver");
         var scoreList = comp.CompetencyCheckClientParams.Where(w => w.CompetencyCheckParam.CompetencyCheckType == comp.CompetencyCheckType).ToList();
         var scoreSum = scoreList.Sum(s => s.Score);
-        var score = scoreList.Count() == 0 ? 0 : scoreSum / (decimal)scoreList.Count();
+        var score = scoreList.Count() == 0 ? 0 : scoreSum / (decimal) scoreList.Count();
         comp.TotalScore = score;
         if (comp.CompetencyCheckId == 0)
         {
@@ -747,6 +928,7 @@ namespace AbaBackend.Controllers
               await _dbContext.CompetencyCheckClientParams.AddAsync(item);
               await _dbContext.SaveChangesAsync();
             }
+
             transaction.Commit();
           }
         }
@@ -761,6 +943,7 @@ namespace AbaBackend.Controllers
             _dbContext.Entry(item).State = EntityState.Modified;
           }
         }
+
         await _dbContext.SaveChangesAsync();
         return Ok();
       }
@@ -776,18 +959,18 @@ namespace AbaBackend.Controllers
       try
       {
         var comp = await _dbContext.CompetencyChecks
-                  .Where(w => w.ClientId.Equals(clientId))
-                  .Select(s => new
-                  {
-                    s.CompetencyCheckId,
-                    CompetencyCheckType = s.CompetencyCheckType.ToString(),
-                    Subject = s.CompetencyCheckType == CompetencyCheckType.Rbt ? $"{s.User.Firstname} {s.User.Lastname}" : s.Caregiver.CaregiverFullname,
-                    s.TotalScore,
-                    s.TotalDuration,
-                    s.Caregiver,
-                    s.User,
-                    s.Date
-                  }).ToListAsync();
+          .Where(w => w.ClientId.Equals(clientId))
+          .Select(s => new
+          {
+            s.CompetencyCheckId,
+            CompetencyCheckType = s.CompetencyCheckType.ToString(),
+            Subject = s.CompetencyCheckType == CompetencyCheckType.Rbt ? $"{s.User.Firstname} {s.User.Lastname}" : s.Caregiver.CaregiverFullname,
+            s.TotalScore,
+            s.TotalDuration,
+            s.Caregiver,
+            s.User,
+            s.Date
+          }).ToListAsync();
         return Ok(comp);
       }
       catch (System.Exception e)
@@ -802,7 +985,7 @@ namespace AbaBackend.Controllers
       try
       {
         var comp = await _dbContext.CompetencyChecks
-                  .FirstOrDefaultAsync(s => s.CompetencyCheckId.Equals(id));
+          .FirstOrDefaultAsync(s => s.CompetencyCheckId.Equals(id));
         if (comp == null) throw new Exception("Competency check not found");
         _dbContext.CompetencyChecks.Remove(comp);
         await _dbContext.SaveChangesAsync();
@@ -916,11 +1099,11 @@ namespace AbaBackend.Controllers
     }
 
     [HttpPost("[action]")]
-    public async Task<IActionResult> SaveSessionCollectBehavior([FromBody] SessionCollectBehavior s)
+    public async Task<IActionResult> SaveSessionCollectBehavior([FromBody] SessionCollectBehaviorV2 s)
     {
       try
       {
-        await _dbContext.AddAsync(s);
+        _dbContext.Update(s);
         await _dbContext.SaveChangesAsync();
         return Ok();
       }
@@ -935,28 +1118,12 @@ namespace AbaBackend.Controllers
     {
       try
       {
-        var dataDetails = await _dbContext.SessionCollectBehaviors
-                          .Where(w => w.SessionId == sessionId)
-                          .Include(i => i.Behavior)
-                          .OrderBy(o => o.Entry)
-                          .ToListAsync();
-
-        var dataSummary = dataDetails.GroupBy(g => new { g.Behavior, g.ProblemId })
-                          .Select(s => new
-                          {
-                            s.Key.ProblemId,
-                            s.Key.Behavior.ProblemBehaviorDescription,
-                            s.Key.Behavior.IsPercent,
-                            Count = s.Count(),
-                            Completed = s.Count(c => c.Completed)
-                          })
-                          .OrderBy(o => o.ProblemBehaviorDescription)
-                          .ToList();
-        return Ok(new
-        {
-          dataDetails,
-          dataSummary
-        });
+        var collectBehaviors = await _dbContext.SessionCollectBehaviorsV2
+          .Where(w => w.SessionId == sessionId)
+          .Include(w => w.Behavior)
+          .OrderBy(w => w.Behavior.ProblemBehaviorDescription)
+          .ToListAsync();
+        return Ok(collectBehaviors);
       }
       catch (System.Exception e)
       {
@@ -970,7 +1137,7 @@ namespace AbaBackend.Controllers
       try
       {
         var data = await _dbContext.SessionCollectBehaviors
-                  .FirstOrDefaultAsync(s => s.SessionCollectBehaviorId.Equals(id));
+          .FirstOrDefaultAsync(s => s.SessionCollectBehaviorId.Equals(id));
         if (data == null) throw new Exception("Collect data not found");
         _dbContext.SessionCollectBehaviors.Remove(data);
         await _dbContext.SaveChangesAsync();
@@ -983,11 +1150,11 @@ namespace AbaBackend.Controllers
     }
 
     [HttpPost("[action]")]
-    public async Task<IActionResult> SaveSessionCollectReplacement([FromBody] SessionCollectReplacement s)
+    public async Task<IActionResult> SaveSessionCollectReplacement([FromBody] SessionCollectReplacementV2 s)
     {
       try
       {
-        await _dbContext.AddAsync(s);
+        _dbContext.Update(s);
         await _dbContext.SaveChangesAsync();
         return Ok();
       }
@@ -1002,27 +1169,13 @@ namespace AbaBackend.Controllers
     {
       try
       {
-        var dataDetails = await _dbContext.SessionCollectReplacements
-                          .Where(w => w.SessionId == sessionId)
-                          .Include(i => i.Replacement)
-                          .OrderBy(o => o.Entry)
-                          .ToListAsync();
+        var collectReplacements = await _dbContext.SessionCollectReplacementsV2
+          .Where(w => w.SessionId == sessionId)
+          .Include(w => w.Replacement)
+          .OrderBy(w => w.Replacement.ReplacementProgramDescription)
+          .ToListAsync();
 
-        var dataSummary = dataDetails.GroupBy(g => new { g.Replacement, g.ReplacementId })
-                          .Select(s => new
-                          {
-                            s.Key.ReplacementId,
-                            s.Key.Replacement.ReplacementProgramDescription,
-                            Count = s.Count(),
-                            Completed = s.Count(c => c.Completed)
-                          })
-                          .OrderBy(o => o.ReplacementProgramDescription)
-                          .ToList();
-        return Ok(new
-        {
-          dataDetails,
-          dataSummary
-        });
+        return Ok(collectReplacements);
       }
       catch (System.Exception e)
       {
@@ -1036,7 +1189,7 @@ namespace AbaBackend.Controllers
       try
       {
         var data = await _dbContext.SessionCollectReplacements
-                  .FirstOrDefaultAsync(s => s.SessionCollectReplacementId.Equals(id));
+          .FirstOrDefaultAsync(s => s.SessionCollectReplacementId.Equals(id));
         if (data == null) throw new Exception("Collect data not found");
         _dbContext.SessionCollectReplacements.Remove(data);
         await _dbContext.SaveChangesAsync();
@@ -1064,10 +1217,14 @@ namespace AbaBackend.Controllers
       {
         var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == reject.SessionId);
         var sessionNote = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId == reject.SessionId);
-        if (sessionNote == null || session == null) throw new Exception("Session and/or Note not found");
+        var supervisionNote = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId == reject.SessionId);
+        if (session.SessionType != SessionType.Supervision_BCABA && (sessionNote == null || session == null)) throw new Exception("Session and/or Note not found");
+        if (session.SessionType == SessionType.Supervision_BCABA && (supervisionNote == null || session == null)) throw new Exception("Session and/or Supervision Note not found");
 
         session.SessionStatus = SessionStatus.Rejected;
-        sessionNote.RejectNotes = reject.RejectMessage;
+        if (session.SessionType != SessionType.Supervision_BCABA) sessionNote.RejectNotes = reject.RejectMessage;
+        if (session.SessionType == SessionType.Supervision_BCABA) supervisionNote.RejectNotes = reject.RejectMessage;
+
         await _dbContext.SaveChangesAsync();
         await _utils.NewEntryLog(session.SessionId, "Rejected", $"Session rejected: {reject.RejectMessage}", "fa-exclamation-circle", "red");
         return Ok();
@@ -1084,32 +1241,32 @@ namespace AbaBackend.Controllers
       try
       {
         var sessions = await _dbContext.Sessions
-                                       .Where(w => w.ClientId.Equals(clientId))
-                                       .Select(s => new
-                                       {
-                                         s.SessionId,
-                                         title = $"{s.User.Firstname} {s.User.Lastname}",
-                                         date = s.SessionStart.ToString("yyyy-MM-dd"),
-                                         SessionStart = s.SessionStart.ToString("u"),
-                                         SessionEnd = s.SessionEnd.ToString("u"),
-                                         time = s.SessionStart.ToString("HH:mm"),
-                                         timeStartFormat = s.SessionStart.ToString("hh:mm tt"),
-                                         timeEndFormat = s.SessionEnd.ToString("hh:mm tt"),
-                                         timeMinutes = s.SessionStart.ToString("mm"),
-                                         duration = (s.SessionEnd - s.SessionStart).TotalMinutes,
-                                         className = $"white--text v-card--hover  pa-0 ma-0",
-                                         SessionType = Enum.GetName(typeof(SessionType), s.SessionType).ToLower(),
-                                         SessionTypeFormated = s.SessionType.ToString().Replace('_', ' '),
-                                         s.TotalUnits,
-                                         Pos = s.Pos.ToString().Replace("_", " "),//Enum.GetName(typeof(Pos), s.Pos),
-                                         SessionStatus = s.SessionStatus.ToString(),
-                                         SessionStatusCode = s.SessionStatus,
-                                         SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-                                         s.User.Rol.RolShortName,
-                                         s.User,
-                                         UserRole = s.User.Rol
-                                       })
-                                       .ToListAsync();
+          .Where(w => w.ClientId.Equals(clientId))
+          .Select(s => new
+          {
+            s.SessionId,
+            title = $"{s.User.Firstname} {s.User.Lastname}",
+            date = s.SessionStart.ToString("yyyy-MM-dd"),
+            SessionStart = s.SessionStart.ToString("u"),
+            SessionEnd = s.SessionEnd.ToString("u"),
+            time = s.SessionStart.ToString("HH:mm"),
+            timeStartFormat = s.SessionStart.ToString("hh:mm tt"),
+            timeEndFormat = s.SessionEnd.ToString("hh:mm tt"),
+            timeMinutes = s.SessionStart.ToString("mm"),
+            duration = (s.SessionEnd - s.SessionStart).TotalMinutes,
+            className = $"white--text v-card--hover  pa-0 ma-0",
+            SessionType = Enum.GetName(typeof(SessionType), s.SessionType).ToLower(),
+            SessionTypeFormated = s.SessionType.ToString().Replace('_', ' '),
+            s.TotalUnits,
+            Pos = s.Pos.ToString().Replace("_", " "), //Enum.GetName(typeof(Pos), s.Pos),
+            SessionStatus = s.SessionStatus.ToString(),
+            SessionStatusCode = s.SessionStatus,
+            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            s.User.Rol.RolShortName,
+            s.User,
+            UserRole = s.User.Rol
+          })
+          .ToListAsync();
         return Ok(sessions);
       }
       catch (Exception e)
@@ -1118,12 +1275,12 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpGet("[action]/{clientId}")]
-    public async Task<IActionResult> GetClientBehaviors(int clientId)
+    [HttpGet("[action]/{clientId}/{onlyActive?}")]
+    public async Task<IActionResult> GetClientBehaviors(int clientId, bool onlyActive = true)
     {
       try
       {
-        var behaviors = await _utils.GetClientBehaviors(clientId);
+        var behaviors = await _utils.GetClientBehaviors(clientId, onlyActive);
         return Ok(behaviors);
       }
       catch (System.Exception e)
@@ -1132,12 +1289,12 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpGet("[action]/{clientId}")]
-    public async Task<IActionResult> GetClientReplacements(int clientId)
+    [HttpGet("[action]/{clientId}/{onlyActive?}")]
+    public async Task<IActionResult> GetClientReplacements(int clientId, bool onlyActive = true)
     {
       try
       {
-        var replacements = await _utils.GetClientReplacements(clientId);
+        var replacements = await _utils.GetClientReplacements(clientId, onlyActive);
         return Ok(replacements);
       }
       catch (System.Exception e)
@@ -1178,9 +1335,9 @@ namespace AbaBackend.Controllers
       {
         var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == s.Id);
         if (session == null) throw new Exception("Session not found");
-        session.Pos = (Pos)s.Value;
+        session.Pos = (Pos) s.Value;
         await _dbContext.SaveChangesAsync();
-        await _utils.NewEntryLog(session.SessionId, "Pos", $"Session POS edited to {((Pos)s.Value).ToString()}", "fa-clock", "teal");
+        await _utils.NewEntryLog(session.SessionId, "Pos", $"Session POS edited to {((Pos) s.Value).ToString()}", "fa-clock", "teal");
 
         return Ok();
       }
@@ -1221,10 +1378,10 @@ namespace AbaBackend.Controllers
       {
         var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
         var lead = await _dbContext.Assignments
-                                    .Where(w => w.ClientId == session.ClientId)
-                                    .Where(w => w.User.RolId == 2 && w.Active)
-                                    .Select(s => s.User).Include(i => i.UserSign)
-                                    .FirstOrDefaultAsync();
+          .Where(w => w.ClientId == session.ClientId)
+          .Where(w => w.User.RolId == 2 && w.Active)
+          .Select(s => s.User).Include(i => i.UserSign)
+          .FirstOrDefaultAsync();
         return Ok(new
         {
           lead
@@ -1262,39 +1419,39 @@ namespace AbaBackend.Controllers
       {
         var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.Auth == token);
         var session = await _dbContext
-                          .Sessions
-                          .AsNoTracking()
-                          .Where(w => w.SessionId.Equals(sign.SessionId))
-                          .Select(s => new
-                          {
-                            s.SessionId,
-                            SessionStart = s.SessionStart.ToString("u"),
-                            SessionEnd = s.SessionEnd.ToString("u"),
-                            s.TotalUnits,
-                            SessionType = s.SessionType.ToString().Replace("_", " "),
-                            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
-                            ClientCode = s.Client.Code ?? "N/A",
-                            SessionStatus = s.SessionStatus.ToString(),
-                            SessionStatusCode = s.SessionStatus,
-                            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-                            Pos = s.Pos.ToString().Replace("_", " "),
-                            PosCode = s.Pos,
-                            s.BehaviorAnalysisCode.Description,
-                            s.BehaviorAnalysisCode.Hcpcs,
-                            s.Sign,
-                            s.DriveTime,
-                            SessionLogs = s.SessionLogs.Select(l => new
-                            {
-                              l.Entry,
-                              l.Icon,
-                              l.Title,
-                              l.Description,
-                              l.IconColor,
-                              l.SessionLogId,
-                              l.User
-                            }).OrderByDescending(o => o.Entry)
-                          })
-                          .FirstOrDefaultAsync();
+          .Sessions
+          .AsNoTracking()
+          .Where(w => w.SessionId.Equals(sign.SessionId))
+          .Select(s => new
+          {
+            s.SessionId,
+            SessionStart = s.SessionStart.ToString("u"),
+            SessionEnd = s.SessionEnd.ToString("u"),
+            s.TotalUnits,
+            SessionType = s.SessionType.ToString().Replace("_", " "),
+            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+            ClientCode = s.Client.Code ?? "N/A",
+            SessionStatus = s.SessionStatus.ToString(),
+            SessionStatusCode = s.SessionStatus,
+            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            Pos = s.Pos.ToString().Replace("_", " "),
+            PosCode = s.Pos,
+            s.BehaviorAnalysisCode.Description,
+            s.BehaviorAnalysisCode.Hcpcs,
+            s.Sign,
+            s.DriveTime,
+            SessionLogs = s.SessionLogs.Select(l => new
+            {
+              l.Entry,
+              l.Icon,
+              l.Title,
+              l.Description,
+              l.IconColor,
+              l.SessionLogId,
+              l.User
+            }).OrderByDescending(o => o.Entry)
+          })
+          .FirstOrDefaultAsync();
         return Ok(session);
       }
       catch (Exception e)
@@ -1310,10 +1467,10 @@ namespace AbaBackend.Controllers
       {
         var date = Convert.ToDateTime(dateStr);
         var data = await _dbContext.CaregiverDataCollections
-                                   .Where(w => w.CollectDate.Date == date.Date && w.ClientId == clientId)
-                                   .Include(i => i.CaregiverDataCollectionProblems)
-                                   .Include(i => i.CaregiverDataCollectionReplacements)
-                                   .FirstOrDefaultAsync();
+          .Where(w => w.CollectDate.Date == date.Date && w.ClientId == clientId)
+          .Include(i => i.CaregiverDataCollectionProblems)
+          .Include(i => i.CaregiverDataCollectionReplacements)
+          .FirstOrDefaultAsync();
 
         if (data == null)
         {
@@ -1350,6 +1507,7 @@ namespace AbaBackend.Controllers
             CaregiverDataCollectionReplacements = caregiverDataCollectionReplacements
           };
         }
+
         return Ok(data);
       }
       catch (System.Exception e)
@@ -1382,14 +1540,14 @@ namespace AbaBackend.Controllers
       try
       {
         var sessions = await _dbContext.CaregiverDataCollections
-                                       .Where(w => w.ClientId.Equals(clientId))
-                                       .Select(s => new
-                                       {
-                                         s.CaregiverDataCollectionId,
-                                         title = "Collected",
-                                         date = s.CollectDate.ToString("yyyy-MM-dd"),
-                                       })
-                                       .ToListAsync();
+          .Where(w => w.ClientId.Equals(clientId))
+          .Select(s => new
+          {
+            s.CaregiverDataCollectionId,
+            title = "Collected",
+            date = s.CollectDate.ToString("yyyy-MM-dd"),
+          })
+          .ToListAsync();
         return Ok(sessions);
       }
       catch (Exception e)
@@ -1414,6 +1572,5 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
-
   }
 }

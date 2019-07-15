@@ -29,11 +29,11 @@ namespace AbaBackend.DataModel
   {
     Created, //when create new session
     Edited, //edited the session
-    Rejected,  //only from service log
-    Cancelled,  // N/A for now
-    Reopen,   // maybe when delete the whole service log all session with checked or billed go to waiting
-    Checked,   //ready to be billed or signed
-    Billed,    //last stage of the session. CAN NOT UNDO
+    Rejected, //only from service log
+    Cancelled, // N/A for now
+    Reopen, // maybe when delete the whole service log all session with checked or billed go to waiting
+    Checked, //ready to be billed or signed
+    Billed, //last stage of the session. CAN NOT UNDO
     Reviewed
   }
 
@@ -45,7 +45,7 @@ namespace AbaBackend.DataModel
     orange,
     cyan,
     teal,
-    pink,
+    brown,
     lime
   }
 
@@ -57,8 +57,10 @@ namespace AbaBackend.DataModel
     public DateTime SessionStart { get; set; }
     public DateTime SessionEnd { get; set; }
     public int TotalUnits { get; set; }
+
     [Column(TypeName = "decimal(6,2)")]
     public decimal DriveTime { get; set; }
+
     public SessionType SessionType { get; set; }
     public Pos Pos { get; set; }
     public DateTime Created { get; set; } = DateTime.Now;
