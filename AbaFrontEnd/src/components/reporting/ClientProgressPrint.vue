@@ -90,7 +90,7 @@ export default {
     },
 
     parseToPages(elements, pageSize = 3) {
-      var result = [];
+      let result = [];
       while (elements.length) {
         result.push(elements.splice(0, pageSize).join(","));
       }

@@ -76,5 +76,8 @@ namespace AbaBackend.DataModel
     public List<SessionProblemNote> SessionProblemNotes { get; set; }
     public List<SessionLog> SessionLogs { get; set; }
     public SessionSign Sign { get; set; }
+    public List<SessionCollectBehaviorV2> SessionCollectBehaviorsV2 { get; set; }
+    public List<SessionCollectReplacementV2> SessionCollectReplacementsV2 { get; set; }
+
   }
 }

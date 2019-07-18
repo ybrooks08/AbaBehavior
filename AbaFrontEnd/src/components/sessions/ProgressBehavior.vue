@@ -98,6 +98,7 @@ export default {
   methods: {
     async loadAll() {
       try {
+        if (!this.activeClientId) return;
         this.loading = true;
         let data = await sessionServicesApi.getProblemsChartData(this.activeClientId, this.behaviorId, this.dateStart, this.dateEnd);
         this.chartOptions = data.chartOptions;

@@ -445,10 +445,10 @@
                     </td>
                     <td class="pl-1">
                       <table class="table-print">
-                        <tr v-for="b in collection.clientBehaviors" :key="b.clientProblemId">
-                          <td width="50%">{{b.problemBehavior.problemBehaviorDescription}}</td>
+                        <tr v-for="b in collection.collectBehaviors" :key="b.sessionCollectBehaviorV2Id">
+                          <td width="50%">{{b.behavior.problemBehaviorDescription}}</td>
                           <td width="50%">
-                            {{getTotalBehaviors(b.problemId)}}
+                            {{getTotalBehaviors(b)}}
                           </td>
                         </tr>
                       </table>
@@ -460,10 +460,10 @@
                     </td>
                     <td class="pl-1">
                       <table class="table-print">
-                        <tr v-for="b in collection.clientReplacements" :key="b.clientReplacementId">
+                        <tr v-for="b in collection.collectReplacements" :key="b.sessionCollectReplacementV2Id">
                           <td width="50%">{{b.replacement.replacementProgramDescription}}</td>
                           <td width="50%">
-                            {{getTotalReplacement(b.replacementId)}}
+                            {{getTotalReplacement(b)}}
                           </td>
                         </tr>
                       </table>
@@ -573,9 +573,9 @@ export default {
         }
       },
       collection: {
-        clientBehaviors: [],
+        // clientBehaviors: [],
         collectBehaviors: [],
-        clientReplacements: [],
+        // clientReplacements: [],
         collectReplacements: []
       },
       sessionSupervisionWorkWithCodes: [],
@@ -630,10 +630,10 @@ export default {
           this.sessionSupervisionWorkWithCodes = this.sessionSupervisionWorkWithCodes.filter(w => w.active);
         }
 
-        this.collection.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.sessionPrint.clientId);
+        // this.collection.clientBehaviors = await sessionServicesApi.getClientBehaviors(this.sessionPrint.clientId);
         this.collection.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
 
-        this.collection.clientReplacements = await sessionServicesApi.getClientReplacements(this.sessionPrint.clientId);
+        // this.collection.clientReplacements = await sessionServicesApi.getClientReplacements(this.sessionPrint.clientId);
         this.collection.collectReplacements = await sessionServicesApi.getCollectReplacements(this.activeSessionId);
 
         this.sessionExtraInfo = await sessionServicesApi.getSessionPrintExtraInfo(this.activeSessionId);
@@ -653,26 +653,39 @@ export default {
       }
     },
 
-    getTotalBehaviors(problemId) {
-      if (!this.collection.collectBehaviors.dataSummary) return;
-      let c = this.collection.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
-      if (c && !c.isPercent) return `${c ? c.count : 0}`;
-      else if (c && c.isPercent) {
-        let total = c ? c.count : 0;
-        let completed = c ? c.completed : 0;
-        let percent = total == 0 ? 0 : (completed / total) * 100;
-        return `${percent.toFixed(0)}%`;
-      }
-      return "Total: 0";
-    },
-
-    getTotalReplacement(replacementId) {
-      if (!this.collection.collectReplacements.dataSummary) return;
-      let c = this.collection.collectReplacements.dataSummary.find(s => s.replacementId === replacementId);
-      let total = c ? c.count : 0;
-      let completed = c ? c.completed : 0;
+    getTotalBehaviors(b) {
+      if (b.noData) return "No data collected";
+      if (!b.behavior.isPercent) return b.total;
+      let total = b.total;
+      let completed = b.completed != null ? b.completed : 0;
       let percent = total == 0 ? 0 : (completed / total) * 100;
       return `${percent.toFixed(0)}%`;
+
+      // if (!this.collection.collectBehaviors.dataSummary) return;
+      // let c = this.collection.collectBehaviors.dataSummary.find(s => s.problemId === problemId);
+      // if (c && !c.isPercent) return `${c ? c.count : 0}`;
+      // else if (c && c.isPercent) {
+      //   let total = c ? c.count : 0;
+      //   let completed = c ? c.completed : 0;
+      //   let percent = total == 0 ? 0 : (completed / total) * 100;
+      //   return `${percent.toFixed(0)}%`;
+      // }
+      // return "Total: 0";
+    },
+
+    getTotalReplacement(c) {
+      if (c.noData) return "No data collected";
+      let total = c.total;
+      let completed = c.completed;
+      let percent = total == 0 ? 0 : (completed / total) * 100;
+      return `${percent.toFixed(0)}%`;
+
+      // if (!this.collection.collectReplacements.dataSummary) return;
+      // let c = this.collection.collectReplacements.dataSummary.find(s => s.replacementId === replacementId);
+      // let total = c ? c.count : 0;
+      // let completed = c ? c.completed : 0;
+      // let percent = total == 0 ? 0 : (completed / total) * 100;
+      // return `${percent.toFixed(0)}%`;
     },
 
     breakLine(s) {

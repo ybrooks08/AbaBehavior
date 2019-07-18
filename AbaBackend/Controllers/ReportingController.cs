@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
+using AbaBackend.Infrastructure.Collection;
 using AbaBackend.Infrastructure.Extensions;
 using AbaBackend.Infrastructure.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -23,13 +25,15 @@ namespace AbaBackend.Controllers
     private IUtils _utils;
     private IConfiguration _configuration;
     private IHostingEnvironment _env;
+    readonly ICollection _collection;
 
-    public ReportingController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env)
+    public ReportingController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env, ICollection collection)
     {
       _dbContext = context;
       _utils = utils;
       _configuration = configuration;
       _env = env;
+      _collection = collection;
     }
 
     [HttpGet("[action]/{from}/{to}/{clientId}/{behaviorAnalysisCodeId}")]
@@ -141,7 +145,7 @@ namespace AbaBackend.Controllers
             SessionTypeCode = s.SessionType,
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             Pos = s.Pos.ToString(),
             PosCode = s.Pos,
             s.SessionNote.Caregiver.CaregiverFullname,
@@ -188,7 +192,7 @@ namespace AbaBackend.Controllers
             SessionType = s.SessionType.ToString().Replace("_", " "),
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             Pos = s.Pos.ToString().Replace("_", " "),
             PosCode = s.Pos,
             UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
@@ -244,7 +248,7 @@ namespace AbaBackend.Controllers
             SessionType = s.SessionType.ToString().Replace("_", " "),
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             Pos = s.Pos.ToString().Replace("_", " "),
             PosCode = s.Pos,
             UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
@@ -281,7 +285,7 @@ namespace AbaBackend.Controllers
         var totalHours = 0m;
         foreach (var session in sessions)
         {
-          var sessionHours = session.TotalUnits / (decimal) 4;
+          var sessionHours = session.TotalUnits / (decimal)4;
           var sessionDriveTime = session.DriveTime;
 
           var regularHours = 0m;
@@ -341,14 +345,14 @@ namespace AbaBackend.Controllers
 
         var problems = await _utils.GetClientBehaviors(clientId);
         var rowsProblems = new List<List<Object>>();
+        var replacements = await _utils.GetClientReplacements(clientId);
+        var rowsReplacements = new List<List<Object>>();
 
-        var mainDataBehaviorClient = await _dbContext.SessionCollectBehaviors
-          .Where(w => w.ClientId == clientId)
-          .ToListAsync();
+        var mainDataBehaviorClientV2 = await _collection.GetCollectionBehaviors(start, end, clientId, problems.Select(s => s.ProblemId).ToList());
+        var mainDataBehaviorCaregiverClientV2 = await _collection.GetCollectionBehaviorsCaregiver(start, end, clientId, problems.Select(s => s.ProblemId).ToList());
 
-        var mainDataReplacementClient = await _dbContext.SessionCollectReplacements
-          .Where(w => w.ClientId == clientId)
-          .ToListAsync();
+        var mainDataReplacementClientV2 = await _collection.GetCollectionReplacements(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
+        var mainDataReplacementCaregiverClientV2 = await _collection.GetCollectionReplacementsCaregiver(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
 
         foreach (var problem in problems)
         {
@@ -364,44 +368,38 @@ namespace AbaBackend.Controllers
           {
             var weekStart = monthStart;
             var weekEnd = monthStart.AddDays(6);
-
-            var mainData = mainDataBehaviorClient
+            var mainDataV2 = mainDataBehaviorClientV2
               .Where(w => w.ProblemId == problem.ProblemId)
-              .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
-              .Count();
-            var mainDataCompleted = mainDataBehaviorClient
+              .Where(w => w.SessionStart.Date >= weekStart && w.SessionStart.Date <= weekEnd)
+              .ToList();
+            var mainDataCaregiverCollect = mainDataBehaviorCaregiverClientV2
+              .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
               .Where(w => w.ProblemId == problem.ProblemId)
-              .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
-              .Where(w => w.Completed)
-              .Count();
-            var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
-              .Where(w => w.ClientId == clientId && w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
-              .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(q => q.Count))
-              .FirstOrDefaultAsync();
+              .ToList();
+            var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect, problem);
 
-            if (!problem.ProblemBehavior.IsPercent)
+            if (mainData == null) newRow.Add("N/A");
+            else if (!problem.ProblemBehavior.IsPercent)
             {
-              var totalWeek = mainData + (mainDataCaregiverCollect ?? 0);
-              sum += totalWeek;
-              newRow.Add(totalWeek);
+              sum += mainData ?? 0;
+              newRow.Add(mainData);
             }
             else
             {
-              var percent = mainData == 0 ? 0 : mainDataCompleted / (decimal) mainData;
-              sum += percent * 100;
-              newRow.Add($"{percent:p0}");
+              sum += mainData ?? 0;
+              newRow.Add($"{mainData:n0}");
             }
 
             monthStart = monthStart.AddDays(7);
           }
 
           newRow.Add(!problem.ProblemBehavior.IsPercent ? sum.ToString() : "-");
-          newRow.Add((sum / (decimal) totalWeeks).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
+          newRow.Add((sum / (decimal)totalWeeks).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
           rowsProblems.Add(newRow);
         }
 
         var hStart = start;
-        var headers = new List<string> {"Problem"};
+        var headers = new List<string> { "Problem" };
         while (hStart < end)
         {
           var weekStart = hStart;
@@ -413,8 +411,6 @@ namespace AbaBackend.Controllers
         headers.Add("Total");
         headers.Add("Average");
 
-        var replacements = await _utils.GetClientReplacements(clientId);
-        var rowsReplacements = new List<List<Object>>();
 
         foreach (var replacement in replacements)
         {
@@ -431,31 +427,19 @@ namespace AbaBackend.Controllers
             var weekStart = monthStart;
             var weekEnd = monthStart.AddDays(6);
 
-            var mainDataCount = mainDataReplacementClient
+            var mainDataV2 = mainDataReplacementClientV2
               .Where(w => w.ReplacementId == replacement.ReplacementId)
-              .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
-              .Count();
-
-            var mainDataCompleted = mainDataReplacementClient
+              .Where(w => w.SessionStart.Date >= weekStart && w.SessionStart.Date <= weekEnd)
+              .ToList();
+            var mainDataCaregiverCollect = mainDataReplacementCaregiverClientV2
+              .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
               .Where(w => w.ReplacementId == replacement.ReplacementId)
-              .Where(w => w.Entry.Date >= weekStart && w.Entry.Date <= weekEnd)
-              .Where(w => w.Completed)
-              .Count();
+              .ToList();
+            var mainData = _collection.GetClientReplacements(mainDataV2, mainDataCaregiverCollect);
 
-            var caregiverReplacements = await _dbContext.CaregiverDataCollections
-              .Where(w => w.ClientId == clientId && w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
-              .GroupBy(g => 0)
-              .Select(s => new
-              {
-                TotalTrial = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalTrial)),
-                TotalCompleted = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalCompleted))
-              }).FirstOrDefaultAsync();
-
-            mainDataCount += caregiverReplacements?.TotalTrial ?? 0;
-            mainDataCompleted += caregiverReplacements?.TotalCompleted ?? 0;
-            var percent = mainDataCount == 0 ? 0 : mainDataCompleted / (decimal) mainDataCount * 100;
-            sumTotal += percent;
-            newRow.Add($"{percent:n0}%");
+            sumTotal += mainData ?? 0;
+            if (mainData == null) newRow.Add("N/A");
+            else newRow.Add($"{mainData:n0}%");
             monthStart = monthStart.AddDays(7);
           }
 
@@ -464,7 +448,7 @@ namespace AbaBackend.Controllers
           rowsReplacements.Add(newRow);
         }
 
-        var headersReplacement = new List<string> {"Replacement"};
+        var headersReplacement = new List<string> { "Replacement" };
         while (start < end)
         {
           var weekStart = start;
@@ -511,7 +495,7 @@ namespace AbaBackend.Controllers
             SessionType = s.SessionType.ToString().Replace("_", " "),
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             Pos = s.Pos.ToString().Replace("_", " "),
             PosCode = s.Pos,
             UserFullname = $"{s.User.Firstname} {s.User.Lastname}",

@@ -127,13 +127,13 @@ namespace AbaBackend.Controllers
 
           if (session.SessionType != SessionType.Supervision_BCABA)
           {
-            var note = new SessionNote {SessionId = session.SessionId};
+            var note = new SessionNote { SessionId = session.SessionId };
             await _dbContext.SessionNotes.AddAsync(note);
             await _dbContext.SaveChangesAsync();
           }
           else
           {
-            var note = new SessionSupervisionNote {SessionId = session.SessionId};
+            var note = new SessionSupervisionNote { SessionId = session.SessionId };
             await _dbContext.AddAsync(note);
             await _dbContext.SaveChangesAsync();
           }
@@ -206,7 +206,7 @@ namespace AbaBackend.Controllers
             Pos = s.Pos.ToString().Replace("_", " "), //Enum.GetName(typeof(Pos), s.Pos),
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             // SessionStartNumber = s.SessionStart.ConvertTimeToNumber(),
             // SessionEndNumber = s.SessionEnd.ConvertTimeToNumber(),
             // s.User.Rol,
@@ -265,7 +265,7 @@ namespace AbaBackend.Controllers
             ClientCode = s.Client.Code ?? "N/A",
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             Pos = s.Pos.ToString().Replace("_", " "),
             PosCode = s.Pos,
             s.BehaviorAnalysisCode.Description,
@@ -404,8 +404,8 @@ namespace AbaBackend.Controllers
                 }).OrderBy(o => o.Problem).ToList(),
                 DataCollection = new OkObjectResult(new
                 {
-                  s.SessionCollectBehaviors,
-                  s.SessionCollectReplacements
+                  s.SessionCollectBehaviorsV2,
+                  s.SessionCollectReplacementsV2
                 }).Value
               }).Value
               : null
@@ -435,7 +435,7 @@ namespace AbaBackend.Controllers
       {
         var sessions = await _dbContext.Sessions
           .Where(w => w.ClientId.Equals(clientId))
-          .GroupBy(g => new {g.SessionStart.Date, g.BehaviorAnalysisCode.Color})
+          .GroupBy(g => new { g.SessionStart.Date, g.BehaviorAnalysisCode.Color })
           .Select(s => new
           {
             s.Key.Date,
@@ -555,6 +555,7 @@ namespace AbaBackend.Controllers
     [HttpGet("[action]/{clientId}/{problemId?}/{dateStart?}/{dateEnd?}")]
     public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, string problemId = "0", DateTime? dateStart = null, DateTime? dateEnd = null)
     {
+      if (clientId == 0) return Ok();
       var problems = problemId == "0" ? new List<int>() : problemId.Split(',').Select(int.Parse).ToList();
       var chartData = await _collection.GetClientBehaviorChart(clientId, problems, dateStart, dateEnd);
       return Ok(chartData);
@@ -669,6 +670,7 @@ namespace AbaBackend.Controllers
     [HttpGet("[action]/{clientId}/{replacementId?}/{dateStart?}/{dateEnd?}")]
     public async Task<IActionResult> GetReplacementProgramChart(int clientId, string replacementId = "0", DateTime? dateStart = null, DateTime? dateEnd = null)
     {
+      if (clientId == 0) return Ok();
       var replacements = replacementId == "0" ? new List<int>() : replacementId.Split(',').Select(int.Parse).ToList();
       var chartData = await _collection.GetClientReplacementChart(clientId, replacements, dateStart, dateEnd);
       return Ok(chartData);
@@ -910,7 +912,7 @@ namespace AbaBackend.Controllers
         if (comp.CompetencyCheckType == CompetencyCheckType.Caregiver && comp.CaregiverId == null) throw new Exception("You must select a valid Caregiver");
         var scoreList = comp.CompetencyCheckClientParams.Where(w => w.CompetencyCheckParam.CompetencyCheckType == comp.CompetencyCheckType).ToList();
         var scoreSum = scoreList.Sum(s => s.Score);
-        var score = scoreList.Count() == 0 ? 0 : scoreSum / (decimal) scoreList.Count();
+        var score = scoreList.Count() == 0 ? 0 : scoreSum / (decimal)scoreList.Count();
         comp.TotalScore = score;
         if (comp.CompetencyCheckId == 0)
         {
@@ -1261,7 +1263,7 @@ namespace AbaBackend.Controllers
             Pos = s.Pos.ToString().Replace("_", " "), //Enum.GetName(typeof(Pos), s.Pos),
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             s.User.Rol.RolShortName,
             s.User,
             UserRole = s.User.Rol
@@ -1335,9 +1337,9 @@ namespace AbaBackend.Controllers
       {
         var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == s.Id);
         if (session == null) throw new Exception("Session not found");
-        session.Pos = (Pos) s.Value;
+        session.Pos = (Pos)s.Value;
         await _dbContext.SaveChangesAsync();
-        await _utils.NewEntryLog(session.SessionId, "Pos", $"Session POS edited to {((Pos) s.Value).ToString()}", "fa-clock", "teal");
+        await _utils.NewEntryLog(session.SessionId, "Pos", $"Session POS edited to {((Pos)s.Value).ToString()}", "fa-clock", "teal");
 
         return Ok();
       }
@@ -1433,7 +1435,7 @@ namespace AbaBackend.Controllers
             ClientCode = s.Client.Code ?? "N/A",
             SessionStatus = s.SessionStatus.ToString(),
             SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString(),
+            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
             Pos = s.Pos.ToString().Replace("_", " "),
             PosCode = s.Pos,
             s.BehaviorAnalysisCode.Description,

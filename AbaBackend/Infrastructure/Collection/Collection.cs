@@ -21,27 +21,27 @@ namespace AbaBackend.Infrastructure.Collection
     readonly IUtils _utils;
     readonly string _connectionString;
 
-    class CollectionBeh : SessionCollectBehaviorV2
+    public class CollectionBeh : SessionCollectBehaviorV2
     {
       public DateTime SessionStart { get; set; }
     }
 
-    class CollectionBehCaregiver : CaregiverDataCollectionProblem
+    public class CollectionBehCaregiver : CaregiverDataCollectionProblem
     {
       public DateTime CollectDate { get; set; }
     }
 
-    class CollectionRep : SessionCollectReplacementV2
+    public class CollectionRep : SessionCollectReplacementV2
     {
       public DateTime SessionStart { get; set; }
     }
 
-    class CollectionRepCaregiver : CaregiverDataCollectionReplacement
+    public class CollectionRepCaregiver : CaregiverDataCollectionReplacement
     {
       public DateTime CollectDate { get; set; }
     }
 
-    async Task<List<CollectionBeh>> GetCollectionBehaviors(DateTime start, DateTime end, int clientId, List<int> problemId)
+    public async Task<List<CollectionBeh>> GetCollectionBehaviors(DateTime start, DateTime end, int clientId, List<int> problemId)
     {
       var query = $@"SELECT
                       CONVERT(date, S.SessionStart) as SessionStart,
@@ -59,7 +59,7 @@ namespace AbaBackend.Infrastructure.Collection
       }
     }
 
-    async Task<List<CollectionBehCaregiver>> GetCollectionBehaviorsCaregiver(DateTime start, DateTime end, int clientId, List<int> problemId)
+    public async Task<List<CollectionBehCaregiver>> GetCollectionBehaviorsCaregiver(DateTime start, DateTime end, int clientId, List<int> problemId)
     {
       var query = $@"select 
                       CONVERT(date, C.CollectDate) as CollectDate,
@@ -77,7 +77,7 @@ namespace AbaBackend.Infrastructure.Collection
       }
     }
 
-    async Task<List<CollectionRep>> GetCollectionReplacements(DateTime start, DateTime end, int clientId, List<int> replacementId)
+    public async Task<List<CollectionRep>> GetCollectionReplacements(DateTime start, DateTime end, int clientId, List<int> replacementId)
     {
       var query = $@"SELECT
                       CONVERT(date, S.SessionStart) as SessionStart,
@@ -95,7 +95,7 @@ namespace AbaBackend.Infrastructure.Collection
       }
     }
 
-    async Task<List<CollectionRepCaregiver>> GetCollectionReplacementsCaregiver(DateTime start, DateTime end, int clientId, List<int> replacementId)
+    public async Task<List<CollectionRepCaregiver>> GetCollectionReplacementsCaregiver(DateTime start, DateTime end, int clientId, List<int> replacementId)
     {
       var query = $@"select 
                       CONVERT(date, C.CollectDate) as CollectDate,
@@ -121,11 +121,13 @@ namespace AbaBackend.Infrastructure.Collection
       _connectionString = configuration.GetConnectionString("AbaDbConnectionString");
     }
 
-    int? GetClientProblems(List<CollectionBeh> collection, List<CollectionBehCaregiver> caregiverCollection)
+    public int? GetClientProblems(List<CollectionBeh> collection, List<CollectionBehCaregiver> caregiverCollection, ClientProblem clientProblem)
     {
       var collectionNoData = collection.Count(w => w.NoData);
       var collectionSum = collection.Sum(s => s.Total);
-      var totalCollection = collectionNoData == collection.Count ? null : (int?) collectionSum;
+      var collectionCompleted = collection.Sum(s => s.Completed);
+      var percent = collectionSum == 0 ? 0 : collectionCompleted / (decimal)collectionSum * 100;
+      var totalCollection = collectionNoData == collection.Count ? null : !clientProblem.ProblemBehavior.IsPercent ? (int?)collectionSum : (int?)Math.Round(percent);
 
       var caregiverCollectionNoData = caregiverCollection.Count(w => w == null);
       var caregiverCollectionSum = caregiverCollection.Sum(s => s.Count);
@@ -135,7 +137,7 @@ namespace AbaBackend.Infrastructure.Collection
       return (totalCaregiverCollection ?? 0) + (totalCollection ?? 0);
     }
 
-    List<int?> GetClientProblemsByWeek(int problemId, DateTime firstWeekStart, DateTime lastWeekEnd, List<CollectionBeh> allCollection, List<CollectionBehCaregiver> allCaregiverCollection)
+    List<int?> GetClientProblemsByWeek(int problemId, DateTime firstWeekStart, DateTime lastWeekEnd, List<CollectionBeh> allCollection, List<CollectionBehCaregiver> allCaregiverCollection, ClientProblem clientProblem)
     {
       var res = new List<int?>();
       var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
@@ -161,7 +163,7 @@ namespace AbaBackend.Infrastructure.Collection
           .Where(w => w.CollectDate >= firstWeekStart && w.CollectDate <= calWeekEnd)
           .ToList();
 
-        var sum = GetClientProblems(collections, collectionsCaregiver);
+        var sum = GetClientProblems(collections, collectionsCaregiver, clientProblem);
         res.Add(sum);
         firstWeekStart = firstWeekStart.AddDays(7);
       }
@@ -202,18 +204,18 @@ namespace AbaBackend.Infrastructure.Collection
 
       foreach (var p in problemsProcess)
       {
-        var data = new List<int?> {p.BaselineCount, null};
-        var collection = GetClientProblemsByWeek(p.ProblemId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
+        var data = new List<int?> { p.BaselineCount, null };
+        var collection = GetClientProblemsByWeek(p.ProblemId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection, p);
         data.AddRange(collection);
 
         dataSet.Add(new MultiSerieChart
         {
           Data = data,
-          Name = p.ProblemBehavior.ProblemBehaviorDescription,
+          Name = $"{p.ProblemBehavior.ProblemBehaviorDescription}{(p.ProblemBehavior.IsPercent ? "(%)" : "")}"
         });
       }
 
-      var legend = new List<string> {"Base", ""};
+      var legend = new List<string> { "Base", "" };
       var calWeekStartLegend = firstWeekStart;
       for (int i = 0; i < totalWeeks; i++)
       {
@@ -221,7 +223,7 @@ namespace AbaBackend.Infrastructure.Collection
         legend.Add(calWeekEnd.ToString("M/d/yy"));
 
         var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
-        foreach (var n in notesWeek) plotLines.Add(new PlotLine {Label = new Label {Text = n.Title}, Value = i + 2});
+        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
 
         calWeekStartLegend = calWeekStartLegend.AddDays(7);
       }
@@ -231,13 +233,13 @@ namespace AbaBackend.Infrastructure.Collection
         chartOptions = new
         {
           series = dataSet,
-          xAxis = new {categories = legend, plotLines, title = new {text = "Weeks (label is last day of week)"}, crosshair = true},
-          title = new {text = problemsProcess.Count != 1 ? "" : problemsProcess.First().ProblemBehavior.ProblemBehaviorDescription},
-          chart = new {type = "spline", height = problemsProcess.Count != 1 ? null : "350"},
-          tooltip = new {shared = true},
-          yAxis = new {title = new {text = "Count"}},
-          legend = new {enabled = problemsProcess.Count != 1},
-          exporting = new {chartOptions = new {title = new {text = problemsProcess.Count != 1 ? "" : problemsProcess.First().ProblemBehavior.ProblemBehaviorDescription}}}
+          xAxis = new { categories = legend, plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
+          title = new { text = problemsProcess.Count != 1 ? "" : problemsProcess.First().ProblemBehavior.ProblemBehaviorDescription },
+          chart = new { type = "spline", height = problemsProcess.Count != 1 ? null : "350" },
+          tooltip = new { shared = true },
+          yAxis = new { title = new { text = "Count" } },
+          legend = new { enabled = problemsProcess.Count != 1 },
+          exporting = new { chartOptions = new { title = new { text = problemsProcess.Count != 1 ? "" : problemsProcess.First().ProblemBehavior.ProblemBehaviorDescription } } }
         },
         notes
       }).Value;
@@ -245,7 +247,7 @@ namespace AbaBackend.Infrastructure.Collection
       return res;
     }
 
-    int? GetClientReplacements(List<CollectionRep> collections, List<CollectionRepCaregiver> collectionsCaregiver)
+    public int? GetClientReplacements(List<CollectionRep> collections, List<CollectionRepCaregiver> collectionsCaregiver)
     {
       var collectionNoData = collections.Count(w => w.NoData);
       var totalTrial = collections.Sum(s => s.Total);
@@ -273,9 +275,9 @@ namespace AbaBackend.Infrastructure.Collection
 
       var trials = totalTrial + caregiverTotalTrial;
       var completed = totalCompleted + caregiverTotalCompleted;
-      var percent = trials == 0 ? 0 : completed / (decimal) trials * 100;
+      var percent = trials == 0 ? 0 : completed / (decimal)trials * 100;
 
-      return (int?) percent;
+      return (int?)percent;
       ;
     }
 
@@ -346,7 +348,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       foreach (var p in replacementsProcess)
       {
-        var data = new List<int?> {p.BaselinePercent, null};
+        var data = new List<int?> { p.BaselinePercent, null };
         var collection = GetClientReplacementsByWeek(p.ReplacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
         data.AddRange(collection);
 
@@ -357,7 +359,7 @@ namespace AbaBackend.Infrastructure.Collection
         });
       }
 
-      var legend = new List<string> {"Base", ""};
+      var legend = new List<string> { "Base", "" };
       var calWeekStartLegend = firstWeekStart;
       for (int i = 0; i < totalWeeks; i++)
       {
@@ -365,7 +367,7 @@ namespace AbaBackend.Infrastructure.Collection
         legend.Add(calWeekEnd.ToString("M/d/yy"));
 
         var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
-        foreach (var n in notesWeek) plotLines.Add(new PlotLine {Label = new Label {Text = n.Title}, Value = i + 2});
+        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + 2 });
 
         calWeekStartLegend = calWeekStartLegend.AddDays(7);
       }
@@ -375,13 +377,13 @@ namespace AbaBackend.Infrastructure.Collection
         chartOptions = new
         {
           series = dataSet,
-          xAxis = new {categories = legend, plotLines, title = new {text = "Weeks (label is last day of week)"}, crosshair = true},
-          title = new {text = replacementsProcess.Count != 1 ? "" : replacementsProcess.First().Replacement.ReplacementProgramDescription},
-          chart = new {type = "spline", height = replacementsProcess.Count != 1 ? null : "350"},
-          tooltip = new {shared = true},
-          yAxis = new {title = new {text = "Trials percent"}},
-          legend = new {enabled = replacementsProcess.Count != 1},
-          exporting = new {chartOptions = new {title = new {text = replacementsProcess.Count != 1 ? "" : replacementsProcess.First().Replacement.ReplacementProgramDescription}}}
+          xAxis = new { categories = legend, plotLines, title = new { text = "Weeks (label is last day of week)" }, crosshair = true },
+          title = new { text = replacementsProcess.Count != 1 ? "" : replacementsProcess.First().Replacement.ReplacementProgramDescription },
+          chart = new { type = "spline", height = replacementsProcess.Count != 1 ? null : "350" },
+          tooltip = new { shared = true },
+          yAxis = new { title = new { text = "Trials percent" } },
+          legend = new { enabled = replacementsProcess.Count != 1 },
+          exporting = new { chartOptions = new { title = new { text = replacementsProcess.Count != 1 ? "" : replacementsProcess.First().Replacement.ReplacementProgramDescription } } }
         },
         notes
       }).Value;

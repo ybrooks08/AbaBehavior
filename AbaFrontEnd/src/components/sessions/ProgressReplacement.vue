@@ -121,6 +121,7 @@ export default {
   methods: {
     async loadAll() {
       try {
+        if (!this.activeClientId) return;
         this.loading = true;
         let data = await sessionServicesApi.getReplacementsChartData(this.activeClientId, this.replacementId, this.dateStart, this.dateEnd);
         this.chartOptions = data.chartOptions;
