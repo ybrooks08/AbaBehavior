@@ -561,112 +561,6 @@ namespace AbaBackend.Controllers
       return Ok(chartData);
     }
 
-    // [HttpGet("[action]/{clientId}/{problemId?}/{dateStart?}/{dateEnd?}")]
-    // public async Task<IActionResult> GetProblemBehaviorsChart(int clientId, int problemId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
-    // {
-    //   var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-    //   var mainData = await _dbContext.SessionCollectBehaviors
-    //     .Where(w => w.ClientId == clientId)
-    //     .Where(w => problemId == 0 || w.ProblemId == problemId)
-    //     .Include(i => i.Behavior)
-    //     .ToListAsync();
-    //   var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
-    //     .Where(w => w.ClientId == clientId)
-    //     .Include(i => i.CaregiverDataCollectionProblems)
-    //     .ToListAsync();
-    //
-    //   var notes = await _dbContext.ClientChartNotes
-    //     .Where(w => w.ClientId == clientId)
-    //     .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
-    //     .OrderBy(o => o.ChartNoteDate)
-    //     .ToListAsync();
-    //
-    //   var problemsUnique = await _utils.GetClientBehaviors(clientId);
-    //   if (problemId != 0) problemsUnique = problemsUnique.Where(w => w.ProblemId == problemId).ToList();
-    //
-    //   var dataSet = new List<MultiSerieChart>();
-    //   var plotLines = new List<PlotLine>();
-    //
-    //   var firstWeekStart = dateStart ?? currentPeriod.start;
-    //   firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-    //   var lastWeekEnd = dateEnd ?? DateTime.Today;
-    //   while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-    //   var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
-    //
-    //   var legend = new List<string> {"Base", ""};
-    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Baseline"}, Value = 0, Color = "Blue", DashStyle = "ShortDot"});
-    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Start"}, Value = 2, Color = "Green", DashStyle = "ShortDot"});
-    //
-    //   foreach (var problem in problemsUnique)
-    //   {
-    //     var baseLine = await _dbContext.ClientProblems
-    //       .Where(w => w.ProblemId == problem.ProblemId && w.ClientId == clientId)
-    //       .Select(s => s.BaselineCount)
-    //       .FirstOrDefaultAsync();
-    //
-    //     var data = new List<int?> {baseLine, null};
-    //
-    //     var calWeekStart = firstWeekStart;
-    //     for (int i = 0; i < totalWeeks; i++)
-    //     {
-    //       var calWeekEnd = calWeekStart.AddDays(6);
-    //       var problemsCount = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-    //         .Count(w => w.ProblemId == problem.ProblemId);
-    //       var problemsComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-    //         .Where(w => w.ProblemId == problem.ProblemId)
-    //         .Count(w => w.Completed);
-    //       var caregiverProblemsCount = mainDataCaregiverCollect
-    //         .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
-    //         .Select(s => s.CaregiverDataCollectionProblems.Where(w => w.ProblemId == problem.ProblemId).Sum(s1 => s1.Count)).Sum();
-    //       problemsCount += caregiverProblemsCount ?? 0;
-    //
-    //       //todo arreglar esto
-    //       //data.Add(problemsCount == 0 ? null : (int?)problemsCount);
-    //       if (!problem.ProblemBehavior.IsPercent) data.Add(problemsCount);
-    //       else
-    //       {
-    //         var percent = problemsCount == 0 ? 0 : problemsComplete / (decimal) problemsCount * 100;
-    //         data.Add((int?) Math.Round(percent));
-    //       }
-    //
-    //       var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
-    //       foreach (var n in notesWeek) plotLines.Add(new PlotLine {Label = new Label {Text = n.Title}, Value = i + 2});
-    //
-    //       calWeekStart = calWeekStart.AddDays(7);
-    //     }
-    //
-    //     dataSet.Add(new MultiSerieChart
-    //     {
-    //       Data = data,
-    //       Name = problem.ProblemBehavior.ProblemBehaviorDescription + (problem.ProblemBehavior.IsPercent ? "(%)" : "")
-    //     });
-    //   }
-    //
-    //   var calWeekStartLegend = firstWeekStart;
-    //   for (int i = 0; i < totalWeeks; i++)
-    //   {
-    //     var calWeekEnd = calWeekStartLegend.AddDays(6);
-    //     legend.Add(calWeekEnd.ToString("M/d/yy"));
-    //     calWeekStartLegend = calWeekStartLegend.AddDays(7);
-    //   }
-    //
-    //   return Ok(new
-    //   {
-    //     chartOptions = new
-    //     {
-    //       xAxis = new {categories = legend, plotLines, title = new {text = "Weeks (label is last day of week)"}, crosshair = true},
-    //       series = dataSet,
-    //       title = new {text = ""},
-    //       chart = new {type = "line", height = problemId == 0 ? null : "350"},
-    //       tooltip = new {shared = true},
-    //       yAxis = new {title = new {text = "Count"}},
-    //       legend = new {enabled = problemId == 0},
-    //       exporting = new {chartOptions = new {title = new {text = problemId == 0 ? "" : problemsUnique.First().ProblemBehavior.ProblemBehaviorDescription}}}
-    //     },
-    //     notes
-    //   });
-    // }
-
     [HttpGet("[action]/{clientId}/{replacementId?}/{dateStart?}/{dateEnd?}")]
     public async Task<IActionResult> GetReplacementProgramChart(int clientId, string replacementId = "0", DateTime? dateStart = null, DateTime? dateEnd = null)
     {
@@ -675,115 +569,6 @@ namespace AbaBackend.Controllers
       var chartData = await _collection.GetClientReplacementChart(clientId, replacements, dateStart, dateEnd);
       return Ok(chartData);
     }
-
-    // [HttpGet("[action]/{clientId}/{replacementId?}/{dateStart?}/{dateEnd?}")]
-    // public async Task<IActionResult> GetReplacementProgramChart(int clientId, int replacementId = 0, DateTime? dateStart = null, DateTime? dateEnd = null)
-    // {
-    //   var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-    //   var mainData = await _dbContext.SessionCollectReplacements
-    //     .Where(w => w.ClientId == clientId)
-    //     .Where(w => replacementId == 0 || w.ReplacementId == replacementId)
-    //     .Include(i => i.Replacement)
-    //     .ToListAsync();
-    //   var notes = await _dbContext.ClientChartNotes
-    //     .Where(w => w.ClientId == clientId)
-    //     .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
-    //     .OrderBy(o => o.ChartNoteDate)
-    //     .ToListAsync();
-    //   var mainDataCaregiverCollect = await _dbContext.CaregiverDataCollections
-    //     .Where(w => w.ClientId == clientId)
-    //     .Include(i => i.CaregiverDataCollectionReplacements)
-    //     .ToListAsync();
-    //
-    //   var replacementUnique = await _utils.GetClientReplacements(clientId);
-    //   if (replacementId != 0) replacementUnique = replacementUnique.Where(w => w.ReplacementId == replacementId).ToList();
-    //   var dataSet = new List<MultiSerieChart>();
-    //   var plotLines = new List<PlotLine>();
-    //
-    //   var firstWeekStart = dateStart ?? currentPeriod.start;
-    //   firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-    //   var lastWeekEnd = dateEnd ?? DateTime.Today;
-    //   while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-    //   var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
-    //
-    //   var legend = new List<string> {"Base", ""};
-    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Baseline"}, Value = 0, Color = "Blue", DashStyle = "ShortDot"});
-    //   plotLines.Add(new PlotLine {Label = new Label {Text = "Start"}, Value = 2, Color = "Green", DashStyle = "ShortDot"});
-    //
-    //   foreach (var replacement in replacementUnique)
-    //   {
-    //     var baseLine = await _dbContext.ClientReplacements
-    //       .Where(w => w.ReplacementId == replacement.ReplacementId && w.ClientId == clientId)
-    //       .Select(s => s.BaselinePercent)
-    //       .FirstOrDefaultAsync();
-    //
-    //     var data = new List<int?> {baseLine, null};
-    //
-    //     var calWeekStart = firstWeekStart;
-    //     for (int i = 0; i < totalWeeks; i++)
-    //     {
-    //       var calWeekEnd = calWeekStart.AddDays(6);
-    //       var replacementCount = mainData
-    //         .Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-    //         .Count(w => w.ReplacementId == replacement.ReplacementId);
-    //       var replacementComplete = mainData.Where(w => w.Entry.Date >= calWeekStart && w.Entry.Date <= calWeekEnd)
-    //         .Where(w => w.ReplacementId == replacement.ReplacementId)
-    //         .Count(w => w.Completed);
-    //       var caregiverReplacements = mainDataCaregiverCollect
-    //         .Where(w => w.CollectDate.Date >= calWeekStart && w.CollectDate.Date <= calWeekEnd)
-    //         .GroupBy(g => 0)
-    //         .Select(s => new
-    //         {
-    //           TotalTrial = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalTrial)),
-    //           TotalCompleted = s.Sum(d => d.CaregiverDataCollectionReplacements.Where(w => w.ReplacementId == replacement.ReplacementId).Sum(s1 => s1.TotalCompleted))
-    //         }).FirstOrDefault();
-    //
-    //       replacementCount += caregiverReplacements?.TotalTrial ?? 0;
-    //       replacementComplete += caregiverReplacements?.TotalCompleted ?? 0;
-    //
-    //       var percent = replacementCount == 0 ? 0 : replacementComplete / (decimal) replacementCount * 100;
-    //
-    //       //todo arreglar esto
-    //       data.Add((int?) Math.Round(percent));
-    //       //data.Add(replacementCount == 0 ? null : (int?)percent);
-    //
-    //       var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStart && w.ChartNoteDate <= calWeekEnd).ToList();
-    //       foreach (var n in notesWeek) plotLines.Add(new PlotLine {Label = new Label {Text = n.Title}, Value = i + 2});
-    //
-    //       calWeekStart = calWeekStart.AddDays(7);
-    //     }
-    //
-    //     dataSet.Add(new MultiSerieChart
-    //     {
-    //       Data = data,
-    //       Name = replacement.Replacement.ReplacementProgramDescription
-    //     });
-    //   }
-    //
-    //   var calWeekStartLegend = firstWeekStart;
-    //   for (int i = 0; i < totalWeeks; i++)
-    //   {
-    //     var calWeekEnd = calWeekStartLegend.AddDays(6);
-    //     legend.Add(calWeekEnd.ToString("M/d/yy"));
-    //     calWeekStartLegend = calWeekStartLegend.AddDays(7);
-    //   }
-    //
-    //   return Ok(new
-    //   {
-    //     chartOptions = new
-    //     {
-    //       xAxis = new {categories = legend, plotLines = plotLines, title = new {text = "Weeks (label is last day of week)"}, crosshair = true},
-    //       series = dataSet,
-    //       title = new {text = ""},
-    //       chart = new {type = "line", height = replacementId == 0 ? null : "350"},
-    //       tooltip = new {shared = true},
-    //       yAxis = new {title = new {text = "Trials percent"}},
-    //       legend = new {enabled = replacementId == 0},
-    //       exporting = new {chartOptions = new {title = new {text = replacementId == 0 ? "" : replacementUnique.First().Replacement.ReplacementProgramDescription}}}
-    //     },
-    //     notes
-    //   });
-    // }
 
     [HttpPost("add-edit-chart-note")]
     public async Task<IActionResult> AddEditChartNote([FromBody] ClientChartNote note)
@@ -1133,24 +918,6 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpDelete("[action]/{id}")]
-    public async Task<IActionResult> DeleteSessionCollectBehavior(int id)
-    {
-      try
-      {
-        var data = await _dbContext.SessionCollectBehaviors
-          .FirstOrDefaultAsync(s => s.SessionCollectBehaviorId.Equals(id));
-        if (data == null) throw new Exception("Collect data not found");
-        _dbContext.SessionCollectBehaviors.Remove(data);
-        await _dbContext.SaveChangesAsync();
-        return Ok();
-      }
-      catch (System.Exception e)
-      {
-        return BadRequest(e.Message);
-      }
-    }
-
     [HttpPost("[action]")]
     public async Task<IActionResult> SaveSessionCollectReplacement([FromBody] SessionCollectReplacementV2 s)
     {
@@ -1178,24 +945,6 @@ namespace AbaBackend.Controllers
           .ToListAsync();
 
         return Ok(collectReplacements);
-      }
-      catch (System.Exception e)
-      {
-        return BadRequest(e.Message);
-      }
-    }
-
-    [HttpDelete("[action]/{id}")]
-    public async Task<IActionResult> DeleteSessionCollectReplacement(int id)
-    {
-      try
-      {
-        var data = await _dbContext.SessionCollectReplacements
-          .FirstOrDefaultAsync(s => s.SessionCollectReplacementId.Equals(id));
-        if (data == null) throw new Exception("Collect data not found");
-        _dbContext.SessionCollectReplacements.Remove(data);
-        await _dbContext.SaveChangesAsync();
-        return Ok();
       }
       catch (System.Exception e)
       {
