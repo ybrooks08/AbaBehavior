@@ -10,14 +10,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AbaBackend.Migrations
 {
     [DbContext(typeof(AbaDbContext))]
-    [Migration("20190426131115_CaregiverCollection")]
-    partial class CaregiverCollection
+    [Migration("20190718204051_AddPasses")]
+    partial class AddPasses
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -69,6 +69,27 @@ namespace AbaBackend.Migrations
                         .IsUnique();
 
                     b.ToTable("Assignments");
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.AuthPass", b =>
+                {
+                    b.Property<int>("AuthPassId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("Created");
+
+                    b.Property<bool>("Used");
+
+                    b.Property<DateTime?>("UsedDate");
+
+                    b.Property<int>("UserId");
+
+                    b.HasKey("AuthPassId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuthPasses");
                 });
 
             modelBuilder.Entity("AbaBackend.DataModel.BehaviorAnalysisCode", b =>
@@ -409,6 +430,8 @@ namespace AbaBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("Active");
+
                     b.Property<int?>("BaselineCount");
 
                     b.Property<DateTime?>("BaselineFrom");
@@ -456,6 +479,8 @@ namespace AbaBackend.Migrations
                     b.Property<int>("ClientReplacementId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("Active");
 
                     b.Property<DateTime?>("BaselineFrom");
 
@@ -1357,6 +1382,8 @@ namespace AbaBackend.Migrations
 
                     b.Property<bool>("Active");
 
+                    b.Property<bool>("IsPercent");
+
                     b.Property<string>("ProblemBehaviorDescription")
                         .IsRequired()
                         .HasMaxLength(100);
@@ -1373,174 +1400,203 @@ namespace AbaBackend.Migrations
                         {
                             ProblemId = 1,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Temper Tantrum"
                         },
                         new
                         {
                             ProblemId = 2,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Elopement"
                         },
                         new
                         {
                             ProblemId = 3,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Defiant behavior"
                         },
                         new
                         {
                             ProblemId = 4,
                             Active = true,
+                            IsPercent = true,
                             ProblemBehaviorDescription = "Task Refusal"
                         },
                         new
                         {
                             ProblemId = 5,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Physical Aggression "
                         },
                         new
                         {
                             ProblemId = 6,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Verbal aggression"
                         },
                         new
                         {
                             ProblemId = 7,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Self Injury Behavior"
                         },
                         new
                         {
                             ProblemId = 8,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Hyperactive Behavior/Out of sit behavior"
                         },
                         new
                         {
                             ProblemId = 9,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Inattentive behavior/Off task behavior"
                         },
                         new
                         {
                             ProblemId = 10,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Disruptive behavior"
                         },
                         new
                         {
                             ProblemId = 11,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Mouthing unsafe objects"
                         },
                         new
                         {
                             ProblemId = 12,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Pica"
                         },
                         new
                         {
                             ProblemId = 13,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Biting Self"
                         },
                         new
                         {
                             ProblemId = 14,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Outburst Behavior"
                         },
                         new
                         {
                             ProblemId = 15,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Climbing-presenting risk of fall"
                         },
                         new
                         {
                             ProblemId = 16,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Bruxism"
                         },
                         new
                         {
                             ProblemId = 17,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Property Destructions"
                         },
                         new
                         {
                             ProblemId = 18,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Lying"
                         },
                         new
                         {
                             ProblemId = 19,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Cheating"
                         },
                         new
                         {
                             ProblemId = 20,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Impulsive Behavior"
                         },
                         new
                         {
                             ProblemId = 21,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Vocal or Auditory stereotypy"
                         },
                         new
                         {
                             ProblemId = 22,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Echolalia"
                         },
                         new
                         {
                             ProblemId = 23,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Hyper-reactivity to sensory input"
                         },
                         new
                         {
                             ProblemId = 24,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Hypo-reactivity to sensory input"
                         },
                         new
                         {
                             ProblemId = 25,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Insomnia"
                         },
                         new
                         {
                             ProblemId = 26,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Difficulty with receptive language"
                         },
                         new
                         {
                             ProblemId = 27,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Difficulty with expressive language"
                         },
                         new
                         {
                             ProblemId = 28,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Bolting"
                         },
                         new
                         {
                             ProblemId = 29,
                             Active = true,
+                            IsPercent = false,
                             ProblemBehaviorDescription = "Saliva play or smearing"
                         });
                 });
@@ -2024,6 +2080,8 @@ namespace AbaBackend.Migrations
 
                     b.Property<int>("ClientId");
 
+                    b.Property<bool>("Completed");
+
                     b.Property<int>("Duration");
 
                     b.Property<DateTime>("Entry");
@@ -2038,9 +2096,34 @@ namespace AbaBackend.Migrations
 
                     b.HasIndex("ProblemId");
 
+                    b.ToTable("SessionCollectBehaviors");
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectBehaviorV2", b =>
+                {
+                    b.Property<int>("SessionCollectBehaviorV2Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("Completed");
+
+                    b.Property<bool>("NoData");
+
+                    b.Property<int>("ProblemId");
+
+                    b.Property<int>("SessionId");
+
+                    b.Property<int>("Total");
+
+                    b.HasKey("SessionCollectBehaviorV2Id");
+
+                    b.HasIndex("ProblemId");
+
                     b.HasIndex("SessionId");
 
-                    b.ToTable("SessionCollectBehaviors");
+                    b.ToTable("SessionCollectBehaviorsV2");
                 });
 
             modelBuilder.Entity("AbaBackend.DataModel.SessionCollectReplacement", b =>
@@ -2065,9 +2148,34 @@ namespace AbaBackend.Migrations
 
                     b.HasIndex("ReplacementId");
 
+                    b.ToTable("SessionCollectReplacements");
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectReplacementV2", b =>
+                {
+                    b.Property<int>("SessionCollectReplacementV2Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("Completed");
+
+                    b.Property<bool>("NoData");
+
+                    b.Property<int>("ReplacementId");
+
+                    b.Property<int>("SessionId");
+
+                    b.Property<int>("Total");
+
+                    b.HasKey("SessionCollectReplacementV2Id");
+
+                    b.HasIndex("ReplacementId");
+
                     b.HasIndex("SessionId");
 
-                    b.ToTable("SessionCollectReplacements");
+                    b.ToTable("SessionCollectReplacementsV2");
                 });
 
             modelBuilder.Entity("AbaBackend.DataModel.SessionLog", b =>
@@ -2261,6 +2369,10 @@ namespace AbaBackend.Migrations
 
                     b.Property<bool>("BriefReplacement");
 
+                    b.Property<int?>("CaregiverId");
+
+                    b.Property<string>("CaregiverNote");
+
                     b.Property<string>("CommentsRelated");
 
                     b.Property<DateTime?>("NextScheduledDate");
@@ -2303,6 +2415,8 @@ namespace AbaBackend.Migrations
 
                     b.Property<string>("Recommendations");
 
+                    b.Property<string>("RejectNotes");
+
                     b.Property<int>("SessionId");
 
                     b.Property<bool>("Validation");
@@ -2312,6 +2426,8 @@ namespace AbaBackend.Migrations
                     b.Property<bool>("isDirectSession");
 
                     b.HasKey("SessionSupervisionNoteId");
+
+                    b.HasIndex("CaregiverId");
 
                     b.HasIndex("SessionId")
                         .IsUnique();
@@ -2589,6 +2705,14 @@ namespace AbaBackend.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("AbaBackend.DataModel.AuthPass", b =>
+                {
+                    b.HasOne("AbaBackend.DataModel.User")
+                        .WithMany("Passes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("AbaBackend.DataModel.Caregiver", b =>
                 {
                     b.HasOne("AbaBackend.DataModel.CaregiverType", "CaregiverType")
@@ -2765,9 +2889,17 @@ namespace AbaBackend.Migrations
                         .WithMany()
                         .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectBehaviorV2", b =>
+                {
+                    b.HasOne("AbaBackend.DataModel.ProblemBehavior", "Behavior")
+                        .WithMany()
+                        .HasForeignKey("ProblemId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AbaBackend.DataModel.Session")
-                        .WithMany("SessionCollectBehaviors")
+                        .WithMany("SessionCollectBehaviorsV2")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -2778,9 +2910,17 @@ namespace AbaBackend.Migrations
                         .WithMany()
                         .HasForeignKey("ReplacementId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectReplacementV2", b =>
+                {
+                    b.HasOne("AbaBackend.DataModel.ReplacementProgram", "Replacement")
+                        .WithMany()
+                        .HasForeignKey("ReplacementId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AbaBackend.DataModel.Session")
-                        .WithMany("SessionCollectReplacements")
+                        .WithMany("SessionCollectReplacementsV2")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -2846,6 +2986,10 @@ namespace AbaBackend.Migrations
 
             modelBuilder.Entity("AbaBackend.DataModel.SessionSupervisionNote", b =>
                 {
+                    b.HasOne("AbaBackend.DataModel.Caregiver", "Caregiver")
+                        .WithMany()
+                        .HasForeignKey("CaregiverId");
+
                     b.HasOne("AbaBackend.DataModel.Session")
                         .WithOne("SessionSupervisionNote")
                         .HasForeignKey("AbaBackend.DataModel.SessionSupervisionNote", "SessionId")

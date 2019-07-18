@@ -240,5 +240,21 @@ export default {
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
+  },
+
+  grantPass(userId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/users/GrantPass/${userId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  revokePass(userId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/users/RevokePass/${userId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
   }
 };

@@ -4,45 +4,42 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AbaBackend.Migrations
 {
-    public partial class SystemLogs : Migration
+    public partial class AddPasses : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "SystemLogs",
+                name: "AuthPasses",
                 columns: table => new
                 {
-                    SystemLogId = table.Column<int>(nullable: false)
+                    AuthPassId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Entry = table.Column<DateTimeOffset>(nullable: false),
-                    Title = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
-                    SystemLogType = table.Column<int>(nullable: false),
-                    Module = table.Column<int>(nullable: false),
-                    ModuleValue = table.Column<string>(nullable: true),
-                    UserId = table.Column<int>(nullable: false)
+                    UserId = table.Column<int>(nullable: false),
+                    Created = table.Column<DateTime>(nullable: false),
+                    UsedDate = table.Column<DateTime>(nullable: true),
+                    Used = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SystemLogs", x => x.SystemLogId);
+                    table.PrimaryKey("PK_AuthPasses", x => x.AuthPassId);
                     table.ForeignKey(
-                        name: "FK_SystemLogs_Users_UserId",
+                        name: "FK_AuthPasses_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_SystemLogs_UserId",
-                table: "SystemLogs",
+                name: "IX_AuthPasses_UserId",
+                table: "AuthPasses",
                 column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "SystemLogs");
+                name: "AuthPasses");
         }
     }
 }

@@ -117,6 +117,9 @@ namespace AbaBackend.Controllers
           check = await _utils.CheckSessionOverlapSameDayClient(session.SessionStart, session.SessionEnd, session.ClientId);
           if (check != "ok") throw new Exception(check);
 
+          //check if user can create after x hours and have any pass
+          if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session beacuse exced the hours allowed and you dont have any pass.");
+
           session.SessionStart = session.SessionStart.ToUniversalTime();
           session.SessionEnd = session.SessionEnd.ToUniversalTime();
           session.TotalUnits = Convert.ToInt32((session.SessionEnd - session.SessionStart).TotalMinutes / 15);
@@ -165,8 +168,9 @@ namespace AbaBackend.Controllers
               ReplacementId = r.ReplacementId
             });
           }
-
           await _dbContext.SaveChangesAsync();
+
+          await _utils.RemovePassIfApply(user, session.SessionStart);
 
           await _utils.NewEntryLog(session.SessionId, "Created", "Session was created", "fa-info", "purple");
 

@@ -1,7 +1,4 @@
 <template>
-  <!--<v-container class="pa-0" fluid grid-list-md>-->
-  <!--<v-layout row wrap>-->
-  <!--<v-flex xs12>-->
   <v-card class="elevation-8">
     <v-toolbar dark class="secondary" fluid>
       <v-toolbar-title>System Users ({{users.length}})</v-toolbar-title>
@@ -57,6 +54,15 @@
           <td class="text-xs-left px-1">{{props.item.firstname}} {{props.item.lastname}}</td>
           <td class="text-xs-left px-1 hidden-sm-and-down">{{props.item.email}}</td>
           <td class="text-xs-left px-1 hidden-xs-only">{{props.item.created | moment('MM/DD/YYYY')}}</td>
+          <td class="text-xs-center px-1 hidden-xs-only">
+            <v-btn flat icon small color="error" class="mx-0" @click="passDown(props.item)">
+              <v-icon small>fa-minus-circle</v-icon>
+            </v-btn>
+            <span class="body-2">{{props.item.passesAvailable}}</span>
+            <v-btn flat icon small color="success" class="mx-0" @click="passUp(props.item)">
+              <v-icon small>fa-plus-circle</v-icon>
+            </v-btn>
+          </td>
           <td class="text-xs-center px-0">
             <v-switch hide-details color="primary" v-model="props.item.active" @change="changeActive(props.item)"></v-switch>
           </td>
@@ -84,49 +90,47 @@
       </template>
     </v-data-table>
 
-    <change-password :userId="userId" :model="changePasswordDialog" @cancel="changePasswordDialog = false"/>
+    <change-password :userId="userId" :model="changePasswordDialog" @cancel="changePasswordDialog = false" />
   </v-card>
-  <!--</v-flex>-->
-  <!--</v-layout>-->
-  <!--</v-container>-->
 </template>
 
 <script>
-import ChangePassword from '@/components/users/ChangePassword';
-import userApi from '@/services/api/UserServices';
+import ChangePassword from "@/components/users/ChangePassword";
+import userApi from "@/services/api/UserServices";
 
 export default {
   data() {
     return {
       users: [],
-      search: '',
+      search: "",
       loading: false,
       showInactive: false,
       headers: [
-        { text: 'Username', align: 'left', value: 'username', class: 'pl-3 pr-0 hidden-sm-and-down' },
-        { text: 'Rol', align: 'left', value: 'rolname', class: 'pr-1 pl-4 hidden-sm-and-down' },
-        { text: 'Fullname', align: 'left', value: 'firstname', class: 'px-1 hidden-sm-and-down' },
-        { text: 'Email', align: 'left', value: 'email', class: 'px-1' },
-        { text: 'Created', align: 'left', value: 'created', class: 'px-1  hidden-xs-only' },
-        { text: 'Active', align: 'left', value: 'active', sortable: false, class: 'px-1' },
-        { text: '', align: 'center', value: 'active', sortable: false, class: 'px-1' },
+        { text: "Username", align: "left", value: "username", class: "pl-3 pr-0 hidden-sm-and-down" },
+        { text: "Rol", align: "left", value: "rolname", class: "pr-1 pl-4 hidden-sm-and-down" },
+        { text: "Fullname", align: "left", value: "firstname", class: "px-1 hidden-sm-and-down" },
+        { text: "Email", align: "left", value: "email", class: "px-1" },
+        { text: "Created", align: "left", value: "created", class: "px-1  hidden-xs-only" },
+        { text: "Passes", align: "center", value: "passesAvailable", sortable: false, class: "px-1" },
+        { text: "Active", align: "left", value: "active", sortable: false, class: "px-1" },
+        { text: "", align: "center", value: "active", sortable: false, class: "px-1" }
       ],
       //        pagination: {
       //          sortBy: 'username',
       //        },
       changePasswordDialog: false,
-      userId: null,
+      userId: null
     };
   },
 
   computed: {
     filterUsers() {
       return this.users.filter(s => s.active !== this.showInactive);
-    },
+    }
   },
 
   components: {
-    ChangePassword,
+    ChangePassword
   },
 
   mounted() {
@@ -141,18 +145,20 @@ export default {
         this.users = await userApi.getUsers();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     async changeActive(item) {
       const newStatus = {
         status: item.active,
-        userId: item.userId,
+        userId: item.userId
       };
       this.loading = true;
       try {
         await userApi.changeUserStatus(newStatus);
-        this.$toast.success('Status changed successful.');
+        this.$toast.success("Status changed successful.");
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -169,6 +175,25 @@ export default {
     editUser(userId) {
       this.$router.push(`/users/add_edit/${userId}`);
     },
-  },
+
+    async passUp(user) {
+      try {
+        await userApi.grantPass(user.userId);
+        user.passesAvailable++;
+      } catch (error) {
+        this.$toast.error(error);
+      }
+    },
+
+    async passDown(user) {
+      if (user.passesAvailable < 1) return;
+      try {
+        await userApi.revokePass(user.userId);
+        user.passesAvailable--;
+      } catch (error) {
+        this.$toast.error(error);
+      }
+    }
+  }
 };
 </script>

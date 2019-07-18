@@ -40,6 +40,7 @@ namespace AbaBackend.Infrastructure.Utils
         .Include(i => i.Rol)
         .ThenInclude(t => t.BehaviorAnalysisCode)
         .Include(i => i.UserSign)
+        .Include(i => i.Passes)
         .FirstOrDefaultAsync(w => w.Username.Equals(username));
       return user;
     }
@@ -80,7 +81,7 @@ namespace AbaBackend.Infrastructure.Utils
     {
       if (user == null) return 0;
       date = date ?? DateTime.Today;
-      var assessments = await GetClientValidAssessmentsForUser((DateTime) date, clientId, user);
+      var assessments = await GetClientValidAssessmentsForUser((DateTime)date, clientId, user);
       var lastAssessment = assessments.OrderByDescending(o => o.EndDate).FirstOrDefault();
       if (lastAssessment == null || lastAssessment.TotalUnits <= 0) return 0;
 
@@ -381,7 +382,7 @@ namespace AbaBackend.Infrastructure.Utils
       var session = await _dbContext.Sessions.FirstAsync(w => w.SessionId == changeSessionStatus.SessionId);
       session.SessionStatus = changeSessionStatus.SessionStatus;
       await _dbContext.SaveChangesAsync();
-      return (changeSessionStatus.SessionStatus.ToString(), ((SessionStatusColors) changeSessionStatus.SessionStatus).ToString());
+      return (changeSessionStatus.SessionStatus.ToString(), ((SessionStatusColors)changeSessionStatus.SessionStatus).ToString());
     }
 
     public async Task<int> GetUserExpiredDocumentsCount(int userId = 0)
@@ -539,7 +540,7 @@ namespace AbaBackend.Infrastructure.Utils
         beginMonth = beginMonth.AddMonths(1);
       }
 
-      Object[] dataset = {new OkObjectResult(new {data, name = "progress"}).Value};
+      Object[] dataset = { new OkObjectResult(new { data, name = "progress" }).Value };
       //var dataset = new OkObjectResult(new {data, name = "progress"}).Value;
 
       var a = new OkObjectResult
@@ -548,13 +549,13 @@ namespace AbaBackend.Infrastructure.Utils
         {
           chartOptions = new
           {
-            xAxis = new {categories = legend, title = new {text = "Months"}, crosshair = true},
+            xAxis = new { categories = legend, title = new { text = "Months" }, crosshair = true },
             series = dataset,
-            title = new {text = provider},
-            chart = new {type = "column"},
-            yAxis = new {title = new {text = "Percent"}, max = 100, min = 0},
-            plotOptions = new {column = new {minPointLength = 2}},
-            legend = new {enabled = false}
+            title = new { text = provider },
+            chart = new { type = "column" },
+            yAxis = new { title = new { text = "Percent" }, max = 100, min = 0 },
+            plotOptions = new { column = new { minPointLength = 2 } },
+            legend = new { enabled = false }
           }
         }
       ).Value;
@@ -607,6 +608,28 @@ namespace AbaBackend.Infrastructure.Utils
         .Include(i => i.UserSign)
         .FirstOrDefaultAsync(w => w.UserId.Equals(userId));
       return user;
+    }
+
+    public bool CanCreateAfterHours(User user, DateTime sessionStart)
+    {
+      var hours = Convert.ToInt32(_configuration["Session:MaxHoursToCreate"]);
+      var diff = (DateTime.Now - sessionStart).TotalHours;
+      if (diff < hours) return true;
+      var hasPass = user.Passes.Any(w => !w.Used);
+      return hasPass;
+    }
+
+    public async Task RemovePassIfApply(User user, DateTime sessionStart)
+    {
+      var hours = Convert.ToInt32(_configuration["Session:MaxHoursToCreate"]);
+      var diff = (DateTime.Now - sessionStart).TotalHours;
+      if (diff < hours) return;
+      var hasPass = user.Passes.OrderBy(o => o.Created).FirstOrDefault(w => !w.Used);
+      if (hasPass == null) return;
+      hasPass.UsedDate = DateTime.Now;
+      hasPass.Used = true;
+      await _dbContext.SaveChangesAsync();
+      return;
     }
   }
 }

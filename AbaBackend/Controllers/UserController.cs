@@ -52,7 +52,8 @@ namespace AbaBackend.Controllers
             u.Lastname,
             u.Active,
             u.Created,
-            u.Email
+            u.Email,
+            PassesAvailable = u.Passes.Where(w => !w.Used).Count()
           })
           .ToListAsync();
         return Ok(users);
@@ -549,7 +550,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -595,7 +596,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -645,7 +646,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -849,6 +850,43 @@ namespace AbaBackend.Controllers
           note,
           client
         });
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{userId}")]
+    public async Task<IActionResult> GrantPass(int userId)
+    {
+      try
+      {
+        var pass = new AuthPass
+        {
+          Created = DateTime.Now,
+          UserId = userId,
+        };
+        await _dbContext.AddAsync(pass);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{userId}")]
+    public async Task<IActionResult> RevokePass(int userId)
+    {
+      try
+      {
+        var pass = await _dbContext.AuthPasses.Where(w => w.UserId == userId && w.Used == false).FirstOrDefaultAsync();
+        if (pass == null) return Ok();
+        _dbContext.Remove(pass);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
       }
       catch (Exception e)
       {

@@ -329,5 +329,6 @@ namespace AbaBackend.DataModel
 
     public DbSet<SessionCollectBehaviorV2> SessionCollectBehaviorsV2 { get; set; }
     public DbSet<SessionCollectReplacementV2> SessionCollectReplacementsV2 { get; set; }
+    public DbSet<AuthPass> AuthPasses { get; set; }
   }
 }

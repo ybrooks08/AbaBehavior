@@ -64,5 +64,6 @@ namespace AbaBackend.DataModel
     public decimal DriveTimePayRate { get; set; }
     public List<DocumentUser> Documents { get; set; }
     public UserSign UserSign { get; set; }
+    public List<AuthPass> Passes { get; set; }
   }
 }

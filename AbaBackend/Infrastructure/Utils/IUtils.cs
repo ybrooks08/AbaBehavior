@@ -40,5 +40,7 @@ namespace AbaBackend.Infrastructure.Utils
     Task NewSystemLog(SystemLogType logType, Module module, int moduleId, string title, string description);
     Task<string> GetFullDataForSystemLog(Module who, int valueId);
     Task<User> GetUserById(int userId);
+    bool CanCreateAfterHours(User user, DateTime sessionStart);
+    Task RemovePassIfApply(User user, DateTime sessionStart);
   }
 }

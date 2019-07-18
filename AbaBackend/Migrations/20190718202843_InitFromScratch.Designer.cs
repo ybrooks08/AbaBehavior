@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AbaBackend.Migrations
 {
     [DbContext(typeof(AbaDbContext))]
-    [Migration("20190528203425_BehaviorIsPercentTypo")]
-    partial class BehaviorIsPercentTypo
+    [Migration("20190718202843_InitFromScratch")]
+    partial class InitFromScratch
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -409,6 +409,8 @@ namespace AbaBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("Active");
+
                     b.Property<int?>("BaselineCount");
 
                     b.Property<DateTime?>("BaselineFrom");
@@ -456,6 +458,8 @@ namespace AbaBackend.Migrations
                     b.Property<int>("ClientReplacementId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("Active");
 
                     b.Property<DateTime?>("BaselineFrom");
 
@@ -2071,9 +2075,34 @@ namespace AbaBackend.Migrations
 
                     b.HasIndex("ProblemId");
 
+                    b.ToTable("SessionCollectBehaviors");
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectBehaviorV2", b =>
+                {
+                    b.Property<int>("SessionCollectBehaviorV2Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("Completed");
+
+                    b.Property<bool>("NoData");
+
+                    b.Property<int>("ProblemId");
+
+                    b.Property<int>("SessionId");
+
+                    b.Property<int>("Total");
+
+                    b.HasKey("SessionCollectBehaviorV2Id");
+
+                    b.HasIndex("ProblemId");
+
                     b.HasIndex("SessionId");
 
-                    b.ToTable("SessionCollectBehaviors");
+                    b.ToTable("SessionCollectBehaviorsV2");
                 });
 
             modelBuilder.Entity("AbaBackend.DataModel.SessionCollectReplacement", b =>
@@ -2098,9 +2127,34 @@ namespace AbaBackend.Migrations
 
                     b.HasIndex("ReplacementId");
 
+                    b.ToTable("SessionCollectReplacements");
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectReplacementV2", b =>
+                {
+                    b.Property<int>("SessionCollectReplacementV2Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("Completed");
+
+                    b.Property<bool>("NoData");
+
+                    b.Property<int>("ReplacementId");
+
+                    b.Property<int>("SessionId");
+
+                    b.Property<int>("Total");
+
+                    b.HasKey("SessionCollectReplacementV2Id");
+
+                    b.HasIndex("ReplacementId");
+
                     b.HasIndex("SessionId");
 
-                    b.ToTable("SessionCollectReplacements");
+                    b.ToTable("SessionCollectReplacementsV2");
                 });
 
             modelBuilder.Entity("AbaBackend.DataModel.SessionLog", b =>
@@ -2339,6 +2393,8 @@ namespace AbaBackend.Migrations
                     b.Property<bool>("OversightResponseBool");
 
                     b.Property<string>("Recommendations");
+
+                    b.Property<string>("RejectNotes");
 
                     b.Property<int>("SessionId");
 
@@ -2804,9 +2860,17 @@ namespace AbaBackend.Migrations
                         .WithMany()
                         .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectBehaviorV2", b =>
+                {
+                    b.HasOne("AbaBackend.DataModel.ProblemBehavior", "Behavior")
+                        .WithMany()
+                        .HasForeignKey("ProblemId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AbaBackend.DataModel.Session")
-                        .WithMany("SessionCollectBehaviors")
+                        .WithMany("SessionCollectBehaviorsV2")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -2817,9 +2881,17 @@ namespace AbaBackend.Migrations
                         .WithMany()
                         .HasForeignKey("ReplacementId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("AbaBackend.DataModel.SessionCollectReplacementV2", b =>
+                {
+                    b.HasOne("AbaBackend.DataModel.ReplacementProgram", "Replacement")
+                        .WithMany()
+                        .HasForeignKey("ReplacementId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AbaBackend.DataModel.Session")
-                        .WithMany("SessionCollectReplacements")
+                        .WithMany("SessionCollectReplacementsV2")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
