@@ -11,5 +11,7 @@ namespace AbaBackend.DataModel
     public int DiagnosisId { get; set; }
 
     public Diagnosis Diagnosis { get; set; }
+
+    public bool Active { get; set; } = true;
   }
 }

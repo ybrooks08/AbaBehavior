@@ -24,18 +24,15 @@
                   <v-divider></v-divider>
                   <v-card-text class="pl-2 pr-2 pt-2 pb-0">
                     <template v-if="!b.behavior.isPercent">
-                      <v-text-field v-model="b.total" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : b.total == 0 ? 'fa-smile' : 'fa-frown'" box hide-actions hide-details label="Total"
-                                    @change="updateBehaviorCollection(b)" :data-vv-name="'beh'+b.sessionCollectBehaviorV2Id" :rules="errors.collect('beh'+b.sessionCollectBehaviorV2Id)" v-validate="'numeric'"></v-text-field>
+                      <v-text-field v-model="b.total" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : b.total == 0 ? 'fa-smile' : 'fa-frown'" box hide-actions hide-details label="Total" @change="updateBehaviorCollection(b)" :data-vv-name="'beh'+b.sessionCollectBehaviorV2Id" :rules="errors.collect('beh'+b.sessionCollectBehaviorV2Id)" v-validate="'numeric'"></v-text-field>
                     </template>
                     <template v-else>
                       <v-layout row wrap>
                         <v-flex xs6>
-                          <v-text-field v-model="b.total" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : 'fa-walking'" box hide-actions hide-details label="Total" @change="updateBehaviorCollection(b)"
-                                        :data-vv-name="'beh'+b.sessionCollectBehaviorV2Id" :rules="errors.collect('beh'+b.sessionCollectBehaviorV2Id)" v-validate="'numeric'"></v-text-field>
+                          <v-text-field v-model="b.total" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : 'fa-walking'" box hide-actions hide-details label="Total" @change="updateBehaviorCollection(b)" :data-vv-name="'beh'+b.sessionCollectBehaviorV2Id" :rules="errors.collect('beh'+b.sessionCollectBehaviorV2Id)" v-validate="'numeric'"></v-text-field>
                         </v-flex>
                         <v-flex xs6>
-                          <v-text-field v-model="b.completed" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : b.completed == 0 ? 'fa-smile' : 'fa-frown'" box hide-actions hide-details label="Occurred"
-                                        @change="updateBehaviorCollection(b)" :data-vv-name="'rep2'+b.sessionCollectBehaviorV2Id" :rules="errors.collect('rep2'+b.sessionCollectBehaviorV2Id)" v-validate="'numeric'"></v-text-field>
+                          <v-text-field v-model="b.completed" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : b.completed == 0 ? 'fa-smile' : 'fa-frown'" box hide-actions hide-details label="Occurred" @change="updateBehaviorCollection(b)" :data-vv-name="'rep2'+b.sessionCollectBehaviorV2Id" :rules="errors.collect('rep2'+b.sessionCollectBehaviorV2Id)" v-validate="'numeric'"></v-text-field>
                         </v-flex>
                       </v-layout>
                     </template>
@@ -59,7 +56,7 @@
       <v-flex xs12>
         <v-card>
           <v-toolbar dark class="secondary" fluid dense flat>
-            <v-toolbar-title>Colect Replacement data {{activeDate | moment("l")}}</v-toolbar-title>
+            <v-toolbar-title>Collect Replacement data {{activeDate | moment("l")}}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn flat @click="goToNotes">
@@ -80,12 +77,10 @@
                   <v-card-text class="pl-2 pr-2 pt-2 pb-0">
                     <v-layout row wrap>
                       <v-flex xs6>
-                        <v-text-field v-model="b.total" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : 'fa-walking'" box hide-actions hide-details label="Total trials" @change="updateReplacementCollection(b)"
-                                      :data-vv-name="'rep'+b.sessionCollectReplacementV2Id" :rules="errors.collect('rep'+b.sessionCollectReplacementV2Id)" v-validate="'numeric'"></v-text-field>
+                        <v-text-field v-model="b.total" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : 'fa-walking'" box hide-actions hide-details label="Total trials" @change="updateReplacementCollection(b)" :data-vv-name="'rep'+b.sessionCollectReplacementV2Id" :rules="errors.collect('rep'+b.sessionCollectReplacementV2Id)" v-validate="'numeric'"></v-text-field>
                       </v-flex>
                       <v-flex xs6>
-                        <v-text-field v-model="b.completed" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : 'fa-check-circle'" box hide-actions hide-details label="Completed" @change="updateReplacementCollection(b)"
-                                      :data-vv-name="'rep2'+b.sessionCollectReplacementV2Id" :rules="errors.collect('rep2'+b.sessionCollectReplacementV2Id)" v-validate="'numeric'"></v-text-field>
+                        <v-text-field v-model="b.completed" :disabled="b.noData" :prepend-inner-icon="b.noData ? 'fa-question-circle' : 'fa-check-circle'" box hide-actions hide-details label="Completed" @change="updateReplacementCollection(b)" :data-vv-name="'rep2'+b.sessionCollectReplacementV2Id" :rules="errors.collect('rep2'+b.sessionCollectReplacementV2Id)" v-validate="'numeric'"></v-text-field>
                       </v-flex>
                     </v-layout>
                   </v-card-text>

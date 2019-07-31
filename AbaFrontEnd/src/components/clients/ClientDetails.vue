@@ -349,7 +349,7 @@
                 <v-card-text class="pa-1">
                   <table v-if="!client.clientDiagnostics || client.clientDiagnostics.length !== 0" class="v-datatable v-table theme--light">
                     <tbody>
-                      <tr v-for="item in client.clientDiagnostics" :key="item.clientDiagnosisId">
+                      <tr v-for="item in client.clientDiagnostics" :key="item.clientDiagnosisId" :class="{'red lighten-5 grey--text': !item.active}">
                         <td class="text-xs-left px-1" style="width: 60px;">
                           <v-avatar>
                             <v-icon large>fa-stethoscope</v-icon>
@@ -359,6 +359,9 @@
                           <strong class="body-2">{{item.diagnosis.description}}</strong>
                           <br>
                           <span>{{item.diagnosis.code}}</span>
+                        </td>
+                        <td class="text-xs-right px-1">
+                          <v-switch hide-details color="primary" v-model="item.active" @change="changeDiagnosisActive(item)"></v-switch>
                         </td>
                         <td class="text-xs-right px-1">
                           <v-btn icon @click="deleteDiagnosis(item)" class="ma-0">
@@ -704,6 +707,21 @@ export default {
       const newStatus = {
         status: assignment.active,
         userId: assignment.assignmentId
+      };
+      this.loadingBasicInfo = true;
+      try {
+        await clientApi.changeAssignmentStatus(newStatus);
+      } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loadingBasicInfo = false;
+      }
+    },
+
+    async changeDiagnosisActive(diagnosis) {
+      const newStatus = {
+        status: diagnosis.active,
+        userId: diagnosis.clientDiagnosisId
       };
       this.loadingBasicInfo = true;
       try {

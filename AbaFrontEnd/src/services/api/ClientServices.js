@@ -132,6 +132,14 @@ export default {
 
   changeAssignmentStatus(item) {
     return new Promise((resolve, reject) => {
+      Vue.axios.post('api/clients/change-diagnosis-status', item)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  changeDiagnosisStatus(item) {
+    return new Promise((resolve, reject) => {
       Vue.axios.post('api/clients/change-assignment-status', item)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));

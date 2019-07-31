@@ -112,6 +112,14 @@
                     <v-list-tile-title>Data collection</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
+                <v-list-tile v-if="isRbt && !editDisabled && sessionDetailed.sessionStatusCode !== 8" @click="markAsReady2Lead">
+                  <v-list-tile-action>
+                    <v-icon medium>fa-calendar-check</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title>Ready to Analyst</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
                 <template v-if="isChecked && isAdmin">
                   <v-divider></v-divider>
                   <v-list-tile @click="markAsReviewed">
@@ -360,7 +368,7 @@
                           <v-switch hide-details color="primary" label="Direct observation/Data collection/Probing" v-model="session.sessionNote.summaryDirectObservation"></v-switch>
                         </v-flex>
                         <v-flex xs12>
-                          <v-switch hide-details color="primary" label="Observation & feedback of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.summaryObservationFeedback"></v-switch>
+                          <v-switch hide-details color="primary" label="Observation of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.summaryObservationFeedback"></v-switch>
                         </v-flex>
                         <v-flex xs12>
                           <v-switch hide-details color="primary" label="Implemented reduction programs" v-model="session.sessionNote.summaryImplementedReduction"></v-switch>
@@ -414,7 +422,7 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-switch hide-details color="primary" label="Observation & feedback of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.caregiverTrainingObservationFeedback"></v-switch>
+                          <v-switch hide-details color="primary" label="Observation of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.caregiverTrainingObservationFeedback"></v-switch>
                         </v-flex>
                         <v-flex xs12>
                           <v-switch hide-details color="primary" label="Parent/Caregiver training" v-model="session.sessionNote.caregiverTrainingParentCaregiverTraining"></v-switch>
@@ -737,6 +745,9 @@ export default {
     isAdmin() {
       return this.user.rol2 === "admin";
     },
+    isRbt() {
+      return this.user.rol2 === "tech";
+    },
     isAdminOrLead() {
       return this.user.rol2 === "admin" || this.user.rol2 === "analyst";
     },
@@ -926,11 +937,32 @@ export default {
     },
 
     async markAsChecked() {
-      this.$confirm("Are you sure you want to check this session and notes?").then(async res => {
+      this.$confirm("Are you sure you want to check this session and notes? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(async res => {
         if (res) {
           const model = {
             sessionId: this.activeSessionId,
             sessionStatus: 5 //checked
+          };
+          try {
+            if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
+              this.$toast.error("You can not check this session without a valid signature");
+              return;
+            }
+            await sessionServicesApi.changeSessionStatus(model);
+            this.close();
+          } catch (error) {
+            this.$toast.error(error);
+          }
+        }
+      });
+    },
+
+    async markAsReady2Lead() {
+      this.$confirm("Are you sure you want to mark this session as Ready to Analyst(Lead)? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(async res => {
+        if (res) {
+          const model = {
+            sessionId: this.activeSessionId,
+            sessionStatus: 8 //checked
           };
           try {
             if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {

@@ -73,7 +73,7 @@
                       <v-icon small>{{sessionPrint.caregiverTraining.caregiverTrainingObservationFeedback ? "fa-check-circle":"far fa-circle"}}</v-icon>
                     </td>
                     <td class="pl-1">
-                      Observation & feedback of recipients's interaction with parent/caregiver/others
+                      Observation of recipients's interaction with parent/caregiver/others
                     </td>
                   </tr>
                   <tr class="no-page-break">
@@ -364,7 +364,7 @@
                         <v-icon small>{{sessionPrint.sessionNote.summaryObservationFeedback ? "fa-check-circle":"far fa-circle"}}</v-icon>
                       </td>
                       <td class="pl-1">
-                        Observation & feedback of recipients's interaction with parent/caregiver/others
+                        Observation of recipients's interaction with parent/caregiver/others
                       </td>
                     </tr>
                     <tr class="no-page-break">

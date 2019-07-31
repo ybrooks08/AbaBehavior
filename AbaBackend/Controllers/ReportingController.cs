@@ -54,7 +54,7 @@ namespace AbaBackend.Controllers
             Lastname = s.Lastname,
             s.Dob,
             s.Code,
-            Diagnosis = s.ClientDiagnostics.Select(sd => new
+            Diagnosis = s.ClientDiagnostics.Where(w => w.Active).Select(sd => new
             {
               sd.Diagnosis.Code,
               sd.Diagnosis.Description

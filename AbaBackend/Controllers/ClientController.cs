@@ -530,6 +530,25 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpPost("change-diagnosis-status")]
+    public async Task<IActionResult> ChangeDiagnosisStatus([FromBody] ModChangeUserStatus newStatus)
+    {
+      try
+      {
+        var diagnosis = await _dbContext.ClientDiagnostics.FirstOrDefaultAsync(w => w.ClientDiagnosisId.Equals(newStatus.UserId)); //generic model UserId = Id
+        if (diagnosis == null) return BadRequest("Diagnosis not found");
+        diagnosis.Active = newStatus.Status;
+        await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, diagnosis.ClientId, "Diagnosis status", $"A client diagnosis status was changed to {newStatus.Status}");
+
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
     [HttpPost("add-client-diagnosis")]
     public async Task<IActionResult> AddClientDiagnosis([FromBody] AddClientDiagnosisModel model)
     {

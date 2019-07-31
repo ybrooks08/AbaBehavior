@@ -263,11 +263,10 @@ namespace AbaBackend.Infrastructure.Collection
           TotalCompleted = s.Sum(w => w.TotalCompleted),
           TotalTrialNull = s.Count(w => w.TotalTrial == null),
           TotalCompletedNull = s.Count(w => w.TotalCompleted == null)
-        })
-        .FirstOrDefault();
+        }).FirstOrDefault();
 
       var caregiverCollectionNoData = caregiverCollection == null || caregiverCollection.TotalCompleted == null || caregiverCollection.TotalTrial == null ||
-                                      (caregiverCollection.TotalTrialNull == collectionsCaregiver.Count || caregiverCollection.TotalCompleted == collectionsCaregiver.Count);
+                                      (caregiverCollection.TotalTrialNull == collectionsCaregiver.Count);
       if (hasNoData & caregiverCollectionNoData) return null;
 
       var caregiverTotalTrial = caregiverCollection?.TotalTrial ?? 0;
@@ -278,7 +277,6 @@ namespace AbaBackend.Infrastructure.Collection
       var percent = trials == 0 ? 0 : completed / (decimal)trials * 100;
 
       return (int?)percent;
-      ;
     }
 
     List<int?> GetClientReplacementsByWeek(int replacementId, DateTime firstWeekStart, DateTime lastWeekEnd, List<CollectionRep> allCollection, List<CollectionRepCaregiver> allCaregiverCollection)
