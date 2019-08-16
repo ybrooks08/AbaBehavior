@@ -1,6 +1,12 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location, onResolve, onReject) {
+  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+  return originalPush.call(this, location).catch(err => err)
+}
+
 Vue.use(Router);
 
 export default new Router({
@@ -230,7 +236,7 @@ export default new Router({
           path: "/clients/caregiver_data_collection",
           name: "CaregiverDataCollection",
           component: () => import(/* webpackChunkName: "CaregiverDataCollection" */ "@/components/sessions/CaregiverDataCollection"),
-          meta: { rol: ["analyst"] }
+          meta: { rol: ["analyst", "admin"] }
         },
         {
           path: "/video_tutorials",
@@ -243,6 +249,18 @@ export default new Router({
           name: 'Ready2Bill',
           component: () => import(/* webpackChunkName: "Ready2Bill" */ '@/components/reporting/Ready2Bill'),
           meta: { rol: ['admin', 'billing'] },
+        },
+        {
+          path: "/adjust-client-data-collect",
+          name: "AdjustClientDataCollect",
+          component: () => import(/* webpackChunkName: "AdjustClientDataCollect" */ "@/components/clients/AdjustClientDataCollect"),
+          meta: { rol: ["admin"] }
+        },
+        {
+          path: "/reporting/caregiver-collections",
+          name: "CaregiverCollections",
+          component: () => import(/* webpackChunkName: "CaregiverCollections" */ "@/components/reporting/CaregiverCollections"),
+          meta: { rol: ["admin"] }
         },
       ],
     },

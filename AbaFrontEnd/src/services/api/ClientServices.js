@@ -321,4 +321,29 @@ export default {
         .catch(error => reject(error.response.data || error.message));
     });
   },
+
+  adjustClientDataCollect(p) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/clients/AdjustClientDataCollect', p)
+        .then((response) => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  adjustStoClientBehavior(clientId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/clients/AdjustStoClientBehavior/${clientId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  adjustStoClientReplacement(clientId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/clients/AdjustStoClientReplacement/${clientId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
 };

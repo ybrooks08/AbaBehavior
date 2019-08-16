@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
+using AbaBackend.Model.Client;
 using AbaBackend.Model.Session;
 using SendGrid;
 
@@ -42,5 +43,6 @@ namespace AbaBackend.Infrastructure.Utils
     Task<User> GetUserById(int userId);
     bool CanCreateAfterHours(User user, DateTime sessionStart);
     Task RemovePassIfApply(User user, DateTime sessionStart);
+    Task<int> AdjustClientDataCollect(AdjustClientDataCollectModel model);
   }
 }

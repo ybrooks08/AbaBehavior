@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
 using AbaBackend.Infrastructure.Extensions;
+using AbaBackend.Model.Client;
 using AbaBackend.Model.Session;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Http;
@@ -402,19 +403,14 @@ namespace AbaBackend.Infrastructure.Utils
       var clientProblem = await _dbContext.ClientProblems
         .Include(i => i.STOs)
         .FirstOrDefaultAsync(w => w.ClientProblemId == clientProblemId);
-      var period = await GetClientWholePeriod(clientProblem.ClientId);
       var stos = clientProblem.STOs.OrderBy(o => o.ClientProblemStoId).ToList();
-
-      var lastSto = new ClientProblemSto();
       foreach (var s in stos)
       {
-        if (s == stos.First()) s.WeekStart = period.start.StartOfWeek(DayOfWeek.Sunday);
-        else s.WeekStart = lastSto.WeekEnd.AddDays(1);
-        s.WeekEnd = s.WeekStart.AddDays(6).AddWeeks(s.Weeks - 1);
+        s.WeekStart = null;
+        s.WeekEnd = null;
         s.Status = StoStatus.Unknow;
         _dbContext.Update(s);
         await _dbContext.SaveChangesAsync();
-        lastSto = s;
       }
     }
 
@@ -423,19 +419,14 @@ namespace AbaBackend.Infrastructure.Utils
       var clientReplacement = await _dbContext.ClientReplacements
         .Include(i => i.STOs)
         .FirstOrDefaultAsync(w => w.ClientReplacementId == clientReplacementId);
-      var period = await GetClientWholePeriod(clientReplacement.ClientId);
       var stos = clientReplacement.STOs.OrderBy(o => o.ClientReplacementStoId).ToList();
-
-      var lastSto = new ClientReplacementSto();
       foreach (var s in stos)
       {
-        if (s == stos.First()) s.WeekStart = period.start.StartOfWeek(DayOfWeek.Sunday);
-        else s.WeekStart = lastSto.WeekEnd.AddDays(1);
-        s.WeekEnd = s.WeekStart.AddDays(6).AddWeeks(s.Weeks - 1);
+        s.WeekStart = null;
+        s.WeekEnd = null;
         s.Status = StoStatus.Unknow;
         _dbContext.Update(s);
         await _dbContext.SaveChangesAsync();
-        lastSto = s;
       }
     }
 
@@ -630,6 +621,71 @@ namespace AbaBackend.Infrastructure.Utils
       hasPass.Used = true;
       await _dbContext.SaveChangesAsync();
       return;
+    }
+
+    public async Task<int> AdjustClientDataCollect(AdjustClientDataCollectModel model)
+    {
+      var sessionsAffected = new List<int>();
+
+      var sessions = await _dbContext.Sessions
+        .Where(w => w.ClientId == model.ClientId)
+        .Where(w => w.SessionStart.Date >= model.From && w.SessionStart.Date <= model.To)
+        .Include(i => i.SessionCollectBehaviorsV2)
+        .Include(i => i.SessionCollectReplacementsV2)
+        .ToListAsync();
+
+      foreach (var session in sessions)
+      {
+        var collectProblems = session.SessionCollectBehaviorsV2.ToList();
+        foreach (var p in model.Problems)
+        {
+          var problem = collectProblems.FirstOrDefault(w => w.ProblemId == p);
+          if (model.Action == "add" && problem == null)
+          {
+            await _dbContext.AddAsync(new SessionCollectBehaviorV2
+            {
+              ClientId = model.ClientId,
+              NoData = true,
+              Total = 0,
+              Completed = 0,
+              ProblemId = p,
+              SessionId = session.SessionId,
+            });
+            sessionsAffected.Add(session.SessionId);
+          }
+          if (model.Action == "del" && problem != null)
+          {
+            _dbContext.Remove(problem);
+            sessionsAffected.Add(session.SessionId);
+          }
+        }
+        var collectReplacements = session.SessionCollectReplacementsV2.ToList();
+        foreach (var r in model.Replacements)
+        {
+          var replacement = collectReplacements.FirstOrDefault(w => w.ReplacementId == r);
+          if (model.Action == "add" && replacement == null)
+          {
+            await _dbContext.AddAsync(new SessionCollectReplacementV2
+            {
+              ClientId = model.ClientId,
+              NoData = true,
+              Total = 0,
+              Completed = 0,
+              ReplacementId = r,
+              SessionId = session.SessionId,
+            });
+            sessionsAffected.Add(session.SessionId);
+          }
+          if (model.Action == "del" && replacement != null)
+          {
+            _dbContext.Remove(replacement);
+            sessionsAffected.Add(session.SessionId);
+          }
+        }
+        await _dbContext.SaveChangesAsync();
+      }
+
+      return sessionsAffected.Distinct().Count();
     }
   }
 }

@@ -181,8 +181,8 @@
           </v-card-text>
         </v-card>
       </v-tab-item>
-      <problem-sto-dialog v-if="problemStoDialogData" :open="problemStoDialogShow" :data="problemStoDialogData" @closed="closedProblemStoDialog"></problem-sto-dialog>
-      <replacement-sto-dialog v-if="replacementStoDialogData" :open="replacementStoDialogShow" :data="replacementStoDialogData" @closed="closedReplacementStoDialog"></replacement-sto-dialog>
+      <problem-sto-dialog v-if="problemStoDialogData" :clientId="clientId" :open="problemStoDialogShow" :data="problemStoDialogData" @closed="closedProblemStoDialog"></problem-sto-dialog>
+      <replacement-sto-dialog v-if="replacementStoDialogData" :clientId="clientId" :open="replacementStoDialogShow" :data="replacementStoDialogData" @closed="closedReplacementStoDialog"></replacement-sto-dialog>
     </v-tabs>
   </v-card>
 </template>

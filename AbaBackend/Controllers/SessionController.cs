@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using AbaBackend.Model.MasterTables;
 using AbaBackend.Infrastructure.Utils.Static;
+using AbaBackend.Infrastructure.StoProcess;
 
 namespace AbaBackend.Controllers
 {
@@ -39,14 +40,16 @@ namespace AbaBackend.Controllers
     readonly IConfiguration _configuration;
     IHostingEnvironment _env;
     readonly ICollection _collection;
+    private readonly IStoProcess _stoProcess;
 
-    public SessionController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env, ICollection collection)
+    public SessionController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env, ICollection collection, IStoProcess stoProcess)
     {
       _dbContext = context;
       _utils = utils;
       _configuration = configuration;
       _env = env;
       _collection = collection;
+      _stoProcess = stoProcess;
     }
 
     [HttpPost("add-session")]
@@ -957,11 +960,18 @@ namespace AbaBackend.Controllers
     }
 
     [AllowAnonymous]
-    [HttpGet("force-send-emails")]
+    [HttpGet("testing")]
     public async Task<IActionResult> TestingHangFire()
     {
-      await _utils.MidNightProcess();
+      // var a = await _collection.GetClientProblemsByWeek(21, 16);
+      //var a = await _collection.GetClientBehaviorChart(21, new List<int>());
+      // var a = await _collection.GetClientReplacements(new DateTime(2019, 7, 7), new DateTime(2019, 7, 13), 21, 4);
+      //var a = await _collection.GetClientReplacementsByWeek(21, 4);
+      // await _utils.MidNightProcess();
       //await _utils.SendEmailsAsync();
+
+      await _stoProcess.ProcessStos();
+
       return Ok();
     }
 
@@ -1326,6 +1336,65 @@ namespace AbaBackend.Controllers
       {
         return BadRequest(e.Message);
       }
+    }
+
+    [HttpGet("[action]/{clientId}")]
+    public async Task<IActionResult> GetSessionsCalendar3(int clientId)
+    {
+      try
+      {
+        var sessions = await _dbContext.Sessions
+          .Where(w => w.ClientId.Equals(clientId))
+          .Select(s => new
+          {
+            s.SessionId,
+            SessionType = Enum.GetName(typeof(SessionType), s.SessionType).ToLower(),
+            Title = s.SessionType.ToString().Replace('_', ' '),
+            SessionStart = s.SessionStart.ToString("u"),
+            SessionEnd = s.SessionEnd.ToString("u"),
+            UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+            Color = ((SessionStatusColors)s.SessionStatus).ToString(),
+            s.TotalUnits,
+            SessionStatus = s.SessionStatus.ToString(),
+            s.User.Rol.RolShortName,
+            s.User,
+            UserRole = s.User.Rol
+          })
+          .ToListAsync();
+
+        var caregivers = await _dbContext.CaregiverDataCollections
+          .Where(w => w.ClientId.Equals(clientId))
+          .Select(s => new
+          {
+            s.CaregiverDataCollectionId,
+            title = "Caregiver Collected",
+            date = s.CollectDate.ToString("yyyy-MM-dd")
+          })
+          .ToListAsync();
+        return Ok(new { sessions, caregivers });
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientId}/{problemId}/{dateStart?}/{dateEnd?}")]
+    public async Task<IActionResult> GetClientBehaviorChartValuesWeek(int clientId, int problemId, DateTime? dateStart = null, DateTime? dateEnd = null)
+    {
+      if (clientId == 0) return Ok();
+      var chartData = await _collection.GetClientBehaviorChartValuesWeek(clientId, problemId, dateStart, dateEnd);
+      var stoStatus = await _collection.GetStoStatusBehavior(clientId, problemId);
+      return Ok(new { chartData = chartData.Select(s => s == null ? 0 : s), stoStatus });
+    }
+
+    [HttpGet("[action]/{clientId}/{replacementId}/{dateStart?}/{dateEnd?}")]
+    public async Task<IActionResult> GetClientReplacementChartValuesWeek(int clientId, int replacementId, DateTime? dateStart = null, DateTime? dateEnd = null)
+    {
+      if (clientId == 0) return Ok();
+      var chartData = await _collection.GetClientReplacementChartValuesWeek(clientId, replacementId, dateStart, dateEnd);
+      var stoStatus = await _collection.GetStoStatusReplacement(clientId, replacementId);
+      return Ok(new { chartData = chartData.Select(s => s == null ? 0 : s), stoStatus });
     }
   }
 }

@@ -4,6 +4,7 @@ using AbaBackend.DataModel;
 using AbaBackend.Infrastructure.Collection;
 using AbaBackend.Infrastructure.Reporting.Sessions;
 using AbaBackend.Infrastructure.Security;
+using AbaBackend.Infrastructure.StoProcess;
 using AbaBackend.Infrastructure.Utils;
 using Hangfire;
 using Hangfire.MemoryStorage;
@@ -59,6 +60,7 @@ namespace AbaBackend
       services.AddScoped<IPasswordHasher, PasswordHasher>();
       services.AddScoped<IUtils, Utils>();
       services.AddScoped<ICollection, Collection>();
+      services.AddScoped<IStoProcess, StoProcess>();
       services.AddScoped<ICompetencyCheckReport, CompetencyCheckReport>();
       services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
       services.AddDbContext<AbaDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("AbaDbConnectionString")));
@@ -72,7 +74,7 @@ namespace AbaBackend
         });
     }
 
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils)
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils, IStoProcess stoProcess)
     {
       app.UseDefaultFiles();
       app.UseStaticFiles();
@@ -96,6 +98,7 @@ namespace AbaBackend
 
       RecurringJob.AddOrUpdate(() => utils.SendEmailsAsync(true), Cron.Hourly);
       RecurringJob.AddOrUpdate(() => utils.MidNightProcess(), Cron.Daily);
+      RecurringJob.AddOrUpdate(() => stoProcess.ProcessStos(), Cron.Daily);
     }
   }
 }

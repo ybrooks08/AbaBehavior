@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
+using AbaBackend.Infrastructure.StoProcess;
 using AbaBackend.Infrastructure.Utils;
 using AbaBackend.Model;
 using AbaBackend.Model.Client;
@@ -19,11 +20,13 @@ namespace AbaBackend.Controllers
   {
     private readonly AbaDbContext _dbContext;
     private readonly IUtils _utils;
+    private readonly IStoProcess _stoProcess;
 
-    public ClientController(AbaDbContext context, IUtils utils)
+    public ClientController(AbaDbContext context, IUtils utils, IStoProcess stoProcess)
     {
       _dbContext = context;
-      this._utils = utils;
+      _utils = utils;
+      _stoProcess = stoProcess;
     }
 
     [HttpGet]
@@ -1038,6 +1041,48 @@ namespace AbaBackend.Controllers
       catch (Exception e)
       {
         return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> AdjustClientDataCollect([FromBody] AdjustClientDataCollectModel model)
+    {
+      try
+      {
+        var count = await _utils.AdjustClientDataCollect(model);
+        return Ok(count);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientId}")]
+    public async Task<IActionResult> AdjustStoClientBehavior(int clientId)
+    {
+      try
+      {
+        await _stoProcess.ProccessClientBehavior(clientId);
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientId}")]
+    public async Task<IActionResult> AdjustStoClientReplacement(int clientId)
+    {
+      try
+      {
+        await _stoProcess.ProccessClientReplacement(clientId);
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
       }
     }
 

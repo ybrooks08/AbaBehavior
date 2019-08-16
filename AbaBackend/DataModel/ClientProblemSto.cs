@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AbaBackend.DataModel
 {
@@ -9,7 +10,9 @@ namespace AbaBackend.DataModel
     public int Quantity { get; set; }
     public int Weeks { get; set; }
     public StoStatus Status { get; set; } = StoStatus.Unknow;
-    public DateTime WeekStart { get; set; }
-    public DateTime WeekEnd { get; set; }
+    public DateTime? WeekStart { get; set; }
+    public DateTime? WeekEnd { get; set; }
+    [NotMapped]
+    public int Index { get; set; }
   }
 }

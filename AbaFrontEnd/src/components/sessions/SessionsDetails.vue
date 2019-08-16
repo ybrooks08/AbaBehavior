@@ -2,9 +2,11 @@
   <v-container pa-0 grid-list-md fluid>
     <v-layout row wrap>
       <v-flex xs12>
-        <calendar-sessions></calendar-sessions>
+        <new-calendar :clientId="activeClientId" :selectedDate="activeDate.format('YYYY-MM-DD')" />
       </v-flex>
-
+      <v-flex xs12>
+        <clinical-data-summary :clientId="activeClientId" />
+      </v-flex>
       <v-flex xs12>
         <v-card>
           <v-toolbar dark class="secondary" fluid dense>
@@ -52,13 +54,17 @@
 <script>
 import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
 import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
-import CalendarSessions from "@/components/sessions/CalendarSessions";
+import NewCalendar from "@/components/sessions/NewCalendar";
+import ClinicalDataSummary from "@/components/clients/ClinicalData/ClinicalDataSummary";
+// import CalendarSessions from "@/components/sessions/CalendarSessions";
 
 export default {
   components: {
     ClientProgressBehavior,
     ClientProgressReplacement,
-    CalendarSessions
+    NewCalendar,
+    ClinicalDataSummary
+    // CalendarSessions
   },
 
   data() {

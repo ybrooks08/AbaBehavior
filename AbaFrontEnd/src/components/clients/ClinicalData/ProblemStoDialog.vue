@@ -21,9 +21,9 @@
               </v-list-tile-title>
               <v-list-tile-sub-title>
                 Status:
-                <strong :class="p.status.toLowerCase() == 'failed' ? 'red--text': p.status.toLowerCase() == 'success' ? 'green--text':''">{{p.status}}</strong>
+                <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text': p.status.toLowerCase() == 'mastered' ? 'green--text':''">{{p.status}}</strong>
                 &nbsp;&nbsp;&nbsp;
-                <small>{{p.weekStart | moment('utc','MM/DD/YYYY')}} - {{p.weekEnd | moment('utc','MM/DD/YYYY')}}</small>
+                <small v-if="p.status.toLowerCase() == 'mastered'">{{p.weekStart | moment("MM/DD/YYYY")}} - {{p.weekEnd | moment("MM/DD/YYYY")}}</small>
               </v-list-tile-sub-title>
             </v-list-tile-content>
             <v-list-tile-action>
@@ -67,6 +67,9 @@
       </v-card-text>
 
       <v-card-actions>
+        <v-btn :disabled="loading" :loading="loading" flat @click="reCalculate()">
+          <v-icon left small>fa-calculator</v-icon> RE-CALC
+        </v-btn>
         <v-spacer />
         <v-btn :disabled="loading" :loading="loading" color="primary" @click="$emit('closed')">Close</v-btn>
       </v-card-actions>
@@ -86,6 +89,10 @@ export default {
     },
     data: {
       type: Object
+    },
+    clientId: {
+      type: [Number, String],
+      required: true
     }
   },
 
@@ -166,6 +173,20 @@ export default {
         this.cancelForm();
         this.loadClientProblemStos();
       } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async reCalculate() {
+      try {
+        this.loading = true;
+        await clientApi.adjustStoClientBehavior(this.clientId);
+        this.cancelForm();
+        this.loadClientProblemStos();
+      } catch (error) {
+        console.error(error);
         this.$toast.error(error);
       } finally {
         this.loading = false;

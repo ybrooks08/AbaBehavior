@@ -376,7 +376,7 @@ namespace AbaBackend.Controllers
               .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
               .Where(w => w.ProblemId == problem.ProblemId)
               .ToList();
-            var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect, problem);
+            var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect, problem.ProblemBehavior.IsPercent);
 
             if (mainData == null) newRow.Add("N/A");
             else if (!problem.ProblemBehavior.IsPercent)
@@ -504,6 +504,37 @@ namespace AbaBackend.Controllers
           })
           .ToListAsync();
         return Ok(sessions);
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{from}/{to}/{clientId}")]
+    public async Task<IActionResult> GetCaregiversCollectionHistory(string from, string to, int clientId)
+    {
+      try
+      {
+        var caregivers = await _dbContext.Caregivers.ToListAsync();
+        var fromDate = Convert.ToDateTime(from).Date;
+        var toDate = Convert.ToDateTime(to).Date;
+
+        var collections = (await _dbContext.CaregiverDataCollections
+          .Where(w => w.ClientId == clientId)
+          .Where(w => w.CollectDate.Date >= fromDate && w.CollectDate.Date <= toDate)
+          .ToListAsync())
+          .Select(s => new
+          {
+            s.ClientId,
+            s.CaregiverDataCollectionId,
+            CollectionDate = s.CollectDate,
+            Caregiver = caregivers.FirstOrDefault(w => w.CaregiverId == s.CaregiverId)
+          })
+          .OrderByDescending(o => o.CollectionDate)
+          .ToList();
+
+        return Ok(collections);
       }
       catch (System.Exception e)
       {
