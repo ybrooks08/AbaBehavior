@@ -63,7 +63,7 @@ namespace AbaBackend.Infrastructure.StoProcess
           var e = false;
           do
           {
-            var checkWeeks = clientBehavior.ProblemBehavior.IsPercent ? valuesByWeek.Take(weeks).Count(w => w.Total >= qty) : valuesByWeek.Take(weeks).Count(w => w.Total <= qty);
+            var checkWeeks = valuesByWeek.Take(weeks).Count(w => w.Total <= qty);
             var allWeeks = valuesByWeek.Take(weeks).ToList();
             if (checkWeeks >= weeks)
             {

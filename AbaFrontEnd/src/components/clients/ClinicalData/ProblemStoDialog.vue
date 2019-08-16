@@ -16,7 +16,7 @@
             <v-list-tile-content>
               <v-list-tile-title class="body-2">
                 Get
-                <span class="purple--text font-weight-black">{{p.quantity}}{{isPercent ? '% or more':' or less'}}</span> in
+                <span class="purple--text font-weight-black">{{p.quantity}} or less</span> in
                 <span class="purple--text font-weight-black">{{p.weeks}}</span> consecutive week(s)
               </v-list-tile-title>
               <v-list-tile-sub-title>
