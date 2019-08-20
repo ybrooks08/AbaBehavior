@@ -14,5 +14,6 @@ namespace AbaBackend.DataModel
     public DateTime? WeekEnd { get; set; }
     [NotMapped]
     public int Index { get; set; }
+    public bool MasteredForced { get; set; }
   }
 }

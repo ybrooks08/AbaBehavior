@@ -818,6 +818,7 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        sto.Status = sto.MasteredForced ? StoStatus.Mastered : StoStatus.Unknow;
         _dbContext.Update(sto);
         await _dbContext.SaveChangesAsync();
 
@@ -848,7 +849,8 @@ namespace AbaBackend.Controllers
                         s.Weeks,
                         s.WeekStart,
                         s.WeekEnd,
-                        Status = s.Status.ToString()
+                        Status = s.Status.ToString(),
+                        s.MasteredForced
                       })
                       .OrderBy(o => o.ClientProblemStoId)
                       .ToListAsync();
@@ -938,6 +940,7 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        sto.Status = sto.MasteredForced ? StoStatus.Mastered : StoStatus.Unknow;
         _dbContext.Update(sto);
         await _dbContext.SaveChangesAsync();
 
@@ -967,7 +970,8 @@ namespace AbaBackend.Controllers
                         s.Weeks,
                         s.WeekStart,
                         s.WeekEnd,
-                        Status = s.Status.ToString()
+                        Status = s.Status.ToString(),
+                        s.MasteredForced
                       })
                       .OrderBy(o => o.ClientReplacementStoId)
                       .ToListAsync();

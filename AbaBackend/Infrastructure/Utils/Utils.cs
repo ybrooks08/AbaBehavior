@@ -403,12 +403,12 @@ namespace AbaBackend.Infrastructure.Utils
       var clientProblem = await _dbContext.ClientProblems
         .Include(i => i.STOs)
         .FirstOrDefaultAsync(w => w.ClientProblemId == clientProblemId);
-      var stos = clientProblem.STOs.OrderBy(o => o.ClientProblemStoId).ToList();
+      var stos = clientProblem.STOs.Where(w => !w.MasteredForced).OrderBy(o => o.ClientProblemStoId).ToList();
       foreach (var s in stos)
       {
         s.WeekStart = null;
         s.WeekEnd = null;
-        s.Status = StoStatus.Unknow;
+        s.Status = s.MasteredForced ? StoStatus.Mastered : StoStatus.Unknow;
         _dbContext.Update(s);
         await _dbContext.SaveChangesAsync();
       }
@@ -419,12 +419,12 @@ namespace AbaBackend.Infrastructure.Utils
       var clientReplacement = await _dbContext.ClientReplacements
         .Include(i => i.STOs)
         .FirstOrDefaultAsync(w => w.ClientReplacementId == clientReplacementId);
-      var stos = clientReplacement.STOs.OrderBy(o => o.ClientReplacementStoId).ToList();
+      var stos = clientReplacement.STOs.Where(w => !w.MasteredForced).OrderBy(o => o.ClientReplacementStoId).ToList();
       foreach (var s in stos)
       {
         s.WeekStart = null;
         s.WeekEnd = null;
-        s.Status = StoStatus.Unknow;
+        s.Status = s.MasteredForced ? StoStatus.Mastered : StoStatus.Unknow;
         _dbContext.Update(s);
         await _dbContext.SaveChangesAsync();
       }

@@ -44,17 +44,17 @@
         <tr :class="{'red lighten-5': !props.item.active}">
           <td class="text-xs-left pl-3 pr-0 hidden-sm-and-down">{{props.item.username}}</td>
           <td class="text-xs-left px-1 hidden-sm-and-down">
-            <v-chip :color="(props.item.active ? 'blue' : 'red')" text-color="white">
+            <v-chip small :color="(props.item.active ? 'blue' : 'red')" text-color="white">
               <v-avatar>
                 <v-icon>fa-user-circle</v-icon>
               </v-avatar>
               {{props.item.rolname}}
             </v-chip>
           </td>
-          <td class="text-xs-left px-1">{{props.item.firstname}} {{props.item.lastname}}</td>
+          <td class="text-xs-left px-1 text-truncate">{{props.item.firstname}} {{props.item.lastname}}</td>
           <td class="text-xs-left px-1 hidden-sm-and-down">{{props.item.email}}</td>
           <td class="text-xs-left px-1 hidden-xs-only">{{props.item.created | moment('MM/DD/YYYY')}}</td>
-          <td class="text-xs-center px-1 hidden-xs-only">
+          <td class="text-xs-center px-1 hidden-xs-only text-truncate text-no-wrap">
             <v-btn flat icon small color="error" class="mx-0" @click="passDown(props.item)">
               <v-icon small>fa-minus-circle</v-icon>
             </v-btn>

@@ -43,7 +43,7 @@ namespace AbaBackend.Infrastructure.StoProcess
       var clientBehaviors = await _utils.GetClientBehaviors(clientId, false);
       if (clientBehaviors.Count == 0) return;
       var clientBehaviorsListId = clientBehaviors.Select(s => s.ProblemId).ToList();
-      var allStos = await _dbContext.ClientProblemSTOs.Where(w => clientBehaviors.Select(s => s.ClientProblemId).Contains(w.ClientProblemId)).ToListAsync();
+      var allStos = await _dbContext.ClientProblemSTOs.Where(w => !w.MasteredForced && clientBehaviors.Select(s => s.ClientProblemId).Contains(w.ClientProblemId)).ToListAsync();
       allStos.ForEach(f => f.Status = StoStatus.Unknow);
 
       var allCollection = await _collection.GetCollectionBehaviors(firstWeekStart, lastWeekEnd, clientId, clientBehaviorsListId);
@@ -95,7 +95,7 @@ namespace AbaBackend.Infrastructure.StoProcess
       var clientReplacements = await _utils.GetClientReplacements(clientId, false);
       if (clientReplacements.Count == 0) return;
       var clientReplacementsListId = clientReplacements.Select(s => s.ReplacementId).ToList();
-      var allStos = await _dbContext.ClientReplacementSTOs.Where(w => clientReplacements.Select(s => s.ClientReplacementId).Contains(w.ClientReplacementId)).ToListAsync();
+      var allStos = await _dbContext.ClientReplacementSTOs.Where(w => !w.MasteredForced && clientReplacements.Select(s => s.ClientReplacementId).Contains(w.ClientReplacementId)).ToListAsync();
       allStos.ForEach(f => f.Status = StoStatus.Unknow);
 
       var allCollection = await _collection.GetCollectionReplacements(firstWeekStart, lastWeekEnd, clientId, clientReplacementsListId);
