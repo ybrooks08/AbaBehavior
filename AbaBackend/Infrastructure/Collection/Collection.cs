@@ -442,8 +442,7 @@ namespace AbaBackend.Infrastructure.Collection
       }).ToList();
 
       var lastMastered = stoWithIndex.Where(w => w.Status == StoStatus.Mastered).LastOrDefault();
-      stoWithIndex.Reverse();
-      var current = stoWithIndex.Where(w => w.Status == StoStatus.Unknow).LastOrDefault();
+      var current = stoWithIndex.Where(w => w.Status == StoStatus.InProgress).FirstOrDefault();
 
       return new CurrentStoStatusBehavior { LastMasteredSto = lastMastered, CurrentSto = current };
     }
@@ -485,8 +484,7 @@ namespace AbaBackend.Infrastructure.Collection
       }).ToList();
 
       var lastMastered = stoWithIndex.Where(w => w.Status == StoStatus.Mastered).LastOrDefault();
-      stoWithIndex.Reverse();
-      var current = stoWithIndex.Where(w => w.Status == StoStatus.Unknow).LastOrDefault();
+      var current = stoWithIndex.Where(w => w.Status == StoStatus.InProgress).FirstOrDefault();
 
       return new CurrentStoStatusReplacement { LastMasteredSto = lastMastered, CurrentSto = current };
     }

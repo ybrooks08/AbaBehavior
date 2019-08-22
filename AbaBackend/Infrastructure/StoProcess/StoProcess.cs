@@ -76,10 +76,10 @@ namespace AbaBackend.Infrastructure.StoProcess
             else if (valuesByWeek.Count > 0) valuesByWeek.RemoveRange(0, 1);
             if (valuesByWeek.Count <= 0) e = true;
           } while (!e);
-
           if (valuesByWeek.Count == 0) break;
-
         }
+        var currentSto = allStos.Where(w => w.ClientProblemId == clientBehavior.ClientProblemId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientProblemStoId).FirstOrDefault();
+        if (currentSto != null) currentSto.Status = StoStatus.InProgress;
       }
       await _dbContext.SaveChangesAsync();
     }
@@ -128,10 +128,10 @@ namespace AbaBackend.Infrastructure.StoProcess
             else if (valuesByWeek.Count > 0) valuesByWeek.RemoveRange(0, 1);
             if (valuesByWeek.Count <= 0) e = true;
           } while (!e);
-
           if (valuesByWeek.Count == 0) break;
-
         }
+        var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
+        if (currentSto != null) currentSto.Status = StoStatus.InProgress;
       }
       await _dbContext.SaveChangesAsync();
     }

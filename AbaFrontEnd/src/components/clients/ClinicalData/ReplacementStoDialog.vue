@@ -21,7 +21,7 @@
                     </v-list-tile-title>
                     <v-list-tile-sub-title>
                       Status:
-                      <strong :class="p.status.toLowerCase() == 'failed' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : ''">{{ p.status }}</strong>
+                      <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : 'orange--text'">{{ p.status }}</strong>
                       &nbsp;&nbsp;&nbsp;
                       <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("MM/DD/YYYY") }} - {{ p.weekEnd | moment("MM/DD/YYYY") }}</small>
                       &nbsp;&nbsp;&nbsp;

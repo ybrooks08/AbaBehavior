@@ -22,7 +22,7 @@
                     </v-list-tile-title>
                     <v-list-tile-sub-title>
                       Status:
-                      <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : ''">{{ p.status }}</strong> &nbsp;&nbsp;&nbsp;
+                      <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : 'orange--text'">{{ p.status }}</strong> &nbsp;&nbsp;&nbsp;
                       <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("MM/DD/YYYY") }} - {{ p.weekEnd | moment("MM/DD/YYYY") }}</small> &nbsp;&nbsp;&nbsp;
                       <small v-if="p.masteredForced" class="red white--text px-1" small label>Forced</small>
                     </v-list-tile-sub-title>
@@ -104,12 +104,12 @@
             <v-icon left small>fa-calculator</v-icon>
             RE-CALC
           </v-btn>
-          <v-spacer/>
+          <v-spacer />
           <v-btn :disabled="loading" :loading="loading" color="primary" @click="$emit('closed')">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <force-sto-dialog :open="forceStoDialogShow" @cancel="forceStoDialogShow = false" @submit="submitForceMastered"/>
+    <force-sto-dialog :open="forceStoDialogShow" @cancel="forceStoDialogShow = false" @submit="submitForceMastered" />
   </div>
 </template>
 
@@ -283,8 +283,8 @@ export default {
 </script>
 
 <style scoped>
-  .v-list__tile__action {
-    min-width: 36px;
-    padding-left: 1%;
-  }
+.v-list__tile__action {
+  min-width: 36px;
+  padding-left: 1%;
+}
 </style>
