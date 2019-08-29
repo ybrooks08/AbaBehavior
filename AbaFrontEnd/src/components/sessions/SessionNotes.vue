@@ -154,7 +154,7 @@
                 <v-tab key="supervisionOversight">Oversight</v-tab>
                 <v-tab key="supervisionExtra">Extra</v-tab>
               </template>
-              <v-tab key="logs">Logs</v-tab>
+              <v-tab v-if="isAdmin" key="logs">Logs</v-tab>
             </v-tabs>
           </v-toolbar>
           <v-tabs-items v-model="tabModel">
@@ -595,7 +595,7 @@
                 </v-card>
               </v-tab-item>
             </template>
-            <v-tab-item key="logs">
+            <v-tab-item v-if="isAdmin" key="logs">
               <v-card flat>
                 <v-card-text class="pa-2">
                   <v-container fluid grid-list-sm pa-0>
