@@ -396,7 +396,7 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-select box hide-details :disabled="loading" label="Problem" v-model="problemSelected" :items="problemsUnique" item-text="problemBehaviorDescription" item-value="problemId"></v-select>
+                          <v-select class="autoheigh" box hide-details :disabled="loading" label="Problem" v-model="problemSelected" :items="problemsUnique" item-text="problemBehaviorDescription" item-value="problemId"></v-select>
                         </v-flex>
                       </v-layout>
                       <template v-for="problem in session.sessionProblemNotes">
@@ -1076,3 +1076,10 @@ export default {
   }
 };
 </script>
+
+<style >
+.v-menu__content {
+  height: auto !important;
+  max-height: 800px !important;
+}
+</style>
