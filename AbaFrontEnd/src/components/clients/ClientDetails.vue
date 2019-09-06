@@ -725,7 +725,7 @@ export default {
       };
       this.loadingBasicInfo = true;
       try {
-        await clientApi.changeAssignmentStatus(newStatus);
+        await clientApi.changeDiagnosisStatus(newStatus);
       } catch (error) {
         this.$toast.error(error);
       } finally {
