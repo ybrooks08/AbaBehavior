@@ -10,7 +10,7 @@
           <highcharts v-show="finish" :options="chartOptions"></highcharts>
         </v-flex>
       </v-layout>
-      <v-expansion-panel class="no-print">
+      <v-expansion-panel class="no-print" v-if="!hideNotes">
         <v-expansion-panel-content expand-icon="fa-angle-up" class="grey lighten-4">
           <div slot="header">Notes</div>
           <v-card>
@@ -19,7 +19,7 @@
                 <v-flex d-flex sm6 md4 lg3 xl2 v-for="(n, index) in notes" :key="index">
                   <v-card class="yellow lighten-5">
                     <v-card-title primary-title class="yellow lighten-3 pa-1">
-                      <span class="text-no-wrap text-truncate">{{n.title}}</span>
+                      <span class="text-no-wrap text-truncate">{{ n.title }}</span>
                       <v-spacer></v-spacer>
                       <v-btn small flat icon class="ma-0" color="grey darken-3" @click="editNote(n)">
                         <v-icon small>fa-edit</v-icon>
@@ -29,9 +29,9 @@
                       </v-btn>
                     </v-card-title>
                     <v-card-text class="pa-1 yellow lighten-5">
-                      {{n.note}}
-                      <br>
-                      <span class="grey--text">{{n.chartNoteDate | moment("ddd, MM/DD/YYYY")}}</span>
+                      {{ n.note }}
+                      <br />
+                      <span class="grey--text">{{ n.chartNoteDate | moment("ddd, MM/DD/YYYY") }}</span>
                     </v-card-text>
                   </v-card>
                 </v-flex>
@@ -62,6 +62,11 @@ export default {
     dateEnd: {
       type: String,
       default: null,
+      required: false
+    },
+    hideNotes: {
+      type: Boolean,
+      default: false,
       required: false
     }
   },

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
+using AbaBackend.Infrastructure.Collection;
 using AbaBackend.Infrastructure.Extensions;
 using AbaBackend.Infrastructure.Security;
 using AbaBackend.Infrastructure.Utils;
@@ -27,13 +28,15 @@ namespace AbaBackend.Controllers
     private IPasswordHasher _passwordHasher;
     private IUtils _utils;
     private readonly IHostingEnvironment _env;
+    readonly ICollection _collection;
 
-    public UserController(AbaDbContext context, IPasswordHasher passwordHasher, IUtils utils, IHostingEnvironment env)
+    public UserController(AbaDbContext context, IPasswordHasher passwordHasher, IUtils utils, IHostingEnvironment env, ICollection collection)
     {
       _dbContext = context;
       _passwordHasher = passwordHasher;
       _utils = utils;
       _env = env;
+      _collection = collection;
     }
 
     [HttpGet]
@@ -849,6 +852,27 @@ namespace AbaBackend.Controllers
         {
           note,
           client
+        });
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{monthlyNoteId}")]
+    public async Task<IActionResult> GetClientMonthlyData(int monthlyNoteId)
+    {
+      try
+      {
+        var note = await _dbContext.MonthlyNotes.FirstOrDefaultAsync(w => w.MonthlyNoteId == monthlyNoteId);
+        var month = new DateTime(note.Year, note.Month, 1);
+        var dataBeh = await _collection.GetMonthlyDataBehavior(note.ClientId, month);
+        var dataRpl = await _collection.GetMonthlyDataReplacement(note.ClientId, month);
+        return Ok(new
+        {
+          behaviors = dataBeh,
+          replacements = dataRpl
         });
       }
       catch (Exception e)

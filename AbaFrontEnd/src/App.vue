@@ -132,5 +132,14 @@ export default {
   table.report-container {
     page-break-after: auto;
   }
+
+  .highcharts-exporting-group {
+    display: none !important;
+  }
+
+  .pagebreak {
+    /* clear: both; */
+    break-after: page;
+  }
 }
 </style>

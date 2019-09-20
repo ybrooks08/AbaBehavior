@@ -13,6 +13,49 @@ namespace AbaBackend.Infrastructure.Collection
     public int? Total { get; set; }
   }
 
+  public class MonthlyBehaviorContract
+  {
+    public string Behavior { get; set; }
+    public int? Baseline { get; set; }
+    public decimal? WeekAverage { get; set; }
+    public List<ClientStoBehaviorContract> Stos { get; set; }
+    public int? Total { get; set; }
+    public int ProblemId { get; set; }
+  }
+
+  public class ClientStoBehaviorContract
+  {
+    public int Weeks { get; set; }
+    public int Quantity { get; set; }
+    public StoStatus StatusNo { get; set; }
+    public string Status { get; set; }
+    public int Index { get; set; }
+    public DateTime? Start { get; set; }
+    public DateTime? End { get; set; }
+  }
+
+  public class MonthlyReplacementContract
+  {
+    public string Replacement { get; set; }
+    public int? Baseline { get; set; }
+    public decimal? WeekAverage { get; set; }
+    public List<ClientStoReplacementContract> Stos { get; set; }
+    public int? Total { get; set; }
+    public int ProblemId { get; set; }
+    public int ReplacementId { get; set; }
+  }
+
+  public class ClientStoReplacementContract
+  {
+    public int Weeks { get; set; }
+    public int Percent { get; set; }
+    public StoStatus StatusNo { get; set; }
+    public string Status { get; set; }
+    public int Index { get; set; }
+    public DateTime? Start { get; set; }
+    public DateTime? End { get; set; }
+  }
+
   public interface ICollection
   {
     Task<List<Collection.CollectionBeh>> GetCollectionBehaviors(DateTime start, DateTime end, int clientId, List<int> problemId);
@@ -30,5 +73,7 @@ namespace AbaBackend.Infrastructure.Collection
     Task<CurrentStoStatusBehavior> GetStoStatusBehavior(int clientId, int problemId);
     Task<List<int?>> GetClientReplacementChartValuesWeek(int clientId, int replacementId, DateTime? start = null, DateTime? end = null);
     Task<CurrentStoStatusReplacement> GetStoStatusReplacement(int clientId, int replacementId);
+    Task<List<MonthlyBehaviorContract>> GetMonthlyDataBehavior(int clientId, DateTime month);
+    Task<List<MonthlyReplacementContract>> GetMonthlyDataReplacement(int clientId, DateTime month);
   }
 }

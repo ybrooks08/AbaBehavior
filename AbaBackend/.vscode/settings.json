@@ -1,4 +1,4 @@
 {
-  "appService.defaultWebAppToDeploy": "None"
-  //"editor.codeLens": false
+  "appService.defaultWebAppToDeploy": "/subscriptions/a084e9fb-6c90-45af-9f55-98d724edde31/resourceGroups/AbaResourceGroup/providers/Microsoft.Web/sites/ababackend",
+  "appService.deploySubpath": "publish"
 }

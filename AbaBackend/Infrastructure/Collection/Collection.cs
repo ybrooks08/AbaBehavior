@@ -441,8 +441,8 @@ namespace AbaBackend.Infrastructure.Collection
         Index = i + 1
       }).ToList();
 
-      var lastMastered = stoWithIndex.Where(w => w.Status == StoStatus.Mastered).LastOrDefault();
-      var current = stoWithIndex.Where(w => w.Status == StoStatus.InProgress).FirstOrDefault();
+      var lastMastered = stoWithIndex.LastOrDefault(w => w.Status == StoStatus.Mastered);
+      var current = stoWithIndex.FirstOrDefault(w => w.Status == StoStatus.InProgress);
 
       return new CurrentStoStatusBehavior { LastMasteredSto = lastMastered, CurrentSto = current };
     }
@@ -483,10 +483,96 @@ namespace AbaBackend.Infrastructure.Collection
         Index = i + 1
       }).ToList();
 
-      var lastMastered = stoWithIndex.Where(w => w.Status == StoStatus.Mastered).LastOrDefault();
-      var current = stoWithIndex.Where(w => w.Status == StoStatus.InProgress).FirstOrDefault();
+      var lastMastered = stoWithIndex.LastOrDefault(w => w.Status == StoStatus.Mastered);
+      var current = stoWithIndex.FirstOrDefault(w => w.Status == StoStatus.InProgress);
 
       return new CurrentStoStatusReplacement { LastMasteredSto = lastMastered, CurrentSto = current };
+    }
+
+    public async Task<List<MonthlyBehaviorContract>> GetMonthlyDataBehavior(int clientId, DateTime month)
+    {
+      var data = new List<MonthlyBehaviorContract>();
+
+      var endMonth = month.AddMonths(1).AddDays(-1);
+      var start = month.GetPrevDay(DayOfWeek.Sunday);
+      var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
+      //var totalWeeks = ((end - start).Days + 1) / 7;
+
+      var behaviors = await _utils.GetClientBehaviors(clientId);
+      foreach (var behavior in behaviors)
+      {
+        var weekValues = await GetClientBehaviorChartValuesWeek(clientId, behavior.ProblemId, start, end);
+        var stos = (await _dbContext.ClientProblemSTOs
+            .Where(w => w.ClientProblemId == behavior.ClientProblemId)
+            .OrderBy(o => o.ClientProblemStoId)
+            .ToListAsync())
+          .Select((s, i) => new ClientStoBehaviorContract
+          {
+            Weeks = s.Weeks,
+            Quantity = s.Quantity,
+            Status = s.Status.ToString(),
+            StatusNo = s.Status,
+            Index = i + 1,
+            Start = s.WeekStart,
+            End = s.WeekEnd
+          }).ToList();
+
+        var newBeh = new MonthlyBehaviorContract
+        {
+          Behavior = behavior.ProblemBehavior.ProblemBehaviorDescription,
+          ProblemId = behavior.ProblemId,
+          Baseline = behavior.BaselineCount,
+          WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,
+          Total = weekValues.Sum(),
+          Stos = stos,
+        };
+        data.Add(newBeh);
+      }
+
+      return data;
+    }
+
+    public async Task<List<MonthlyReplacementContract>> GetMonthlyDataReplacement(int clientId, DateTime month)
+    {
+      var data = new List<MonthlyReplacementContract>();
+
+      var endMonth = month.AddMonths(1).AddDays(-1);
+      var start = month.GetPrevDay(DayOfWeek.Sunday);
+      var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
+      //var totalWeeks = ((end - start).Days + 1) / 7;
+
+      var replacements = await _utils.GetClientReplacements(clientId);
+      foreach (var replacement in replacements)
+      {
+        var weekValues = await GetClientReplacementChartValuesWeek(clientId, replacement.ReplacementId, start, end);
+        var stos = (await _dbContext.ClientReplacementSTOs
+            .Where(w => w.ClientReplacementId == replacement.ClientReplacementId)
+            .OrderBy(o => o.ClientReplacementStoId)
+            .ToListAsync())
+          .Select((s, i) => new ClientStoReplacementContract
+          {
+            Weeks = s.Weeks,
+            Percent = s.Percent,
+            Status = s.Status.ToString(),
+            StatusNo = s.Status,
+            Index = i + 1,
+            Start = s.WeekStart,
+            End = s.WeekEnd
+          }).ToList();
+
+        var newRpl = new MonthlyReplacementContract
+        {
+          Replacement = replacement.Replacement.ReplacementProgramDescription,
+          ReplacementId = replacement.ReplacementId,
+          ProblemId = replacement.ReplacementId,
+          Baseline = replacement.BaselinePercent,
+          WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,
+          //Total = weekValues.Sum(),
+          Stos = stos,
+        };
+        data.Add(newRpl);
+      }
+      return data;
     }
   }
 }

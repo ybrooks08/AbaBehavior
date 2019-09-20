@@ -14,7 +14,8 @@ namespace AbaBackend.DataModel
   public enum Module
   {
     Client,
-    User
+    User,
+    System
   }
 
   public class SystemLog

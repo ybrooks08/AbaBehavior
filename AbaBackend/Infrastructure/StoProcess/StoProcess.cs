@@ -24,6 +24,7 @@ namespace AbaBackend.Infrastructure.StoProcess
 
     public async Task ProcessStos()
     {
+      await _utils.NewSystemLog(SystemLogType.Info, Module.System, 0, "Process", "Daily process ran.");
       var clients = await _dbContext.Clients.Where(w => w.Active).ToListAsync();
       foreach (var client in clients)
       {
