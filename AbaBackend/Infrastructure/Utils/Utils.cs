@@ -107,9 +107,9 @@ namespace AbaBackend.Infrastructure.Utils
         await CreateReferralsEmails(days);
         await CreateAssessmentEmails(days);
       }
-
-      var checkStos = new Classes.CheckStos(_dbContext);
-      await checkStos.ProcessStos();
+      // var checkStos = new Classes.CheckStos(_dbContext);
+      // await checkStos.ProcessStos();
+      // return true;
     }
 
     internal async Task CreateDocumentsEmails(int days)
@@ -563,6 +563,21 @@ namespace AbaBackend.Infrastructure.Utils
         Title = title,
         Module = module,
         ModuleValue = who,
+        Description = description,
+        SystemLogType = logType,
+        Entry = DateTimeOffset.UtcNow
+      });
+      await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task NewGenericSystemLog(SystemLogType logType, Module module, string title, string description)
+    {
+      await _dbContext.AddAsync(new SystemLog
+      {
+        UserId = 1,
+        Title = title,
+        Module = module,
+        ModuleValue = "NA",
         Description = description,
         SystemLogType = logType,
         Entry = DateTimeOffset.UtcNow

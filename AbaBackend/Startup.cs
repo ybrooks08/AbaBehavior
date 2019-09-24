@@ -7,6 +7,7 @@ using AbaBackend.Infrastructure.Security;
 using AbaBackend.Infrastructure.StoProcess;
 using AbaBackend.Infrastructure.Utils;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -88,7 +89,10 @@ namespace AbaBackend
 
       //app.UseHttpsRedirection();
       app.UseHangfireServer();
-      app.UseHangfireDashboard();
+      app.UseHangfireDashboard("/hangfire", new DashboardOptions
+      {
+        Authorization = new[] { new MyAuthorizationFilter() }
+      });
       app.UseCors("CorsPolicy");
       app.UseMvc();
 
@@ -99,6 +103,15 @@ namespace AbaBackend
       RecurringJob.AddOrUpdate(() => utils.SendEmailsAsync(true), Cron.Hourly);
       RecurringJob.AddOrUpdate(() => utils.MidNightProcess(), Cron.Daily);
       RecurringJob.AddOrUpdate(() => stoProcess.ProcessStos(), Cron.Daily);
+    }
+
+    public class MyAuthorizationFilter : IDashboardAuthorizationFilter
+    {
+      public bool Authorize(DashboardContext context)
+      {
+        //var httpContext = context.GetHttpContext();
+        return true;//httpContext.User.Identity.IsAuthenticated;
+      }
     }
   }
 }
