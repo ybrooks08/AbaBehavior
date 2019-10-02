@@ -2,7 +2,7 @@
   <div>
     <v-container fluid grid-list-md pa-0></v-container>
     <v-list class="pa-0">
-      <v-divider />
+      <v-divider/>
       <v-list-tile to="/home" active-class="blue lighten-4">
         <v-list-tile-action>
           <v-icon>fa-home</v-icon>
@@ -11,7 +11,7 @@
           <v-list-tile-title>Home</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
-      <v-divider />
+      <v-divider/>
       <template v-if="activeClients.length > 0">
         <v-subheader>Assigned clients</v-subheader>
         <template v-for="client in activeClients">
@@ -31,7 +31,7 @@
               </v-btn>
             </v-list-tile-action>
           </v-list-tile>
-          <v-divider :key="'d-'+client.assignmentId" />
+          <v-divider :key="'d-'+client.assignmentId"/>
         </template>
       </template>
       <template v-if="inactiveClients.length > 0">
@@ -53,7 +53,7 @@
               </v-btn>
             </v-list-tile-action>
           </v-list-tile>
-          <v-divider :key="'d-'+client.assignmentId" />
+          <v-divider :key="'d-'+client.assignmentId"/>
         </template>
       </template>
 
@@ -81,7 +81,7 @@
                 </v-btn>
               </v-list-tile-action>
             </v-list-tile>
-            <v-divider :key="'d-'+client.assignmentId" />
+            <v-divider :key="'d-'+client.assignmentId"/>
           </template>
         </v-list-group>
       </template>
@@ -126,6 +126,14 @@
         </v-list-tile-action>
         <v-list-tile-content>
           <v-list-tile-title>Monthly/Week data</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile to="/reporting/print-sessions" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-print</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Print Sessions</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
       <!-- </template> -->
@@ -210,7 +218,7 @@ export default {
 </script>
 
 <style scoped>
-.no-left-padding >>> a {
-  padding-left: 16px !important;
-}
+  .no-left-padding >>> a {
+    padding-left: 16px !important;
+  }
 </style>

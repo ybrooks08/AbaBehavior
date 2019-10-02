@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using AbaBackend.DataModel;
+using AbaBackend.Infrastructure;
 using AbaBackend.Infrastructure.Collection;
 using AbaBackend.Infrastructure.Reporting.Sessions;
 using AbaBackend.Infrastructure.Security;
