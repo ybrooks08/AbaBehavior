@@ -21,18 +21,14 @@ namespace AbaBackend.Controllers
   [Route("api/reporting")]
   public class ReportingController : Controller
   {
-    private AbaDbContext _dbContext;
-    private IUtils _utils;
-    private IConfiguration _configuration;
-    private IHostingEnvironment _env;
+    private readonly AbaDbContext _dbContext;
+    private readonly IUtils _utils;
     readonly ICollection _collection;
 
-    public ReportingController(AbaDbContext context, IUtils utils, IConfiguration configuration, IHostingEnvironment env, ICollection collection)
+    public ReportingController(AbaDbContext context, IUtils utils, ICollection collection)
     {
       _dbContext = context;
       _utils = utils;
-      _configuration = configuration;
-      _env = env;
       _collection = collection;
     }
 
@@ -50,8 +46,8 @@ namespace AbaBackend.Controllers
           .Select(s => new
           {
             MemberId = s.MemberNo,
-            Firstname = s.Firstname,
-            Lastname = s.Lastname,
+            s.Firstname,
+            s.Lastname,
             s.Dob,
             s.Code,
             Diagnosis = s.ClientDiagnostics.Where(w => w.Active).Select(sd => new
@@ -121,8 +117,8 @@ namespace AbaBackend.Controllers
           .Select(s => new
           {
             MemberId = s.MemberNo,
-            Firstname = s.Firstname,
-            Lastname = s.Lastname,
+            s.Firstname,
+            s.Lastname,
             s.Dob,
             s.Code,
             Assessments = s.Assessments.Where(w => w.BehaviorAnalysisCodeId == user.Rol.BehaviorAnalysisCodeId && (w.StartDate <= toDate && fromDate <= w.EndDate)),
@@ -293,10 +289,10 @@ namespace AbaBackend.Controllers
           var extraHours = 0m;
           var extraDrive = 0m;
 
-          var serviceHours = StaticUtils.CalculateWageHour(totalHours, sessionHours);
+          var (regular, extra) = StaticUtils.CalculateWageHour(totalHours, sessionHours);
           totalHours += sessionHours;
-          regularHours = serviceHours.regular;
-          extraHours = serviceHours.extra;
+          regularHours = regular;
+          extraHours = extra;
 
           var driveHours = StaticUtils.CalculateWageHour(totalHours, sessionDriveTime);
           totalHours += sessionDriveTime;

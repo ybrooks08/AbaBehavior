@@ -24,14 +24,12 @@ namespace AbaBackend.Controllers
     private readonly IConfiguration _configuration;
     private readonly AbaDbContext _dbContext;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly ILogger _logger;
 
-    public AuthController(IConfiguration configuration, AbaDbContext dbContext, IPasswordHasher passwordHasher, ILogger<AuthController> logger)
+    public AuthController(IConfiguration configuration, AbaDbContext dbContext, IPasswordHasher passwordHasher)
     {
       _configuration = configuration;
       _dbContext = dbContext;
       _passwordHasher = passwordHasher;
-      _logger = logger;
     }
 
     [AllowAnonymous]

@@ -11,11 +11,9 @@ namespace AbaBackend.DataModel
 {
   public class AbaDbContext : DbContext
   {
-    private IHostingEnvironment _env;
 
-    public AbaDbContext(DbContextOptions<AbaDbContext> options, IHostingEnvironment env) : base(options)
+    public AbaDbContext(DbContextOptions<AbaDbContext> options) : base(options)
     {
-      _env = env;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -69,7 +67,7 @@ namespace AbaBackend.DataModel
         .WithMany()
         .HasForeignKey(s => s.UserId)
         .OnDelete(DeleteBehavior.Restrict);
-      
+
       modelBuilder.Entity<User>()
         .Property(b => b.SessionsDateAllowed)
         .HasDefaultValue(DayOfWeekBit.Monday | DayOfWeekBit.Tuesday | DayOfWeekBit.Wednesday | DayOfWeekBit.Thursday | DayOfWeekBit.Friday);

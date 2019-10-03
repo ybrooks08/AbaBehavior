@@ -19,14 +19,12 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
 
   public class CompetencyCheckReport : ICompetencyCheckReport
   {
-    IUtils _utils;
     private AbaDbContext _dbContext { get; }
     private ExcelPackage _excelPackage;
     private ExcelWorksheet _wsMain;
 
-    public CompetencyCheckReport(IUtils utils, AbaDbContext dbContext)
+    public CompetencyCheckReport(AbaDbContext dbContext)
     {
-      _utils = utils;
       _dbContext = dbContext;
     }
 

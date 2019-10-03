@@ -22,7 +22,7 @@ namespace AbaBackend.Controllers
     }
 
     [HttpGet("problems-behaviors")]
-    public async Task<IActionResult> GetProblemBehaviors(int id)
+    public async Task<IActionResult> GetProblemBehaviors()
     {
       try
       {
@@ -74,7 +74,7 @@ namespace AbaBackend.Controllers
     }
 
     [HttpGet("replacement-programs")]
-    public async Task<IActionResult> GetReplacementPrograms(int id)
+    public async Task<IActionResult> GetReplacementPrograms()
     {
       try
       {
@@ -293,13 +293,13 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
-    
+
     [HttpGet("[action]")]
     public IActionResult GetDayOfWeekBitValues()
     {
       var pos = Enum.GetValues(typeof(DayOfWeekBit))
         .Cast<DayOfWeekBit>()
-        .Select(x => new { value = (int)x, text = x.ToString()})
+        .Select(x => new { value = (int)x, text = x.ToString() })
         .OrderBy(o => o.value)
         .ToList();
       return Ok(pos);

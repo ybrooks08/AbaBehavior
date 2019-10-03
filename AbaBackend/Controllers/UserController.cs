@@ -25,15 +25,13 @@ namespace AbaBackend.Controllers
   public class UserController : Controller
   {
     private readonly AbaDbContext _dbContext;
-    private IPasswordHasher _passwordHasher;
-    private IUtils _utils;
+    private readonly IUtils _utils;
     private readonly IHostingEnvironment _env;
     readonly ICollection _collection;
 
-    public UserController(AbaDbContext context, IPasswordHasher passwordHasher, IUtils utils, IHostingEnvironment env, ICollection collection)
+    public UserController(AbaDbContext context, IUtils utils, IHostingEnvironment env, ICollection collection)
     {
       _dbContext = context;
-      _passwordHasher = passwordHasher;
       _utils = utils;
       _env = env;
       _collection = collection;
@@ -259,7 +257,7 @@ namespace AbaBackend.Controllers
     }
 
     [HttpGet("get-roles")]
-    public async Task<IActionResult> GetRoles(int id)
+    public async Task<IActionResult> GetRoles()
     {
       try
       {
@@ -555,7 +553,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -601,7 +599,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -651,7 +649,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -927,7 +925,7 @@ namespace AbaBackend.Controllers
       {
         var user = await _utils.GetUserById(userId);
         if (user == null) throw new Exception("User not found");
-        user.SessionsDateAllowed = (DayOfWeekBit) value;
+        user.SessionsDateAllowed = (DayOfWeekBit)value;
         await _dbContext.SaveChangesAsync();
         return Ok();
       }

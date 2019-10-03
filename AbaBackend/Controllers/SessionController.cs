@@ -36,9 +36,9 @@ namespace AbaBackend.Controllers
   public class SessionController : Controller
   {
     readonly AbaDbContext _dbContext;
-    IUtils _utils;
+    readonly IUtils _utils;
     readonly IConfiguration _configuration;
-    IHostingEnvironment _env;
+    readonly IHostingEnvironment _env;
     readonly ICollection _collection;
     private readonly IStoProcess _stoProcess;
 
@@ -67,7 +67,7 @@ namespace AbaBackend.Controllers
           //check if client is actived or exists
           var client = await _utils.GetClientById(session.ClientId);
           if (client == null || !client.Active) throw new Exception("Client isn't active or doesn't exists.");
-          
+
           //check if user is allowed to create session on day of week
           if (!_utils.CheckIfuserAllowedDayOfWeek(user.SessionsDateAllowed, session.SessionStart.Date)) throw new Exception("You aren't allowed to create session on selected day");
 
@@ -207,7 +207,7 @@ namespace AbaBackend.Controllers
             start = s.SessionStart,
             end = s.SessionEnd,
             content = s.BehaviorAnalysisCode.Hcpcs,
-            Color = s.BehaviorAnalysisCode.Color,
+            s.BehaviorAnalysisCode.Color,
             Code = s.BehaviorAnalysisCode.Hcpcs,
             s.User,
             className = $"white--text v-card--hover  pa-0 ma-0 {s.BehaviorAnalysisCode.Color}",
@@ -685,9 +685,11 @@ namespace AbaBackend.Controllers
             compClientParams.Add(entry);
           }
 
-          comp = new CompetencyCheck();
-          comp.Date = DateTime.Today;
-          comp.CompetencyCheckClientParams = compClientParams;
+          comp = new CompetencyCheck
+          {
+            Date = DateTime.Today,
+            CompetencyCheckClientParams = compClientParams
+          };
         }
 
         return Ok(comp);
@@ -725,7 +727,6 @@ namespace AbaBackend.Controllers
               await _dbContext.CompetencyCheckClientParams.AddAsync(item);
               await _dbContext.SaveChangesAsync();
             }
-
             transaction.Commit();
           }
         }
@@ -973,7 +974,7 @@ namespace AbaBackend.Controllers
       // await _utils.MidNightProcess();
       //await _utils.SendEmailsAsync();
 
-      var a = _utils.CheckIfuserAllowedDayOfWeek((DayOfWeekBit) 62, DateTime.Today);
+      var a = _utils.CheckIfuserAllowedDayOfWeek((DayOfWeekBit)62, DateTime.Today);
       await Task.Delay(1);
 
       return Ok(a);

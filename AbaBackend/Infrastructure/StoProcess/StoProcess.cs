@@ -11,9 +11,9 @@ namespace AbaBackend.Infrastructure.StoProcess
 {
   public class StoProcess : IStoProcess
   {
-    AbaDbContext _dbContext;
-    IUtils _utils;
-    ICollection _collection;
+    readonly AbaDbContext _dbContext;
+    readonly IUtils _utils;
+    readonly ICollection _collection;
 
     public StoProcess(AbaDbContext dbContext, IUtils utils, ICollection collection)
     {

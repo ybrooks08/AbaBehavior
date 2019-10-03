@@ -17,7 +17,6 @@ namespace AbaBackend.Infrastructure.Collection
 {
   public class Collection : ICollection
   {
-    readonly IConfiguration _configuration;
     readonly AbaDbContext _dbContext;
     readonly IUtils _utils;
     readonly string _connectionString;
@@ -120,7 +119,6 @@ namespace AbaBackend.Infrastructure.Collection
 
     public Collection(IConfiguration configuration, AbaDbContext dbContext, IUtils utils)
     {
-      _configuration = configuration;
       _dbContext = dbContext;
       _utils = utils;
       _connectionString = configuration.GetConnectionString("AbaDbConnectionString");
