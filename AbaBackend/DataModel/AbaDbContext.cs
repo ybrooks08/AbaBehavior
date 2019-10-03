@@ -69,6 +69,10 @@ namespace AbaBackend.DataModel
         .WithMany()
         .HasForeignKey(s => s.UserId)
         .OnDelete(DeleteBehavior.Restrict);
+      
+      modelBuilder.Entity<User>()
+        .Property(b => b.SessionsDateAllowed)
+        .HasDefaultValue(DayOfWeekBit.Monday | DayOfWeekBit.Tuesday | DayOfWeekBit.Wednesday | DayOfWeekBit.Thursday | DayOfWeekBit.Friday);
 
       //Seed
       var salt = Encoding.ASCII.GetBytes("INITIAL-SALT-HERE"); //Guid.NewGuid().ToByteArray();
@@ -254,9 +258,9 @@ namespace AbaBackend.DataModel
 
       modelBuilder.Entity<CompetencyCheckParam>().HasData(
         new CompetencyCheckParam { CompetencyCheckParamId = 1, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Collected data on problem behaviors which ocurred in session", Comment = "Behavior(s) occurrences" },
-        new CompetencyCheckParam { CompetencyCheckParamId = 2, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Followed recommended intervention procedures upon occurrence of problem behaviore in session", Comment = "Interventions(s) used for problem behaviors" },
+        new CompetencyCheckParam { CompetencyCheckParamId = 2, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Followed recommended intervention procedures upon occurrence of problem behavior in session", Comment = "Interventions(s) used for problem behaviors" },
         new CompetencyCheckParam { CompetencyCheckParamId = 3, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Implemented the replacement skills training programs and recorded the data", Comment = "Replacement(s) skill specific for problem behavior" },
-        new CompetencyCheckParam { CompetencyCheckParamId = 4, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Implemented the acquisition skills training proramas and recorded the data", Comment = "Acquisition(s) skill" },
+        new CompetencyCheckParam { CompetencyCheckParamId = 4, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Implemented the acquisition skills training programs and recorded the data", Comment = "Acquisition(s) skill" },
         new CompetencyCheckParam { CompetencyCheckParamId = 5, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Provided reinforcement in accordance with the program", Comment = "Reinforcer(s) used for replacement/acquisition training" },
         new CompetencyCheckParam { CompetencyCheckParamId = 6, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Demostrated to Behavior assistant how to implement a portion of the behavior program", Comment = "BASP Portion selected to describe and review" },
         new CompetencyCheckParam { CompetencyCheckParamId = 7, CompetencyCheckType = CompetencyCheckType.Caregiver, Description = "Can indicate when the behavior occurred in another setting or with another person and the program was effectively implemented (Programming forgeneralization)", Comment = "List new setting/person. Describe generalization example during month" },

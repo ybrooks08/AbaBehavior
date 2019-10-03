@@ -5,9 +5,10 @@
         <v-card class="elevation-12" width="750">
           <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>User basic info</v-toolbar-title>
-            <v-spacer />
+            <v-spacer/>
             <v-btn dark flat :to="`/users/add_edit/${id}`">
-              <v-icon left>fa-edit</v-icon>EDIT
+              <v-icon left>fa-edit</v-icon>
+              EDIT
             </v-btn>
           </v-toolbar>
           <v-card-title class="pb-0">
@@ -19,15 +20,15 @@
                 <v-flex xs6>
                   <v-layout row wrap>
                     <v-flex class="body-2" xs4>Username:</v-flex>
-                    <v-flex xs8>{{user.username || 'N/A'}}</v-flex>
+                    <v-flex xs8>{{user.username || "N/A"}}</v-flex>
                     <v-flex class="body-2" xs4>Email:</v-flex>
-                    <v-flex xs8>{{user.email || 'N/A'}}</v-flex>
+                    <v-flex xs8>{{user.email || "N/A"}}</v-flex>
                     <v-flex class="body-2" xs4>Phone:</v-flex>
                     <v-flex xs8>{{user.phone | phone}}</v-flex>
                     <v-flex class="body-2" xs4>Created:</v-flex>
-                    <v-flex xs8>{{user.created || new Date() | moment('MMM Do, YYYY')}}</v-flex>
+                    <v-flex xs8>{{user.created || new Date() | moment("MMM Do, YYYY")}}</v-flex>
                     <v-flex class="body-2" xs4>Actived:</v-flex>
-                    <v-flex xs8>{{user.active ? 'YES' : 'NO'}}</v-flex>
+                    <v-flex xs8>{{user.active ? "YES" : "NO"}}</v-flex>
                   </v-layout>
                 </v-flex>
                 <v-flex xs6>
@@ -35,11 +36,11 @@
                     <v-flex class="body-2" xs6>Rol:</v-flex>
                     <v-flex xs6>{{!user.rol || user.rol.rolName}}</v-flex>
                     <v-flex class="body-2" xs6>Create sessions:</v-flex>
-                    <v-flex xs6>{{!user.rol || user.rol.canCreateSession ? 'YES' : 'NO'}}</v-flex>
+                    <v-flex xs6>{{!user.rol || user.rol.canCreateSession ? "YES" : "NO"}}</v-flex>
                     <v-flex class="body-2" xs6>Edit all client sessions:</v-flex>
-                    <v-flex xs6>{{!user.rol || user.rol.canEditAllClientSession ? 'YES' : 'NO'}}</v-flex>
+                    <v-flex xs6>{{!user.rol || user.rol.canEditAllClientSession ? "YES" : "NO"}}</v-flex>
                     <v-flex class="body-2" xs6>Must have documents:</v-flex>
-                    <v-flex xs6>{{!user.rol || user.rol.hasDocuments ? 'YES' : 'NO'}}</v-flex>
+                    <v-flex xs6>{{!user.rol || user.rol.hasDocuments ? "YES" : "NO"}}</v-flex>
                   </v-layout>
                 </v-flex>
               </v-layout>
@@ -50,11 +51,26 @@
       <v-flex xs12>
         <v-card class="elevation-12" width="750">
           <v-toolbar dark class="secondary" fluid dense>
+            <v-toolbar-title>Days allowed to create sessions</v-toolbar-title>
+          </v-toolbar>
+          <v-progress-linear style="position: absolute;" v-show="loadingDayOfWeekBit" :indeterminate="true" class="ma-0"></v-progress-linear>
+          <v-card-text>
+            <v-layout row wrap>
+              <v-flex xs3 v-for="w in dayOfWeekBitValues" :key="w.text">
+                <v-switch hide-details color="primary" :label="w.text" v-model="dayOfWeekBitValuesArray" :value="w.value" @change="changeDayOfWeekValue"></v-switch>
+              </v-flex>
+            </v-layout>
+          </v-card-text>
+        </v-card>
+      </v-flex>
+      <v-flex xs12>
+        <v-card class="elevation-12" width="750">
+          <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>User e-sign</v-toolbar-title>
-            <v-spacer />
+            <v-spacer/>
             <v-btn dark flat :to="`/user-sign/${id}`">
               <v-icon left>fa-signature</v-icon>
-              {{user.userSign ? 'Change' : 'Create'}}
+              {{user.userSign ? "Change" : "Create"}}
             </v-btn>
           </v-toolbar>
           <v-card-text>
@@ -65,7 +81,7 @@
                     <v-alert type="info" :value="true">NO SIGN</v-alert>
                   </template>
                   <template v-else>
-                    <v-img max-width="300" :contain="true" max-height="100" :src="!user.userSign || user.userSign.sign" />
+                    <v-img max-width="300" :contain="true" max-height="100" :src="!user.userSign || user.userSign.sign"/>
                   </template>
                 </v-flex>
               </v-layout>
@@ -139,6 +155,7 @@
 
 <script>
 import userApi from "@/services/api/UserServices";
+import masterTableApi from "@/services/api/MasterTablesServices";
 
 export default {
   props: {
@@ -159,7 +176,10 @@ export default {
       loadingBasicInfo: false,
       loadingDocuments: false,
       showPdfForm: false,
-      docUser: null
+      docUser: null,
+      dayOfWeekBitValues: [],
+      dayOfWeekBitValuesArray: [],
+      loadingDayOfWeekBit: false
     };
   },
 
@@ -170,18 +190,25 @@ export default {
   methods: {
     async loadBasicInfo() {
       this.loadingBasicInfo = true;
+      this.loadingDayOfWeekBit = true;
       try {
+        this.dayOfWeekBitValues = await masterTableApi.getDayOfWeekBitValues();
         this.groups = await userApi.getDocumentGroups();
         this.user = await userApi.getUserFull(this.id);
         this.user.documents.forEach(d => {
           d.expires = this.$moment(d.expires)
-            .utc()
-            .format("MM/DD/YYYY");
+              .utc()
+              .format("MM/DD/YYYY");
+        });
+        this.dayOfWeekBitValues.forEach(c => {
+          const a = (c.value & this.user.sessionsDateAllowed) !== 0;
+          this.dayOfWeekBitValuesArray.push(a ? c.value : 0);
         });
       } catch (error) {
         this.$toast.error(error);
       } finally {
         this.loadingBasicInfo = false;
+        this.loadingDayOfWeekBit = false;
       }
     },
 
@@ -258,6 +285,23 @@ export default {
     uploadForm(doc) {
       this.docUser = doc;
       this.showPdfForm = true;
+    },
+
+    async changeDayOfWeekValue() {
+      let value = 0;
+      this.dayOfWeekBitValuesArray.forEach(c => {
+        value |= c;
+      });
+
+      try {
+        this.loadingDayOfWeekBit = true;
+        await userApi.changeDayOfWeekBit(this.id, value);
+      } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loadingDayOfWeekBit = false;
+      }
+
     }
   }
 };

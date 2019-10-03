@@ -4,14 +4,16 @@ using AbaBackend.DataModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AbaBackend.Migrations
 {
     [DbContext(typeof(AbaDbContext))]
-    partial class AbaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191003022006_DayOfWeekAllowedDefaultValue")]
+    partial class DayOfWeekAllowedDefaultValue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -618,7 +620,7 @@ namespace AbaBackend.Migrations
                             CompetencyCheckParamId = 2,
                             Comment = "Interventions(s) used for problem behaviors",
                             CompetencyCheckType = 2,
-                            Description = "Followed recommended intervention procedures upon occurrence of problem behavior in session"
+                            Description = "Followed recommended intervention procedures upon occurrence of problem behaviore in session"
                         },
                         new
                         {
@@ -632,7 +634,7 @@ namespace AbaBackend.Migrations
                             CompetencyCheckParamId = 4,
                             Comment = "Acquisition(s) skill",
                             CompetencyCheckType = 2,
-                            Description = "Implemented the acquisition skills training programs and recorded the data"
+                            Description = "Implemented the acquisition skills training proramas and recorded the data"
                         },
                         new
                         {

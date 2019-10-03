@@ -45,5 +45,6 @@ namespace AbaBackend.Infrastructure.Utils
     bool CanCreateAfterHours(User user, DateTime sessionStart);
     Task RemovePassIfApply(User user, DateTime sessionStart);
     Task<int> AdjustClientDataCollect(AdjustClientDataCollectModel model);
+    bool CheckIfuserAllowedDayOfWeek(DayOfWeekBit days, DateTime date);
   }
 }

@@ -67,6 +67,9 @@ namespace AbaBackend.Controllers
           //check if client is actived or exists
           var client = await _utils.GetClientById(session.ClientId);
           if (client == null || !client.Active) throw new Exception("Client isn't active or doesn't exists.");
+          
+          //check if user is allowed to create session on day of week
+          if (!_utils.CheckIfuserAllowedDayOfWeek(user.SessionsDateAllowed, session.SessionStart.Date)) throw new Exception("You aren't allowed to create session on selected day");
 
           //check if have expiring documents
           var documentsExpired = await _utils.GetUserExpiredDocumentsCount();
@@ -970,9 +973,10 @@ namespace AbaBackend.Controllers
       // await _utils.MidNightProcess();
       //await _utils.SendEmailsAsync();
 
-      await _stoProcess.ProcessStos();
+      var a = _utils.CheckIfuserAllowedDayOfWeek((DayOfWeekBit) 62, DateTime.Today);
+      await Task.Delay(1);
 
-      return Ok();
+      return Ok(a);
     }
 
     [HttpPost("[action]")]

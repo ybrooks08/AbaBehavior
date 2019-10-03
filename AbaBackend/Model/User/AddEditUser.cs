@@ -45,5 +45,6 @@ namespace AbaBackend.Model.User
     public string BankAccountNumber { get; set; }
     public decimal PayRate { get; set; }
     public decimal DriveTimePayRate { get; set; }
+    public DayOfWeekBit SessionsDateAllowed { get; set; }
   }
 }

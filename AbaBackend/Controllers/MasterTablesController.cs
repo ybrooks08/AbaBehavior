@@ -293,6 +293,17 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
+    
+    [HttpGet("[action]")]
+    public IActionResult GetDayOfWeekBitValues()
+    {
+      var pos = Enum.GetValues(typeof(DayOfWeekBit))
+        .Cast<DayOfWeekBit>()
+        .Select(x => new { value = (int)x, text = x.ToString()})
+        .OrderBy(o => o.value)
+        .ToList();
+      return Ok(pos);
+    }
 
   }
 }

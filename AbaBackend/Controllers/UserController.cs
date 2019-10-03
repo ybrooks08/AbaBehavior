@@ -228,6 +228,8 @@ namespace AbaBackend.Controllers
           userProcess.PayRate = user.PayRate;
           userProcess.DriveTimePayRate = user.DriveTimePayRate;
 
+          userProcess.SessionsDateAllowed = user.SessionsDateAllowed;
+
           if (user.UserId == 0) await _dbContext.Users.AddAsync(userProcess);
           await _dbContext.SaveChangesAsync();
 
@@ -553,7 +555,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -599,7 +601,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -649,7 +651,7 @@ namespace AbaBackend.Controllers
           Pos = Enum.GetName(typeof(Pos), s.Pos).Replace("_", " "),
           EnumStatus = s.SessionStatus,
           SessionStatus = s.SessionStatus.ToString(),
-          SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString()
+          SessionStatusColor = ((SessionStatusColors) s.SessionStatus).ToString()
         })
         .OrderByDescending(o => o.SessionStart)
         .ThenBy(o => o.ClientFullname)
@@ -909,6 +911,23 @@ namespace AbaBackend.Controllers
         var pass = await _dbContext.AuthPasses.Where(w => w.UserId == userId && w.Used == false).FirstOrDefaultAsync();
         if (pass == null) return Ok();
         _dbContext.Remove(pass);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{userId}/{value}")]
+    public async Task<IActionResult> ChangeDayOfWeekBit(int userId, int value)
+    {
+      try
+      {
+        var user = await _utils.GetUserById(userId);
+        if (user == null) throw new Exception("User not found");
+        user.SessionsDateAllowed = (DayOfWeekBit) value;
         await _dbContext.SaveChangesAsync();
         return Ok();
       }

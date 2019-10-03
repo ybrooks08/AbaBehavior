@@ -702,5 +702,16 @@ namespace AbaBackend.Infrastructure.Utils
 
       return sessionsAffected.Distinct().Count();
     }
+
+    public bool CheckIfuserAllowedDayOfWeek(DayOfWeekBit days, DateTime date)
+    {
+      var values = Enum.GetValues(typeof(DayOfWeekBit));
+      foreach (var value in values)
+      {
+        var a = ((DayOfWeekBit)value & days) != 0 && value.ToString() == date.DayOfWeek.ToString();
+        if (a) return true;
+      }
+      return false;
+    }
   }
 }
