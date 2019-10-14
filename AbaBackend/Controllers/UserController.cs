@@ -820,7 +820,8 @@ namespace AbaBackend.Controllers
           .Select(s => new
           {
             value = s.MonthlyNoteId,
-            text = s.MonthlyNoteDate.ToString("Y")
+            text = s.MonthlyNoteDate.ToString("Y"),
+            date = s.MonthlyNoteDate
           })
           .ToListAsync();
         return Ok(notes);

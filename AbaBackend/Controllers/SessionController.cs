@@ -1117,8 +1117,8 @@ namespace AbaBackend.Controllers
       }
     }
 
-    [HttpGet("[action]/{clientId}")]
-    public async Task<IActionResult> GetCompetencyCheckCaregiversCharts(int clientId)
+    [HttpGet("[action]/{clientId}/{chartMaxDate?}")]
+    public async Task<IActionResult> GetCompetencyCheckCaregiversCharts(int clientId, DateTime? chartMaxDate = null)
     {
       var competencyChecks = await _dbContext.CompetencyChecks.Where(w => w.ClientId == clientId).Include(i => i.Caregiver).Include(i => i.User).ToListAsync();
       var caregivers = competencyChecks.Where(w => w.Caregiver != null).Select(s => s.Caregiver).Distinct().ToList();
@@ -1128,13 +1128,13 @@ namespace AbaBackend.Controllers
 
       foreach (var caregiver in caregivers)
       {
-        var c = await _utils.GetCompetencyCheckChart(clientId, CompetencyCheckType.Caregiver, caregiver.CaregiverId);
+        var c = await _utils.GetCompetencyCheckChart(clientId, CompetencyCheckType.Caregiver, caregiver.CaregiverId, chartMaxDate);
         charts.Add(c);
       }
 
       foreach (var rbt in rbts)
       {
-        var c = await _utils.GetCompetencyCheckChart(clientId, CompetencyCheckType.Rbt, rbt.UserId);
+        var c = await _utils.GetCompetencyCheckChart(clientId, CompetencyCheckType.Rbt, rbt.UserId, chartMaxDate);
         charts.Add(c);
       }
 

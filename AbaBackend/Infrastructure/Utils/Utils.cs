@@ -503,7 +503,7 @@ namespace AbaBackend.Infrastructure.Utils
       }
     }
 
-    public async Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId)
+    public async Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId, DateTime? chartMaxDate = null)
     {
       var comps = competencyCheckType == CompetencyCheckType.Rbt
         ? _dbContext.CompetencyChecks.Where(w => w.UserId == userOrCaregiverId && w.ClientId == clientId).AsQueryable()
@@ -515,7 +515,7 @@ namespace AbaBackend.Infrastructure.Utils
 
       var provider = competencyCheckType == CompetencyCheckType.Caregiver ? competencies.Select(s => $"Caregiver {s.Caregiver.CaregiverFullname}").First() : competencies.Select(s => $"RBT {s.User.Firstname} {s.User.Lastname}").First();
       var firstDate = competencies.Select(s => s.Date).Min();
-      var lastDate = competencies.Select(s => s.Date).Max();
+      var lastDate = chartMaxDate ?? competencies.Select(s => s.Date).Max();
       var beginMonth = new DateTime(firstDate.Year, firstDate.Month, 1);
       var lastMonth = new DateTime(lastDate.Year, lastDate.Month, 1).AddMonths(1).AddDays(-1);
       var legend = new List<string>();

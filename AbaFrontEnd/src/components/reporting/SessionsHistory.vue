@@ -20,7 +20,7 @@
                     </v-list-tile-avatar>
                     <v-list-tile-content>
                       <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.clientName}}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment('utc', 'MM/DD/YYYY')}} | Code: {{item.clientCode || 'N/A' }}</v-list-tile-sub-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment("utc", "MM/DD/YYYY")}} | Code: {{item.clientCode || "N/A" }}</v-list-tile-sub-title>
                     </v-list-tile-content>
                   </template>
                 </v-autocomplete>
@@ -63,16 +63,16 @@
                   <br>
                   {{r.rol}}
                 </td>
-                <td class="px-1">{{r.sessionStart | moment('MM/DD/YYYY')}}</td>
+                <td class="px-1">{{r.sessionStart | moment("MM/DD/YYYY")}}</td>
                 <td>
                   <v-chip dark label :color="r.sessionStatusColor">{{r.sessionStatus}}</v-chip>
                 </td>
                 <td class="hidden-sm-and-down px-1 text-truncate">
                   <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                  {{r.sessionStart | moment('LT')}}
+                  {{r.sessionStart | moment("LT")}}
                   <br>
                   <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                  {{r.sessionEnd | moment('LT')}}
+                  {{r.sessionEnd | moment("LT")}}
                 </td>
                 <td class="hidden-sm-and-down px-1">{{r.sessionType}}</td>
                 <td class="hidden-sm-and-down px-1">{{r.pos}}</td>
@@ -87,10 +87,10 @@
                 </td>
                 <td class="text-xs-left pr-3 pl-0 right text-truncate">
                   <v-tooltip top>
-                    <v-btn slot="activator" icon class="mx-0">
-                      <v-icon color="grey darken-2">fa-eye</v-icon>
+                    <v-btn slot="activator" icon class="mx-0" @click.stop="sessionPrint(r)">
+                      <v-icon color="grey darken-2">fa-print</v-icon>
                     </v-btn>
-                    <span v-html="r.notes ? r.notes.substring(0, 200)+'...' : 'N/A'"></span>
+                    <span>Print</span>
                   </v-tooltip>
                   <v-tooltip top>
                     <v-btn slot="activator" icon class="mx-0" @click.stop="sessionNotes(r)">
@@ -115,23 +115,23 @@
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 // import clientApi from '@/services/api/ClientServices';
-import reportingApi from '@/services/api/ReportingServices';
+import reportingApi from "@/services/api/ReportingServices";
 
 export default {
   data() {
     return {
       loading: false,
-      required: (value) => !!value || 'This field is required.',
+      required: (value) => !!value || "This field is required.",
       validForm: false,
       datePickerModel: {
-        start: this.$moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DDTHH:mm'),
-        end: this.$moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DDTHH:mm'),
+        start: this.$moment().subtract(1, "month").startOf("month").format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment().subtract(1, "month").endOf("month").format("YYYY-MM-DDTHH:mm")
       },
       clients: [],
       clientId: null,
-      sessions: [],
+      sessions: []
     };
   },
 
@@ -140,12 +140,12 @@ export default {
       return this.$store.getters.user;
     },
     isAdminOrManagement() {
-      return this.user.rol2 === 'admin' || this.user.rol2 === 'management';
-    },
+      return this.user.rol2 === "admin" || this.user.rol2 === "management";
+    }
   },
 
   mounted() {
-    this.$store.commit('SET_ACTIVE_CLIENT', null);
+    this.$store.commit("SET_ACTIVE_CLIENT", null);
     this.loadUserClients();
   },
 
@@ -172,7 +172,7 @@ export default {
         let sessions = await reportingApi.getSessionsHistory(this.datePickerModel.start, this.datePickerModel.end, this.clientId);
 
         if (sessions.length == 0) {
-          this.$toast.info('No data');
+          this.$toast.info("No data");
           return;
         }
 
@@ -189,23 +189,31 @@ export default {
     },
 
     sessionNotes(session) {
-      this.$store.commit('SET_ACTIVE_DATE', session.sessionStart);
-      this.$store.commit('SET_ACTIVE_CLIENT', session.clientId);
-      this.$store.commit('SET_ACTIVE_SESSION', session.sessionId);
-      let routeData = this.$router.resolve('/clients/session_notes');
-      window.open(routeData.href, '_blank');
+      this.$store.commit("SET_ACTIVE_DATE", session.sessionStart);
+      this.$store.commit("SET_ACTIVE_CLIENT", session.clientId);
+      this.$store.commit("SET_ACTIVE_SESSION", session.sessionId);
+      let routeData = this.$router.resolve("/clients/session_notes");
+      window.open(routeData.href, "_blank");
       //this.$router.push('/clients/session_notes');
     },
 
     sessionData(session) {
-      this.$store.commit('SET_ACTIVE_DATE', session.sessionStart);
-      this.$store.commit('SET_ACTIVE_CLIENT', session.clientId);
-      this.$store.commit('SET_ACTIVE_SESSION', session.sessionId);
-      let routeData = this.$router.resolve('/session/session_collect_data');
-      window.open(routeData.href, '_blank');
+      this.$store.commit("SET_ACTIVE_DATE", session.sessionStart);
+      this.$store.commit("SET_ACTIVE_CLIENT", session.clientId);
+      this.$store.commit("SET_ACTIVE_SESSION", session.sessionId);
+      let routeData = this.$router.resolve("/session/session_collect_data");
+      window.open(routeData.href, "_blank");
       //this.$router.push('/session/session_collect_data');
     },
-  },
+
+    sessionPrint(session) {
+      this.$store.commit("SET_ACTIVE_DATE", session.sessionStart);
+      this.$store.commit("SET_ACTIVE_CLIENT", session.clientId);
+      this.$store.commit("SET_ACTIVE_SESSION", session.sessionId);
+      let routeData = this.$router.resolve("/session/session_print");
+      window.open(routeData.href, "_blank");
+    }
+  }
 
 };
 </script>

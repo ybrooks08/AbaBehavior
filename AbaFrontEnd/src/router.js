@@ -176,7 +176,7 @@ export default new Router({
           path: "/reporting/sessions-history",
           name: "SessionsHistory",
           component: () => import(/* webpackChunkName: "SessionsHistory" */ "@/components/reporting/SessionsHistory"),
-          meta: { rol: ["assistant", "tech", "analyst", "admin"] }
+          meta: { rol: ["assistant", "tech", "analyst", "admin", "billing"] }
         },
         {
           path: "/reporting/client_progress",
@@ -194,7 +194,7 @@ export default new Router({
           path: "/session/session_print",
           name: "SessionPrint",
           component: () => import(/* webpackChunkName: "SessionPrint" */ "@/components/sessions/SessionPrint"),
-          meta: { rol: ["assistant", "tech", "analyst", "admin"] }
+          meta: { rol: ["assistant", "tech", "analyst", "admin", "billing"] }
         },
         {
           path: "/documents_setup",
@@ -266,7 +266,7 @@ export default new Router({
           path: "/reporting/print-sessions",
           name: "PrintSessions",
           component: () => import(/* webpackChunkName: "PrintSessions" */ "@/components/reporting/PrintSessions"),
-          meta: { rol: ["admin", "analyst", "assistant", "tech"] }
+          meta: { rol: ["admin", "analyst", "assistant", "tech", "billing"] }
         }
       ]
     },

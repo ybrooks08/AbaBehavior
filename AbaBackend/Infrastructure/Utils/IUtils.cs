@@ -37,7 +37,7 @@ namespace AbaBackend.Infrastructure.Utils
     Task<List<ClientReplacement>> GetClientReplacements(int clientId, bool onlyActive = true);
     Task AddSessionProblemNotes(int sessionId, int clientId);
     Task NewEntryLog(int sessionId, string title, string description, string icon = "fa-info-circle", string iconColor = "blue");
-    Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId);
+    Task<Object> GetCompetencyCheckChart(int clientId, CompetencyCheckType competencyCheckType, int userOrCaregiverId, DateTime? chartMaxDate = null);
     Task NewSystemLog(SystemLogType logType, Module module, int moduleId, string title, string description);
     Task NewGenericSystemLog(SystemLogType logType, Module module, string title, string description);
     Task<string> GetFullDataForSystemLog(Module who, int valueId);

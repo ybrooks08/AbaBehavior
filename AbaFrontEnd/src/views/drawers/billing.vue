@@ -50,6 +50,22 @@
           <v-list-tile-title>Services Logs</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/reporting/print-sessions" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-print</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Print Sessions</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile to="/reporting/sessions-history" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-history</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Progress Notes</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
     </v-list>
   </div>
 </template>

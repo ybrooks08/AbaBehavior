@@ -22,9 +22,7 @@ namespace AbaBackend.Infrastructure.Utils.Static
 
     public static bool IsValidEmail(string email)
     {
-      if (string.IsNullOrWhiteSpace(email))
-        return false;
-
+      if (string.IsNullOrWhiteSpace(email)) return false;
       try
       {
         email = Regex.Replace(email, @"(@)(.+)$", DomainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
@@ -57,6 +55,4 @@ namespace AbaBackend.Infrastructure.Utils.Static
       }
     }
   }
-
-
 }
