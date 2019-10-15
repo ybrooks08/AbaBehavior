@@ -45,6 +45,7 @@ namespace AbaBackend.Infrastructure.StoProcess
       if (clientBehaviors.Count == 0) return;
       var clientBehaviorsListId = clientBehaviors.Select(s => s.ProblemId).ToList();
       var allStos = await _dbContext.ClientProblemSTOs.Where(w => !w.MasteredForced && clientBehaviors.Select(s => s.ClientProblemId).Contains(w.ClientProblemId)).ToListAsync();
+      var forcedSto = await _dbContext.ClientProblemSTOs.Where(w => w.MasteredForced && clientBehaviors.Select(s => s.ClientProblemId).Contains(w.ClientProblemId)).ToListAsync();
       allStos.ForEach(f => f.Status = StoStatus.Unknow);
 
       var allCollection = await _collection.GetCollectionBehaviors(firstWeekStart, lastWeekEnd, clientId, clientBehaviorsListId);
@@ -54,7 +55,9 @@ namespace AbaBackend.Infrastructure.StoProcess
       {
         var valuesByWeek = _collection.GetClientProblemsByWeek(clientBehavior.ProblemId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection, clientBehavior.ProblemBehavior.IsPercent);
         var stos = allStos.Where(w => w.ClientProblemId == clientBehavior.ClientProblemId).OrderBy(o => o.ClientProblemStoId).ToList();
+        var forced = forcedSto.Where(w => w.ClientProblemId == clientBehavior.ClientProblemId).OrderBy(o => o.ClientProblemStoId).ToList();
         if (stos.Count == 0) continue;
+        var firstDayOfSto = forced.Count > 0 ? ((DateTime)forced.Last().WeekEnd).AddDays(1) : valuesByWeek.First().Start;
 
         foreach (var sto in stos)
         {
@@ -68,11 +71,13 @@ namespace AbaBackend.Infrastructure.StoProcess
             var allWeeks = valuesByWeek.Take(weeks).ToList();
             if (checkWeeks >= weeks)
             {
-              sto.WeekStart = allWeeks.First().Start;
+              // sto.WeekStart = allWeeks.First().Start;
+              sto.WeekStart = firstDayOfSto;
               sto.WeekEnd = allWeeks.Last().End;
               sto.Status = StoStatus.Mastered;
               valuesByWeek.RemoveRange(0, weeks);
               e = true;
+              firstDayOfSto = Convert.ToDateTime(sto.WeekEnd).AddDays(1);
             }
             else if (valuesByWeek.Count > 0) valuesByWeek.RemoveRange(0, 1);
             if (valuesByWeek.Count <= 0) e = true;
@@ -97,6 +102,7 @@ namespace AbaBackend.Infrastructure.StoProcess
       if (clientReplacements.Count == 0) return;
       var clientReplacementsListId = clientReplacements.Select(s => s.ReplacementId).ToList();
       var allStos = await _dbContext.ClientReplacementSTOs.Where(w => !w.MasteredForced && clientReplacements.Select(s => s.ClientReplacementId).Contains(w.ClientReplacementId)).ToListAsync();
+      var forcedSto = await _dbContext.ClientReplacementSTOs.Where(w => w.MasteredForced && clientReplacements.Select(s => s.ClientReplacementId).Contains(w.ClientReplacementId)).ToListAsync();
       allStos.ForEach(f => f.Status = StoStatus.Unknow);
 
       var allCollection = await _collection.GetCollectionReplacements(firstWeekStart, lastWeekEnd, clientId, clientReplacementsListId);
@@ -106,7 +112,9 @@ namespace AbaBackend.Infrastructure.StoProcess
       {
         var valuesByWeek = _collection.GetClientReplacementsByWeek(clientReplacement.ReplacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
         var stos = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId).OrderBy(o => o.ClientReplacementStoId).ToList();
+        var forced = forcedSto.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId).OrderBy(o => o.ClientReplacementStoId).ToList();
         if (stos.Count == 0) continue;
+        var firstDayOfSto = forced.Count > 0 ? ((DateTime)forced.Last().WeekEnd).AddDays(1) : valuesByWeek.First().Start;
 
         foreach (var sto in stos)
         {
@@ -120,11 +128,13 @@ namespace AbaBackend.Infrastructure.StoProcess
             var allWeeks = valuesByWeek.Take(weeks).ToList();
             if (checkWeeks >= weeks)
             {
-              sto.WeekStart = allWeeks.First().Start;
+              //sto.WeekStart = allWeeks.First().Start;
+              sto.WeekStart = firstDayOfSto;
               sto.WeekEnd = allWeeks.Last().End;
               sto.Status = StoStatus.Mastered;
               valuesByWeek.RemoveRange(0, weeks);
               e = true;
+              firstDayOfSto = Convert.ToDateTime(sto.WeekEnd).AddDays(1);
             }
             else if (valuesByWeek.Count > 0) valuesByWeek.RemoveRange(0, 1);
             if (valuesByWeek.Count <= 0) e = true;
