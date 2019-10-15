@@ -315,6 +315,7 @@ namespace AbaBackend.Controllers
           {
             s.ClientId,
             ClientName = $"{s.Client.Firstname} {s.Client.Lastname}",
+            ClientDiagnosis = s.Client.ClientDiagnostics.Where(w => w.Active).Select(s1 => new { s1.Diagnosis.Code, s1.Diagnosis.Description }),
             SessionStart = s.SessionStart.ToString("u"),
             SessionEnd = s.SessionEnd.ToString("u"),
             UserFullname = $"{s.User.Firstname} {s.User.Lastname}",

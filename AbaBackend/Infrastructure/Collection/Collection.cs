@@ -518,6 +518,7 @@ namespace AbaBackend.Infrastructure.Collection
         var newBeh = new MonthlyBehaviorContract
         {
           Behavior = behavior.ProblemBehavior.ProblemBehaviorDescription,
+          IsPercent = behavior.ProblemBehavior.IsPercent,
           ProblemId = behavior.ProblemId,
           Baseline = behavior.BaselineCount,
           WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,

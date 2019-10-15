@@ -53,6 +53,8 @@
               <v-flex xs8>{{ sessionPrint.sessionType }}</v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Service:</v-flex>
               <v-flex xs8>{{ sessionPrint.service }} ({{ sessionPrint.serviceDescription }})</v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Diagnosis:</v-flex>
+              <v-flex xs8 style="display:flex; flex-direction: column;"><small class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code">{{d.description}} ({{d.code}})</small></v-flex>
             </v-layout>
           </v-flex>
           <v-flex xs12>
@@ -589,6 +591,7 @@ export default {
       try {
         this.loadingSession = true;
         let sessionPrint = await sessionServicesApi.getSessionForPrint(this.sessionId);
+        console.log(sessionPrint)
         let d1 = this.$moment(sessionPrint.sessionStart).local();
         let d2 = this.$moment(sessionPrint.sessionEnd).local();
         sessionPrint.sessionStart = d1;

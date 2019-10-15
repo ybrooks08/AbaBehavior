@@ -21,6 +21,7 @@ namespace AbaBackend.Infrastructure.Collection
     public List<ClientStoBehaviorContract> Stos { get; set; }
     public int? Total { get; set; }
     public int ProblemId { get; set; }
+    public bool IsPercent { get; internal set; }
   }
 
   public class ClientStoBehaviorContract

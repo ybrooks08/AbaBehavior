@@ -171,7 +171,8 @@
                                       {{ s.index }}
                                     </v-avatar>
                                   </td>
-                                  <td style="width: 350px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
+                                  <td v-if="!b.isPercent" style="width: 350px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
+                                  <td v-else style="width: 350px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
                                   <td style="border: none !important">
                                     <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong> &nbsp;&nbsp;</span>
                                     <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
@@ -226,7 +227,7 @@
                                       {{ s.index }}
                                     </v-avatar>
                                   </td>
-                                  <td style="width: 350px; border: none !important">Increase to {{ s.percent }} total percent of trials for {{ s.weeks }} consecutive weeks</td>
+                                  <td style="width: 350px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks</td>
                                   <td style="border: none !important">
                                     <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong> &nbsp;&nbsp;</span>
                                     <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
@@ -412,6 +413,7 @@ export default {
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
+        console.log(this.clientProblems)
         this.clientReplacements = monthlyData.replacements;
         this.behIds = this.clientProblems.map(w => w.problemId);
         this.repIds = this.clientReplacements.map(w => w.replacementId);
