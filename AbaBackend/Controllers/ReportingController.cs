@@ -63,7 +63,8 @@ namespace AbaBackend.Controllers
                 a.PaNumber,
                 a.TotalUnits,
                 a.StartDate,
-                a.EndDate
+                a.EndDate,
+                a.Status
               }),
             Referrals = s.Referrals.Where(w => (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active),
             Assignments = s.Assignments.Where(w => w.User.Rol.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId) && w.Active).Select(su => su.User),

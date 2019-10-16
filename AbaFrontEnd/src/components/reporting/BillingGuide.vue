@@ -9,7 +9,7 @@
           <v-form autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
-                <date-picker-menu v-model="datePickerModel" :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" />
+                <date-picker-menu v-model="datePickerModel" :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading"/>
                 <!-- <date-picker-menu :isLarge=true :isDark=false :btnColor="'primary'" :pickerStartInit="from" :pickerEndInit="to" :initialValue="'Last month'" @dateSelected="dateSelected" :disabled="loading" /> -->
               </v-flex>
               <v-flex xs12>
@@ -29,8 +29,7 @@
                 <v-select box hide-details :disabled="loading" :items="behaviorAnalysisCodes" v-model="behaviorAnalysisCodeId" label="Service" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId" :rules="[required]" required>
                   <template slot="selection" slot-scope="data">
                     <div class="input-group__selections__comma">
-                      {{ data.item.description }} &nbsp;
-                      <span class="grey--text text--darken-1">({{data.item.hcpcs}})</span>
+                      {{ data.item.description }} &nbsp; <span class="grey--text text--darken-1">({{data.item.hcpcs}})</span>
                     </div>
                   </template>
                   <template slot="item" slot-scope="data">
@@ -51,7 +50,7 @@
         </v-card-text>
         <v-card-actions>
           <small class="pl-4 grey--text">* Only reviewed and billed sessions will be reported</small>
-          <v-spacer />
+          <v-spacer/>
           <!-- <v-btn :loading="loading" :disabled="loading || !validForm">Clear</v-btn> -->
           <v-btn color="primary" :loading="loading" :disabled="loading || !validForm" @click="View">View</v-btn>
         </v-card-actions>
@@ -61,7 +60,7 @@
       <v-card>
         <v-toolbar dense dark class="secondary no-print">
           <v-toolbar-title>Billing guide overview</v-toolbar-title>
-          <v-spacer />
+          <v-spacer/>
           <v-btn dark icon @click="print">
             <v-icon>fa-print</v-icon>
           </v-btn>
@@ -150,6 +149,7 @@
             <thead>
               <tr style="height: auto;">
                 <th class="text-xs-left py-0">Auth</th>
+                <th></th>
                 <th class="text-xs-left py-0">PA Number</th>
                 <th class="text-xs-left py-0">Total Units / Hours</th>
                 <th class="text-xs-left py-0">Start / End date</th>
@@ -161,6 +161,11 @@
                   <strong>{{r.behaviorAnalysisCode.hcpcs}}</strong>
                 </td>
                 <td>
+                  <template v-if="r.behaviorAnalysisCode.hcpcs == 'H0031' || r.behaviorAnalysisCode.hcpcs == 'H0032'">
+                    <v-btn small v-if="r.status === 0" color="primary" @click="markAssessmentAsBilled(r)">Mark as billed</v-btn>
+                    <v-chip v-else label disabled color="green" text-color="white">Billed</v-chip>
+                  </template>
+                </td>
                 <td>
                   <strong>{{r.paNumber}}</strong>
                 </td>
@@ -299,13 +304,13 @@ export default {
       report: null,
       datePickerModel: {
         start: this.$moment()
-          .subtract(1, "month")
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm"),
+            .subtract(1, "month")
+            .startOf("month")
+            .format("YYYY-MM-DDTHH:mm"),
         end: this.$moment()
-          .subtract(1, "month")
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm")
+            .subtract(1, "month")
+            .endOf("month")
+            .format("YYYY-MM-DDTHH:mm")
       },
       required: value => !!value || "This field is required.",
       clients: [],
@@ -374,6 +379,16 @@ export default {
         this.$toast.error(error);
       } finally {
         this.$set(this.btnLoading, index, false);
+      }
+    },
+
+    async markAssessmentAsBilled(assessment) {
+      try {
+        await sessionServicesApi.markAssessmentAsBilled(assessment.assessmentId);
+        assessment.status = 1;
+      } catch (error) {
+        console.error(error);
+        this.$toast.error(error);
       }
     },
 

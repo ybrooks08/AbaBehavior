@@ -1402,5 +1402,14 @@ namespace AbaBackend.Controllers
       var stoStatus = await _collection.GetStoStatusReplacement(clientId, replacementId);
       return Ok(new { chartData = chartData.Select(s => s == null ? 0 : s), stoStatus });
     }
+    
+    [HttpGet("[action]/{assessmentId}")]
+    public async Task<IActionResult> MarkAssessmentAsBilled(int assessmentId)
+    {
+      var a = await _dbContext.Assessments.FirstOrDefaultAsync(w => w.AssessmentId == assessmentId);
+      a.Status = 1;
+      await _dbContext.SaveChangesAsync();
+      return Ok();
+    }
   }
 }

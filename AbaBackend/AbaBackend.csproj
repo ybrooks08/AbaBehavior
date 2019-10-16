@@ -15,33 +15,5 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.5" />
     <PackageReference Include="Sendgrid" Version="9.11.0" />
-    
-  </ItemGroup>
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\publish\web.config" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\web.config" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\web.config" />
-    <_ContentIncludedByDefault Remove="publish\publish\web.config" />
-    <_ContentIncludedByDefault Remove="publish\web.config" />
-    <_ContentIncludedByDefault Remove="publish\AbaBackend.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\AbaBackend.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\appsettings.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\AbaBackend.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\AbaBackend.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\appsettings.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\AbaBackend.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\AbaBackend.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\appsettings.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\AbaBackend.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\AbaBackend.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\appsettings.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\publish\AbaBackend.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\publish\AbaBackend.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\publish\publish\publish\appsettings.json" />
   </ItemGroup>
 </Project>

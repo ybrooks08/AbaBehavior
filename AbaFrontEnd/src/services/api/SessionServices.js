@@ -418,6 +418,14 @@ export default {
           .then(response => resolve(response.data))
           .catch(error => reject(error.response.data || error.message));
     });
+  },
+
+  markAssessmentAsBilled(assessmentId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/session/MarkAssessmentAsBilled/${assessmentId}`)
+          .then(response => resolve(response.data))
+          .catch(error => reject(error.response.data || error.message));
+    });
   }
 
 };
