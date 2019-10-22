@@ -4,14 +4,14 @@
       <v-flex sm12 md10>
         <v-card class="elevation-12">
           <v-toolbar dense dark color="secondary">
-            <v-toolbar-title>{{(id === 0 ? 'Create new user' : 'Edit user ' + username)}}</v-toolbar-title>
+            <v-toolbar-title>{{ id === 0 ? "Create new user" : "Edit user " + username }}</v-toolbar-title>
           </v-toolbar>
           <v-card-text>
             <v-form ref="form" autocomplete="off" v-model="validForm">
               <v-subheader>Account info</v-subheader>
               <v-layout row wrap>
                 <v-flex sm12 md6>
-                  <v-text-field box :disabled="loading || id !==0" label="Username" v-model="username" required prepend-icon="fa-user" :rules="[required]"></v-text-field>
+                  <v-text-field box :disabled="loading || id !== 0" label="Username" v-model="username" required prepend-icon="fa-user" :rules="[required]"></v-text-field>
                 </v-flex>
                 <v-flex sm12 md6>
                   <v-select box :disabled="loading" label="Rol" v-model="rol" required :items="roles" item-text="rolName" item-value="rolId" prepend-icon="fa-users-cog" hint="Documents will be added automatically" :persistent-hint="id == 0"></v-select>
@@ -22,7 +22,7 @@
                   <v-text-field box :disabled="loading" label="Password" v-model="password" type="password" required prepend-icon="fa-lock" data-vv-name="password" :rules="errors.collect('password')" v-validate="'required'"></v-text-field>
                 </v-flex>
                 <v-flex sm12 md6>
-                  <v-text-field box :disabled="loading" label="rePassword" v-model="repassword" type="password" required prepend-icon="fa-lock" data-vv-name="repassword" :rules="errors.collect('repassword')" v-validate="{required, confirmed:password}"></v-text-field>
+                  <v-text-field box :disabled="loading" label="rePassword" v-model="repassword" type="password" required prepend-icon="fa-lock" data-vv-name="repassword" :rules="errors.collect('repassword')" v-validate="{ required, confirmed: password }"></v-text-field>
                 </v-flex>
               </v-layout>
               <v-subheader>Personal info</v-subheader>
@@ -106,7 +106,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn :disabled="loading" flat @click="close">Cancel</v-btn>
-            <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="submit">{{id === 0 ? 'Create' : 'Save'}}</v-btn>
+            <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="submit">{{ id === 0 ? "Create" : "Save" }}</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -115,22 +115,22 @@
 </template>
 
 <script>
-import userApi from '@/services/api/UserServices';
+import userApi from "@/services/api/UserServices";
 
 export default {
   props: {
     id: {
       type: [Number, String],
       required: false,
-      default: 0,
-    },
+      default: 0
+    }
   },
 
   data() {
     return {
       loading: false,
       roles: [],
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       validForm: false,
       username: null,
       email: null,
@@ -155,10 +155,11 @@ export default {
       bankRoutingNumber: null,
       bankAccountNumber: null,
       payRate: null,
-      driveTimePayRate: null
+      driveTimePayRate: null,
+
+      sessionsDateAllowed: null
     };
   },
-
 
   computed: {
     states() {
@@ -166,7 +167,7 @@ export default {
     },
     user() {
       return this.$store.getters.user;
-    },
+    }
   },
 
   async mounted() {
@@ -176,7 +177,7 @@ export default {
 
   methods: {
     close() {
-      this.$router.push('/users');
+      this.$router.push("/users");
     },
 
     async loadUser() {
@@ -207,9 +208,13 @@ export default {
         this.bankAccountNumber = user.bankAccountNumber;
         this.payRate = user.payRate;
         this.driveTimePayRate = user.driveTimePayRate;
+
+        this.sessionsDateAllowed = user.sessionsDateAllowed;
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     async submit() {
@@ -237,19 +242,22 @@ export default {
         bankRoutingNumber: this.bankRoutingNumber,
         bankAccountNumber: this.bankAccountNumber,
         payRate: this.payRate,
-        driveTimePayRate: this.driveTimePayRate
+        driveTimePayRate: this.driveTimePayRate,
+        sessionsDateAllowed: this.sessionsDateAllowed
       };
 
       this.loading = true;
 
       try {
         await userApi.addEditUser(user);
-        this.$toast.success(`User ${this.id === 0 ? 'added' : 'edited'} successful.`);
+        this.$toast.success(`User ${this.id === 0 ? "added" : "edited"} successful.`);
         this.close();
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
-    },
-  },
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
 };
 </script>

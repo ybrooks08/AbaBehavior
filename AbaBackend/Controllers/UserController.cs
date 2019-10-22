@@ -98,7 +98,8 @@ namespace AbaBackend.Controllers
             u.BankRoutingNumber,
             u.BankAccountNumber,
             u.PayRate,
-            u.DriveTimePayRate
+            u.DriveTimePayRate,
+            u.SessionsDateAllowed
           })
           .FirstOrDefaultAsync();
         if (user == null) return BadRequest("User not found");
