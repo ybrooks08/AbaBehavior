@@ -1,7 +1,7 @@
 <template>
   <v-card class="elevation-8">
     <v-toolbar dark class="secondary" fluid>
-      <v-toolbar-title>Clients/Patients ({{users.length}})</v-toolbar-title>
+      <v-toolbar-title>Clients/Patients ({{ filterUsers.length }} / {{ users.length }})</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-text-field v-model="search" placeholder="Search" prepend-icon="fa-search" hide-details single-line solo-inverted></v-text-field>
       <v-menu class="mr-0" bottom left :disabled="loading">
@@ -20,10 +20,10 @@
           <v-divider></v-divider>
           <v-list-tile @click="showInactive = !showInactive">
             <v-list-tile-action>
-              <v-icon>{{showInactive ? "fa-user-check":"fa-user-times"}}</v-icon>
+              <v-icon>{{ showInactive ? "fa-user-check" : "fa-user-times" }}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title>{{showInactive ? "Show active users":"Show inactived users"}}</v-list-tile-title>
+              <v-list-tile-title>{{ showInactive ? "Show active users" : "Show inactived users" }}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
           <v-list-tile @click="loadClients">
@@ -41,16 +41,16 @@
     <!-- <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear> -->
     <v-data-table :headers="headers" :search="search" :items="filterUsers" :loading="loading" hide-actions>
       <template slot="items" slot-scope="props">
-        <tr :class="{'red lighten-5': !props.item.active}">
+        <tr :class="{ 'red lighten-5': !props.item.active }">
           <td class="text-xs-left px-1 hidden-xs-only">
             <v-avatar size="32">
-              <img :src="`images/${props.item.gender ? props.item.gender.toLowerCase() : 'nogender'}.png`">
+              <img :src="`images/${props.item.gender ? props.item.gender.toLowerCase() : 'nogender'}.png`" />
             </v-avatar>
           </td>
-          <td class="text-xs-left px-1">{{props.item.firstname}} {{props.item.nickname ? `(${props.item.nickname})` : ""}}</td>
-          <td class="text-xs-left px-1">{{props.item.lastname}}</td>
-          <td class="text-xs-left px-1 hidden-xs-only">{{props.item.dob | moment("utc", "MM/DD/YYYY")}}</td>
-          <td class="text-xs-left px-1 hidden-sm-and-down">{{getAddress(props.item)}}</td>
+          <td class="text-xs-left px-1">{{ props.item.firstname }} {{ props.item.nickname ? `(${props.item.nickname})` : "" }}</td>
+          <td class="text-xs-left px-1">{{ props.item.lastname }}</td>
+          <td class="text-xs-left px-1 hidden-xs-only">{{ props.item.dob | moment("utc", "MM/DD/YYYY") }}</td>
+          <td class="text-xs-left px-1 hidden-sm-and-down">{{ getAddress(props.item) }}</td>
           <td class="text-xs-center px-0">
             <v-switch color="primary" hide-details v-model="props.item.active" @change="changeActive(props.item)"></v-switch>
           </td>

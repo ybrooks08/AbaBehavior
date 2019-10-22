@@ -538,5 +538,43 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
+
+    [HttpGet("[action]")]
+    public async Task<IActionResult> GetStaffClientRelationship()
+    {
+      try
+      {
+        var clients = await _dbContext.Clients.Where(w => w.Active).Select(s => new
+        {
+          s.ClientId,
+          s.Firstname,
+          s.Lastname,
+          Assignments = s.Assignments.Select(s1 => new
+          {
+            UserFullname = $"{s1.User.Firstname} {s1.User.Lastname}",
+            Rol = s1.User.Rol.BehaviorAnalysisCode,
+            s1.Active
+          }).ToList()
+        }).OrderBy(o => o.Firstname).ThenBy(o => o.Lastname).ToListAsync();
+
+        var users = await _dbContext.Users.Where(w => w.Active).Select(s => new
+        {
+          s.UserId,
+          s.Firstname,
+          s.Lastname,
+          Assignments = _dbContext.Assignments.Where(w => w.UserId == s.UserId).Select(s1 => new
+          {
+            ClientFullname = $"{s1.Client.Firstname} {s1.Client.Lastname}",
+            s1.Client.Code,
+            s1.Active
+          }).OrderBy(o => o.ClientFullname).ToList()
+        }).OrderBy(o => o.Firstname).ThenBy(o => o.Lastname).ToListAsync();
+        return Ok(new { clients, users });
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
   }
 }

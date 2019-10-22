@@ -38,7 +38,7 @@ Vue.use(Vuetify, {
     'info': 'fa-info-circle',
     'edit': 'fa-edit',
     'dropdown': 'fa-caret-down',
-    'expand': 'fa-chevron-down',
+    "expand": "fa-angle-down fa-lg",
     'prev': 'fa-angle-left',
     'next': 'fa-angle-right'
   }

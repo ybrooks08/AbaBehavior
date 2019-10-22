@@ -156,6 +156,14 @@
           <v-list-tile-title>Adjust client data collect</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/reporting/staff-client">
+        <v-list-tile-action>
+          <v-icon>fa-link</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Staff and Clients relationship</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-list-tile to="/system_logs">
         <v-list-tile-action>
           <v-icon>fa-list-alt</v-icon>

@@ -267,7 +267,13 @@ export default new Router({
           name: "PrintSessions",
           component: () => import(/* webpackChunkName: "PrintSessions" */ "@/components/reporting/PrintSessions"),
           meta: { rol: ["admin", "analyst", "assistant", "tech", "billing"] }
-        }
+        },
+        {
+          path: "/reporting/staff-client",
+          name: "StaffClient",
+          component: () => import(/* webpackChunkName: "StaffClient" */ "@/components/reporting/StaffClient"),
+          meta: { rol: ["admin"] }
+        },
       ]
     },
     { path: "*", redirect: "/" }
