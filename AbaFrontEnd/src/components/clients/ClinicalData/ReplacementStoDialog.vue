@@ -23,7 +23,7 @@
                       Status:
                       <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : 'orange--text'">{{ p.status }}</strong>
                       &nbsp;&nbsp;&nbsp;
-                      <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("MM/DD/YYYY") }} - {{ p.weekEnd | moment("MM/DD/YYYY") }}</small>
+                      <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("utc", "MM/DD/YYYY") }} - {{ p.weekEnd | moment("utc", "MM/DD/YYYY") }}</small>
                       &nbsp;&nbsp;&nbsp;
                       <small v-if="p.masteredForced" class="red white--text px-1" small label>Forced</small>
                     </v-list-tile-sub-title>
