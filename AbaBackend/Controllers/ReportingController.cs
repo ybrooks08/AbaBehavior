@@ -551,6 +551,7 @@ namespace AbaBackend.Controllers
           s.Lastname,
           Assignments = s.Assignments.Select(s1 => new
           {
+            s1.AssignmentId,
             UserFullname = $"{s1.User.Firstname} {s1.User.Lastname}",
             Rol = s1.User.Rol.BehaviorAnalysisCode,
             s1.Active

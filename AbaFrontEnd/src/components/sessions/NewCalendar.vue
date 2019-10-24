@@ -28,7 +28,7 @@
               <v-icon medium>fa-file-alt</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title>New Session (Supervision to BCaBA)</v-list-tile-title>
+              <v-list-tile-title>New Session (Training to BCaBA)</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
           <v-list-tile v-if="user.rol2 !== 'tech'" to="/clients/new_training">
@@ -90,7 +90,7 @@
           <template v-slot:activator="{ on }">
             <v-card v-on="on" flat class="white--text pa-1 text-xs-left" :color="event.color" style="height: 100%; margin-left: 1px !important; margin-bottom: 1px !important; cursor: pointer;">
               <div class="text-truncate condensed">
-                <v-icon color="white" small>{{ event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "supervision_bcaba" ? "fa-file-alt" : "fa-user-shield" }}</v-icon
+                <v-icon color="white" small>{{ event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "training_bcaba" ? "fa-file-alt" : "fa-user-shield" }}</v-icon
                 >&nbsp;
                 <span class="caption condensed">{{ view == "month" ? event.userFullname : event.title }}</span>
                 <span v-if="view != 'month' && !event.allDay" class="right caption"> <v-icon small color="yellow">fa-star</v-icon>{{ event.totalUnits }} </span>

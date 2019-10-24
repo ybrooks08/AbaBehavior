@@ -8,7 +8,7 @@ namespace AbaBackend.DataModel
   {
     BA_Service = 1,
     Caregiver_Trainer = 2,
-    Supervision_BCABA = 3
+    Training_BCABA = 3
   }
 
   public enum Pos

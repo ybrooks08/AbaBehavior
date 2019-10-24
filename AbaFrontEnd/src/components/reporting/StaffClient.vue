@@ -50,6 +50,9 @@
                                       <v-list-tile-sub-title v-if="u.rol">{{ u.rol.description }}</v-list-tile-sub-title>
                                     </v-list-tile-content>
                                     <v-list-tile-action>
+                                      <v-switch hide-details color="primary" v-model="u.active" @change="changeAssignmentActive(u)"></v-switch>
+                                    </v-list-tile-action>
+                                    <v-list-tile-action>
                                       <v-chip small label text-color="white" :color="u.active ? 'green darken-3' : 'red darken-3'">{{ u.active ? "ACTIVE" : "INACTIVE" }}</v-chip>
                                     </v-list-tile-action>
                                   </v-list-tile>
@@ -120,6 +123,7 @@
 
 <script>
 import reportingApi from "@/services/api/ReportingServices";
+import clientApi from "@/services/api/ClientServices";
 
 export default {
   data() {
@@ -153,6 +157,21 @@ export default {
       }
       let count = r.filter(s => s.active && s.rol.hcpcs === service);
       return count.length;
+    },
+
+    async changeAssignmentActive(assignment) {
+      const newStatus = {
+        status: assignment.active,
+        userId: assignment.assignmentId
+      };
+      this.loadingBasicInfo = true;
+      try {
+        await clientApi.changeAssignmentStatus(newStatus);
+      } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loadingBasicInfo = false;
+      }
     }
   }
 };

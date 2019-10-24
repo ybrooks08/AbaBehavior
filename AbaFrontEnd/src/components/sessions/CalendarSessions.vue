@@ -5,7 +5,7 @@
       <v-spacer></v-spacer>
       <v-toolbar-title class="body-2 grey--text">Active date:</v-toolbar-title>
       <v-menu>
-        <v-btn flat slot="activator" :disabled="loading">{{today | moment("MM/DD/YYYY")}}</v-btn>
+        <v-btn flat slot="activator" :disabled="loading">{{ today | moment("MM/DD/YYYY") }}</v-btn>
         <v-date-picker v-model="today" @input="changeDatePicker"></v-date-picker>
       </v-menu>
       <v-menu class="mr-0" bottom left :disabled="loading">
@@ -26,7 +26,7 @@
               <v-icon medium>fa-file-alt</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title>New Session (Supervision to BCaBA)</v-list-tile-title>
+              <v-list-tile-title>New Session (Training to BCaBA)</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
           <v-list-tile v-if="user.rol2 !== 'tech'" to="/clients/new_training">
@@ -77,7 +77,7 @@
               <!-- all day events don't have time -->
               <div :key="event.caregiverDataCollectionId" class="purple text-xs-center" style="cursor: pointer;" @click="openCaregiverCollect(event)">
                 <v-icon color="white" class="hidden-sm-and-down">fa-sm fa-user-shield</v-icon>&nbsp;
-                <small class="condensed white--text text-truncate text-no-wrap">{{event.title}}</small>
+                <small class="condensed white--text text-truncate text-no-wrap">{{ event.title }}</small>
               </div>
             </template>
           </template>
@@ -86,49 +86,50 @@
               <v-menu :key="'menu' + event.sessionId" v-model="event.open" full-width>
                 <div slot="activator" :key="event.sessionId" :style="{ top: timeToY(event.time) + minutesToPixels(event.timeMinutes) + 'px', height: minutesToPixels(event.duration) + 'px' }" class="my-event with-time" :class="event.sessionStatusColor">
                   <v-card-text class="pa-1 white--text">
-                    <v-icon color="white">{{event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "supervision_bcaba" ? "fa-file-alt" :"fa-user-shield"}}</v-icon>
-                    <span class="body-2">&nbsp;{{event.title}}</span>
+                    <v-icon color="white">{{ event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "training_bcaba" ? "fa-file-alt" : "fa-user-shield" }}</v-icon>
+                    <span class="body-2">&nbsp;{{ event.title }}</span>
                     <v-divider class="ma-1"></v-divider>
                     <template v-if="event.sessionType === 'ba_service'">
                       <v-icon class="white--text" small>fa-star</v-icon>
-                      {{event.totalUnits}}&nbsp;
+                      {{ event.totalUnits }}&nbsp;
                     </template>
                     <v-icon class="white--text" small>fa-map-marker-alt</v-icon>
-                    <span class="text-truncate mr-5">{{event.pos}}</span>
+                    <span class="text-truncate mr-5">{{ event.pos }}</span>
                   </v-card-text>
                 </div>
                 <v-card color="grey lighten-4" min-width="350px" flat full-width>
                   <v-toolbar dense :color="event.sessionStatusColor" dark flat>
-                    <v-icon>{{event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "supervision_bcaba" ? "fa-file-alt" :"fa-user-shield"}}</v-icon>
-                    <v-toolbar-title>{{event.title}} - {{event.rolShortName}}</v-toolbar-title>
+                    <v-icon>{{ event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "training_bcaba" ? "fa-file-alt" : "fa-user-shield" }}</v-icon>
+                    <v-toolbar-title>{{ event.title }} - {{ event.rolShortName }}</v-toolbar-title>
                   </v-toolbar>
                   <v-card-text>
                     <v-icon small>fa-calendar</v-icon>&nbsp;
-                    <span>{{event.date | moment("LL")}}</span>
-                    <br>
+                    <span>{{ event.date | moment("LL") }}</span>
+                    <br />
                     <v-icon color="green" small>fa-sign-in-alt</v-icon>&nbsp;
-                    <span>{{event.timeStartFormat}}</span>
+                    <span>{{ event.timeStartFormat }}</span>
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <v-icon color="red" small>fa-sign-out-alt</v-icon>&nbsp;
-                    <span>{{event.timeEndFormat}}</span>
-                    <br>
-                    <v-icon small>{{event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "supervision_bcaba" ? "fa-file-alt" :"fa-user-shield"}}</v-icon>&nbsp;
-                    <span>{{event.sessionTypeFormated}}</span>
-                    <br>
+                    <span>{{ event.timeEndFormat }}</span>
+                    <br />
+                    <v-icon small>{{ event.sessionType === "ba_service" ? "fa-file-medical" : event.sessionType === "training_bcaba" ? "fa-file-alt" : "fa-user-shield" }}</v-icon
+                    >&nbsp;
+                    <span>{{ event.sessionTypeFormated }}</span>
+                    <br />
                     <v-icon small>fa-star</v-icon>&nbsp;
-                    <span>{{event.totalUnits}}</span>
-                    <br>
+                    <span>{{ event.totalUnits }}</span>
+                    <br />
                     <v-icon small>fa-clock</v-icon>&nbsp;
-                    <span>{{(event.totalUnits / 4).toLocaleString()}}</span>
-                    <br>
+                    <span>{{ (event.totalUnits / 4).toLocaleString() }}</span>
+                    <br />
                     <v-icon small>fa-map-marker-alt</v-icon>&nbsp;
-                    <span>{{event.pos}}</span>
-                    <br>
+                    <span>{{ event.pos }}</span>
+                    <br />
                     <v-icon :color="event.sessionStatusColor" small>fa-flag</v-icon>&nbsp;
                     <span>
-                      <v-chip label small :color="event.sessionStatusColor" text-color="white">{{event.sessionStatus}}</v-chip>
+                      <v-chip label small :color="event.sessionStatusColor" text-color="white">{{ event.sessionStatus }}</v-chip>
                     </span>
-                    <br>
+                    <br />
                   </v-card-text>
                   <v-card-actions class="grey lighten-2">
                     <v-btn color="secondary" @click="sessionDetails(event)">Notes</v-btn>

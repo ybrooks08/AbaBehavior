@@ -87,7 +87,7 @@ namespace AbaBackend.Controllers
           if (unitsAvailable < session.TotalUnits) throw new Exception("There are not enough units for this session.");
 
           //check if client has BCABA service
-          if (session.SessionType == SessionType.Supervision_BCABA)
+          if (session.SessionType == SessionType.Training_BCABA)
           {
             var bcaba = await _dbContext.Clients
               .Where(w => w.ClientId.Equals(session.ClientId))
@@ -134,7 +134,7 @@ namespace AbaBackend.Controllers
           await _dbContext.Sessions.AddAsync(session);
           await _dbContext.SaveChangesAsync();
 
-          if (session.SessionType != SessionType.Supervision_BCABA)
+          if (session.SessionType != SessionType.Training_BCABA)
           {
             var note = new SessionNote { SessionId = session.SessionId };
             await _dbContext.SessionNotes.AddAsync(note);
@@ -333,9 +333,9 @@ namespace AbaBackend.Controllers
             Service = s.User.Rol.BehaviorAnalysisCode.Hcpcs,
             ServiceDescription = s.User.Rol.BehaviorAnalysisCode.Description,
             s.DriveTime,
-            Caregiver = s.SessionType == SessionType.Supervision_BCABA ? $"{s.SessionSupervisionNote.Caregiver.CaregiverFullname}" : $"{s.SessionNote.Caregiver.CaregiverFullname}",
-            CaregiverType = s.SessionType == SessionType.Supervision_BCABA ? $"{s.SessionSupervisionNote.Caregiver.CaregiverType.Description}" : $"{s.SessionNote.Caregiver.CaregiverType.Description}",
-            CaregiverNote = s.SessionType == SessionType.Supervision_BCABA ? $"{s.SessionSupervisionNote.CaregiverNote}" : $"{s.SessionNote.CaregiverNote}",
+            Caregiver = s.SessionType == SessionType.Training_BCABA ? $"{s.SessionSupervisionNote.Caregiver.CaregiverFullname}" : $"{s.SessionNote.Caregiver.CaregiverFullname}",
+            CaregiverType = s.SessionType == SessionType.Training_BCABA ? $"{s.SessionSupervisionNote.Caregiver.CaregiverType.Description}" : $"{s.SessionNote.Caregiver.CaregiverType.Description}",
+            CaregiverNote = s.SessionType == SessionType.Training_BCABA ? $"{s.SessionSupervisionNote.CaregiverNote}" : $"{s.SessionNote.CaregiverNote}",
             CaregiverTraining = s.SessionType == SessionType.Caregiver_Trainer
               ? new OkObjectResult(new
               {
@@ -346,7 +346,7 @@ namespace AbaBackend.Controllers
                 s.SessionNote.CaregiverTrainingSummary
               }).Value
               : null,
-            SupervisionNote = s.SessionType == SessionType.Supervision_BCABA
+            SupervisionNote = s.SessionType == SessionType.Training_BCABA
               ? new OkObjectResult(new
               {
                 s.SessionSupervisionNote.isDirectSession,
@@ -482,7 +482,7 @@ namespace AbaBackend.Controllers
         //if (!ModelState.IsValid) return BadRequest(ModelState.Values.SelectMany(e => e.Errors.Select(s => s.ErrorMessage)).FirstOrDefault());
         if (session.SessionStatus != SessionStatus.Checked) _dbContext.Update(session).Property(s => s.SessionStatus).CurrentValue = SessionStatus.Edited;
 
-        if (session.SessionType == SessionType.Supervision_BCABA)
+        if (session.SessionType == SessionType.Training_BCABA)
         {
           _dbContext.SessionSupervisionNotes.Attach(session.SessionSupervisionNote);
           _dbContext.Entry(session.SessionSupervisionNote).State = EntityState.Modified;
@@ -859,9 +859,9 @@ namespace AbaBackend.Controllers
           var session = await _dbContext.Sessions.Include(i => i.Client).Include(i => i.User).FirstOrDefaultAsync(w => w.SessionId == sessionId);
           var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
           var supervisionNotes = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
-          if (session.SessionType != SessionType.Supervision_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
-          if (session.SessionType == SessionType.Supervision_BCABA && (supervisionNotes == null || supervisionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
-          var caregiverId = session.SessionType != SessionType.Supervision_BCABA ? sessionNotes.CaregiverId : supervisionNotes.CaregiverId;
+          if (session.SessionType != SessionType.Training_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+          if (session.SessionType == SessionType.Training_BCABA && (supervisionNotes == null || supervisionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");
+          var caregiverId = session.SessionType != SessionType.Training_BCABA ? sessionNotes.CaregiverId : supervisionNotes.CaregiverId;
           var caregiver = await _dbContext.Caregivers.FirstOrDefaultAsync(w => w.CaregiverId == caregiverId);
           if (!StaticUtils.IsValidEmail(caregiver.Email)) throw new Exception("The caregiver hasn't a valid email address.");
           var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.SessionId == sessionId);
@@ -989,12 +989,12 @@ namespace AbaBackend.Controllers
         var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == reject.SessionId);
         var sessionNote = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId == reject.SessionId);
         var supervisionNote = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId == reject.SessionId);
-        if (session.SessionType != SessionType.Supervision_BCABA && (sessionNote == null || session == null)) throw new Exception("Session and/or Note not found");
-        if (session.SessionType == SessionType.Supervision_BCABA && (supervisionNote == null || session == null)) throw new Exception("Session and/or Supervision Note not found");
+        if (session.SessionType != SessionType.Training_BCABA && (sessionNote == null || session == null)) throw new Exception("Session and/or Note not found");
+        if (session.SessionType == SessionType.Training_BCABA && (supervisionNote == null || session == null)) throw new Exception("Session and/or Supervision Note not found");
 
         session.SessionStatus = SessionStatus.Rejected;
-        if (session.SessionType != SessionType.Supervision_BCABA) sessionNote.RejectNotes = reject.RejectMessage;
-        if (session.SessionType == SessionType.Supervision_BCABA) supervisionNote.RejectNotes = reject.RejectMessage;
+        if (session.SessionType != SessionType.Training_BCABA) sessionNote.RejectNotes = reject.RejectMessage;
+        if (session.SessionType == SessionType.Training_BCABA) supervisionNote.RejectNotes = reject.RejectMessage;
 
         await _dbContext.SaveChangesAsync();
         await _utils.NewEntryLog(session.SessionId, "Rejected", $"Session rejected: {reject.RejectMessage}", "fa-exclamation-circle", "red");
@@ -1402,7 +1402,7 @@ namespace AbaBackend.Controllers
       var stoStatus = await _collection.GetStoStatusReplacement(clientId, replacementId);
       return Ok(new { chartData = chartData.Select(s => s == null ? 0 : s), stoStatus });
     }
-    
+
     [HttpGet("[action]/{assessmentId}")]
     public async Task<IActionResult> MarkAssessmentAsBilled(int assessmentId)
     {
