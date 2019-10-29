@@ -59,9 +59,9 @@ namespace AbaBackend.DataModel
     [MaxLength(20)]
     public string BankAccountNumber { get; set; }
     [Column(TypeName = "decimal(6,2)")]
-    public decimal PayRate { get; set; }
+    public decimal? PayRate { get; set; }
     [Column(TypeName = "decimal(6,2)")]
-    public decimal DriveTimePayRate { get; set; }
+    public decimal? DriveTimePayRate { get; set; }
     public List<DocumentUser> Documents { get; set; }
     public UserSign UserSign { get; set; }
     public List<AuthPass> Passes { get; set; }

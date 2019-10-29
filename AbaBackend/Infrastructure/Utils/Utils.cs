@@ -618,6 +618,8 @@ namespace AbaBackend.Infrastructure.Utils
 
     public bool CanCreateAfterHours(User user, DateTime sessionStart)
     {
+      var current = GetCurrentUser().Result;
+      if (current.RolId == 1) return true;
       var hours = Convert.ToInt32(_configuration["Session:MaxHoursToCreate"]);
       var diff = (DateTime.Now - sessionStart).TotalHours;
       if (diff < hours) return true;

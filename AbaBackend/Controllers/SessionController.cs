@@ -480,7 +480,11 @@ namespace AbaBackend.Controllers
     {
       try
       {
-        //if (!ModelState.IsValid) return BadRequest(ModelState.Values.SelectMany(e => e.Errors.Select(s => s.ErrorMessage)).FirstOrDefault());
+        var user = await _utils.GetUserByUsername(session.User.Username);
+        //check if user can create after x hours and have any pass
+        if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not edit this session beacuse exced the hours allowed and you dont have any pass.");
+
+        //if (!ModelState.IsValid) ret
         if (session.SessionStatus != SessionStatus.Checked) _dbContext.Update(session).Property(s => s.SessionStatus).CurrentValue = SessionStatus.Edited;
 
         if (session.SessionType == SessionType.Training_BCABA)
@@ -506,6 +510,7 @@ namespace AbaBackend.Controllers
         }
 
         await _dbContext.SaveChangesAsync();
+        await _utils.RemovePassIfApply(user, session.SessionStart);
         await _utils.NewEntryLog(session.SessionId, "Edited", "Session notes was edited");
         return Ok();
       }

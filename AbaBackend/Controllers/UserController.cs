@@ -203,6 +203,7 @@ namespace AbaBackend.Controllers
             userProcess.Salt = salt;
             userProcess.Hash = hash.Hash(user.Password, salt);
             userProcess.Username = user.Username;
+            //userProcess.SessionsDateAllowed = DayOfWeekBit.Monday || DayOfWeekBit.Tuesday || DayOfWeekBit;
           }
 
           userProcess.Email = user.Email;

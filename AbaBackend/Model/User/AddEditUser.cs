@@ -43,8 +43,8 @@ namespace AbaBackend.Model.User
     public string BankAddress { get; set; }
     public string BankRoutingNumber { get; set; }
     public string BankAccountNumber { get; set; }
-    public decimal PayRate { get; set; }
-    public decimal DriveTimePayRate { get; set; }
-    public DayOfWeekBit SessionsDateAllowed { get; set; }
+    public decimal? PayRate { get; set; }
+    public decimal? DriveTimePayRate { get; set; }
+    public DayOfWeekBit SessionsDateAllowed { get; set; }// = DayOfWeekBit.Monday | DayOfWeekBit.Tuesday | DayOfWeekBit.Wednesday | DayOfWeekBit.Thursday | DayOfWeekBit.Friday;
   }
 }

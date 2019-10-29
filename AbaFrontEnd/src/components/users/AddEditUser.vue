@@ -14,15 +14,18 @@
                   <v-text-field box :disabled="loading || id !== 0" label="Username" v-model="username" required prepend-icon="fa-user" :rules="[required]"></v-text-field>
                 </v-flex>
                 <v-flex sm12 md6>
-                  <v-select box :disabled="loading" label="Rol" v-model="rol" required :items="roles" item-text="rolName" item-value="rolId" prepend-icon="fa-users-cog" hint="Documents will be added automatically" :persistent-hint="id == 0"></v-select>
+                  <v-select box :disabled="loading" label="Rol" v-model="rol" required :items="roles" item-text="rolName" item-value="rolId" prepend-icon="fa-users-cog"
+                            hint="Documents will be added automatically" :persistent-hint="id == 0"></v-select>
                 </v-flex>
               </v-layout>
               <v-layout row wrap v-if="id === 0">
                 <v-flex sm12 md6>
-                  <v-text-field box :disabled="loading" label="Password" v-model="password" type="password" required prepend-icon="fa-lock" data-vv-name="password" :rules="errors.collect('password')" v-validate="'required'"></v-text-field>
+                  <v-text-field box :disabled="loading" label="Password" v-model="password" type="password" required prepend-icon="fa-lock" data-vv-name="password" :rules="errors.collect('password')"
+                                v-validate="'required'"></v-text-field>
                 </v-flex>
                 <v-flex sm12 md6>
-                  <v-text-field box :disabled="loading" label="rePassword" v-model="repassword" type="password" required prepend-icon="fa-lock" data-vv-name="repassword" :rules="errors.collect('repassword')" v-validate="{ required, confirmed: password }"></v-text-field>
+                  <v-text-field box :disabled="loading" label="rePassword" v-model="repassword" type="password" required prepend-icon="fa-lock" data-vv-name="repassword"
+                                :rules="errors.collect('repassword')" v-validate="{ required, confirmed: password }"></v-text-field>
                 </v-flex>
               </v-layout>
               <v-subheader>Personal info</v-subheader>
@@ -36,7 +39,8 @@
               </v-layout>
               <v-layout row wrap>
                 <v-flex sm12 md8>
-                  <v-text-field box :disabled="loading" label="Email" v-model="email" prepend-icon="fa-envelope" type="email" required data-vv-name="email" :rules="errors.collect('email')" v-validate="'required|email'"></v-text-field>
+                  <v-text-field box :disabled="loading" label="Email" v-model="email" prepend-icon="fa-envelope" type="email" required data-vv-name="email" :rules="errors.collect('email')"
+                                v-validate="'required|email'"></v-text-field>
                 </v-flex>
                 <v-flex sm12 md4>
                   <v-text-field box :disabled="loading" label="Phone" v-model="phone" prepend-icon="fa-phone" type="phone" mask="phone"></v-text-field>
@@ -156,7 +160,6 @@ export default {
       bankAccountNumber: null,
       payRate: null,
       driveTimePayRate: null,
-
       sessionsDateAllowed: null
     };
   },
@@ -241,9 +244,9 @@ export default {
         bankAddress: this.bankAddress,
         bankRoutingNumber: this.bankRoutingNumber,
         bankAccountNumber: this.bankAccountNumber,
-        payRate: this.payRate,
-        driveTimePayRate: this.driveTimePayRate,
-        sessionsDateAllowed: this.sessionsDateAllowed
+        payRate: this.id === 0 ? 0 : this.payRate,
+        driveTimePayRate: this.id === 0 ? 0 : this.driveTimePayRate,
+        sessionsDateAllowed: this.id === 0 ? 62 : this.sessionsDateAllowed
       };
 
       this.loading = true;
