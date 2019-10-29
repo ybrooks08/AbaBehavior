@@ -11,11 +11,22 @@
               <v-form ref="form" autocomplete="off" v-model="validForm">
                 <v-layout row wrap>
                   <v-flex md12>
-                    <v-select box :disabled="loading" :items="behaviorAnalysisCodes" v-model="data.behaviorAnalysisCodeId" label="Assessment" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId" :rules="[required]" required>
+                    <v-select
+                      box
+                      :disabled="loading"
+                      :items="behaviorAnalysisCodes"
+                      v-model="data.behaviorAnalysisCodeId"
+                      label="Assessment"
+                      prepend-icon="fa-briefcase-medical"
+                      item-text="description"
+                      item-value="behaviorAnalysisCodeId"
+                      :rules="[required]"
+                      required
+                    >
                       <template slot="selection" slot-scope="data">
                         <div class="input-group__selections__comma">
                           {{ data.item.description }} &nbsp;
-                          <span class="grey--text text--darken-1">({{data.item.hcpcs}})</span>
+                          <span class="grey--text text--darken-1">({{ data.item.hcpcs }})</span>
                         </div>
                       </template>
                       <template slot="item" slot-scope="data">
@@ -40,7 +51,7 @@
                         <v-avatar>
                           <v-icon>fa-clock</v-icon>
                         </v-avatar>
-                        {{minutes}} mins
+                        {{ minutes }} mins
                       </v-chip>
                     </v-flex>
                     <v-flex xs12 md4>
@@ -49,10 +60,34 @@
                   </v-layout>
                   <v-layout row wrap>
                     <v-flex sm12 md6>
-                      <v-text-field box :disabled="loading" label="Start date" v-model="data.startDate" prepend-icon="fa-calendar-plus" required return-masked-value mask="##/##/####" data-vv-name="startdate" :rules="errors.collect('startdate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
+                      <v-text-field
+                        box
+                        :disabled="loading"
+                        label="Start date"
+                        v-model="data.startDate"
+                        prepend-icon="fa-calendar-plus"
+                        required
+                        return-masked-value
+                        mask="##/##/####"
+                        data-vv-name="startdate"
+                        :rules="errors.collect('startdate')"
+                        v-validate="'required|date_format:MM/dd/yyyy'"
+                      ></v-text-field>
                     </v-flex>
                     <v-flex sm12 md6>
-                      <v-text-field box :disabled="loading" label="End date" v-model="data.endDate" prepend-icon="fa-calendar-minus" required return-masked-value mask="##/##/####" data-vv-name="enddate" :rules="errors.collect('enddate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
+                      <v-text-field
+                        box
+                        :disabled="loading"
+                        label="End date"
+                        v-model="data.endDate"
+                        prepend-icon="fa-calendar-minus"
+                        required
+                        return-masked-value
+                        mask="##/##/####"
+                        data-vv-name="enddate"
+                        :rules="errors.collect('enddate')"
+                        v-validate="'required|date_format:MM/dd/yyyy'"
+                      ></v-text-field>
                     </v-flex>
                   </v-layout>
                 </v-layout>
@@ -62,7 +97,7 @@
         </v-layout>
 
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn :disabled="loading" flat @click="cancel">Cancel</v-btn>
           <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="saveChanges">Add</v-btn>
         </v-card-actions>
@@ -72,23 +107,23 @@
 </template>
 
 <script>
-import masterTableApi from '@/services/api/MasterTablesServices';
-import clientApi from '@/services/api/ClientServices';
+import masterTableApi from "@/services/api/MasterTablesServices";
+import clientApi from "@/services/api/ClientServices";
 
 export default {
   props: {
     model: {
       type: Boolean,
       required: true,
-      default: false,
+      default: false
     },
-    clientId: null,
+    clientId: null
   },
 
   data() {
     return {
       loading: false,
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       validForm: false,
       behaviorAnalysisCodes: [],
       data: {
@@ -98,15 +133,15 @@ export default {
         totalUnits: 0,
         paNumber: null,
         startDate: null,
-        endDate: null,
-      },
+        endDate: null
+      }
     };
   },
 
   computed: {
     minutes() {
-      return this.data.totalUnits ? (this.data.totalUnits * 15).toLocaleString() : 'N/A';
-    },
+      return this.data.totalUnits ? (this.data.totalUnits * 15).toLocaleString() : "N/A";
+    }
   },
 
   async mounted() {
@@ -118,7 +153,7 @@ export default {
       this.loading = true;
       try {
         await clientApi.addAssessment(this.data);
-        this.$emit('onSubmit');
+        this.$emit("onSubmit");
         this.$refs.form.reset();
       } catch (error) {
         this.$toast.error(error);
@@ -128,12 +163,11 @@ export default {
     },
 
     cancel() {
-      this.$emit('cancel');
+      this.$emit("cancel");
       this.$refs.form.reset();
-    },
-  },
+    }
+  }
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

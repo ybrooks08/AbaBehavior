@@ -9,27 +9,54 @@
           <v-form autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
-                <date-picker-menu v-model="datePickerModel" :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading"/>
+                <date-picker-menu v-model="datePickerModel" :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" />
                 <!-- <date-picker-menu :isLarge=true :isDark=false :btnColor="'primary'" :pickerStartInit="from" :pickerEndInit="to" :initialValue="'Last month'" @dateSelected="dateSelected" :disabled="loading" /> -->
               </v-flex>
               <v-flex xs12>
-                <v-autocomplete box hide-details :disabled="loading" :items="clients" item-value="clientId" item-text="fullname" v-model="selectedClientId" label="Client" prepend-icon="fa-user" :rules="[required]" required>
+                <v-autocomplete
+                  box
+                  hide-details
+                  :disabled="loading"
+                  :items="clients"
+                  item-value="clientId"
+                  item-text="fullname"
+                  v-model="selectedClientId"
+                  label="Client"
+                  prepend-icon="fa-user"
+                  :rules="[required]"
+                  required
+                >
                   <template slot="item" slot-scope="{ item }">
                     <v-list-tile-avatar>
-                      <img :style="!item.active ? 'opacity: 0.5': ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`">
+                      <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
                     </v-list-tile-avatar>
                     <v-list-tile-content>
-                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.firstname}} {{item.lastname}}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment("utc", "MM/DD/YYYY")}} | Code: {{item.code || "N/A" }}</v-list-tile-sub-title>
+                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.firstname }} {{ item.lastname }} </v-list-tile-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">
+                        {{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.code || "N/A" }}
+                      </v-list-tile-sub-title>
                     </v-list-tile-content>
                   </template>
                 </v-autocomplete>
               </v-flex>
               <v-flex md12>
-                <v-select box hide-details :disabled="loading" :items="behaviorAnalysisCodes" v-model="behaviorAnalysisCodeId" label="Service" prepend-icon="fa-briefcase-medical" item-text="description" item-value="behaviorAnalysisCodeId" :rules="[required]" required>
+                <v-select
+                  box
+                  hide-details
+                  :disabled="loading"
+                  :items="behaviorAnalysisCodes"
+                  v-model="behaviorAnalysisCodeId"
+                  label="Service"
+                  prepend-icon="fa-briefcase-medical"
+                  item-text="description"
+                  item-value="behaviorAnalysisCodeId"
+                  :rules="[required]"
+                  required
+                >
                   <template slot="selection" slot-scope="data">
                     <div class="input-group__selections__comma">
-                      {{ data.item.description }} &nbsp; <span class="grey--text text--darken-1">({{data.item.hcpcs}})</span>
+                      {{ data.item.description }} &nbsp;
+                      <span class="grey--text text--darken-1">({{ data.item.hcpcs }})</span>
                     </div>
                   </template>
                   <template slot="item" slot-scope="data">
@@ -50,7 +77,7 @@
         </v-card-text>
         <v-card-actions>
           <small class="pl-4 grey--text">* Only reviewed and billed sessions will be reported</small>
-          <v-spacer/>
+          <v-spacer />
           <!-- <v-btn :loading="loading" :disabled="loading || !validForm">Clear</v-btn> -->
           <v-btn color="primary" :loading="loading" :disabled="loading || !validForm" @click="View">View</v-btn>
         </v-card-actions>
@@ -60,7 +87,7 @@
       <v-card>
         <v-toolbar dense dark class="secondary no-print">
           <v-toolbar-title>Billing guide overview</v-toolbar-title>
-          <v-spacer/>
+          <v-spacer />
           <v-btn dark icon @click="print">
             <v-icon>fa-print</v-icon>
           </v-btn>
@@ -74,19 +101,19 @@
             <v-flex xs6>
               <v-layout row wrap>
                 <v-flex class="body-2 text-xs-right" xs4>Recipient ID:</v-flex>
-                <v-flex xs8>{{report.client.memberId || "N/A"}}</v-flex>
+                <v-flex xs8>{{ report.client.memberId || "N/A" }}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>Last Name:</v-flex>
-                <v-flex xs8>{{report.client.lastname || "N/A"}}</v-flex>
+                <v-flex xs8>{{ report.client.lastname || "N/A" }}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>First Name:</v-flex>
-                <v-flex xs8>{{report.client.firstname || "N/A"}}</v-flex>
+                <v-flex xs8>{{ report.client.firstname || "N/A" }}</v-flex>
               </v-layout>
             </v-flex>
             <v-flex xs6>
               <v-layout row wrap>
                 <v-flex class="body-2 text-xs-right" xs4>Dob:</v-flex>
-                <v-flex xs8>{{report.client.dob || new Date() | moment("utc", "MM/DD/YYYY")}}</v-flex>
+                <v-flex xs8>{{ report.client.dob || new Date() | moment("utc", "MM/DD/YYYY") }}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>Patient account:</v-flex>
-                <v-flex xs8>{{report.client.code}}</v-flex>
+                <v-flex xs8>{{ report.client.code }}</v-flex>
               </v-layout>
             </v-flex>
           </v-layout>
@@ -99,9 +126,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr style="height: auto;" v-for="r in report.client.diagnosis" :key="('diag'+r.code)">
-                <td style="height: auto;">{{r.code}}</td>
-                <td style="height: auto;">{{r.description}}</td>
+              <tr style="height: auto;" v-for="r in report.client.diagnosis" :key="'diag' + r.code">
+                <td style="height: auto;">{{ r.code }}</td>
+                <td style="height: auto;">{{ r.description }}</td>
               </tr>
             </tbody>
           </table>
@@ -117,29 +144,29 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in report.client.referrals" :key="('referral'+r.referralId)">
+              <tr v-for="r in report.client.referrals" :key="'referral' + r.referralId">
                 <td>
-                  <strong>{{r.referralFullname}}</strong>
-                  <br>
-                  {{r.specialty}}
+                  <strong>{{ r.referralFullname }}</strong>
+                  <br />
+                  {{ r.specialty }}
                 </td>
                 <td>
-                  <strong>{{r.license}}</strong>
-                  <br>
-                  {{r.provider}}
+                  <strong>{{ r.license }}</strong>
+                  <br />
+                  {{ r.provider }}
                 </td>
                 <td>
-                  <strong>{{r.npi}}</strong>
+                  <strong>{{ r.npi }}</strong>
                 </td>
                 <td>
-                  <strong>{{r.fullAddress}}</strong>
+                  <strong>{{ r.fullAddress }}</strong>
                 </td>
                 <td>
                   <v-icon small>fa-check-circle</v-icon>
-                  {{r.dateReferral | moment("utc", "MM/DD/YYYY")}}
-                  <br>
+                  {{ r.dateReferral | moment("utc", "MM/DD/YYYY") }}
+                  <br />
                   <v-icon small>fa-times-circle</v-icon>
-                  {{r.dateExpires | moment("utc", "MM/DD/YYYY")}}
+                  {{ r.dateExpires | moment("utc", "MM/DD/YYYY") }}
                 </td>
               </tr>
             </tbody>
@@ -156,9 +183,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in report.client.assessments" :key="('ass'+r.assessmentId)">
+              <tr v-for="r in report.client.assessments" :key="'ass' + r.assessmentId">
                 <td>
-                  <strong>{{r.behaviorAnalysisCode.hcpcs}}</strong>
+                  <strong>{{ r.behaviorAnalysisCode.hcpcs }}</strong>
                 </td>
                 <td>
                   <template v-if="r.behaviorAnalysisCode.hcpcs == 'H0031' || r.behaviorAnalysisCode.hcpcs == 'H0032'">
@@ -167,23 +194,23 @@
                   </template>
                 </td>
                 <td>
-                  <strong>{{r.paNumber}}</strong>
+                  <strong>{{ r.paNumber }}</strong>
                 </td>
                 <td>
                   <strong>
                     <v-icon small>fa-star</v-icon>
-                    {{r.totalUnits.toLocaleString()}}
+                    {{ r.totalUnits.toLocaleString() }}
                   </strong>
-                  <br>
+                  <br />
                   <v-icon small>fa-clock</v-icon>
-                  {{(r.totalUnits / 4).toLocaleString()}}
+                  {{ (r.totalUnits / 4).toLocaleString() }}
                 </td>
                 <td>
                   <v-icon small>fa-check-circle</v-icon>
-                  {{r.startDate | moment("utc", "MM/DD/YYYY")}}
-                  <br>
+                  {{ r.startDate | moment("utc", "MM/DD/YYYY") }}
+                  <br />
                   <v-icon small>fa-times-circle</v-icon>
-                  {{r.endDate | moment("utc", "MM/DD/YYYY")}}
+                  {{ r.endDate | moment("utc", "MM/DD/YYYY") }}
                 </td>
               </tr>
             </tbody>
@@ -198,17 +225,17 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in report.client.assignments" :key="('user'+r.userId)">
+              <tr v-for="r in report.client.assignments" :key="'user' + r.userId">
                 <td>
-                  <strong>{{r.firstname}} {{r.lastname}}</strong>
-                  <br>
-                  {{r.licenseNo}}
+                  <strong>{{ r.firstname }} {{ r.lastname }}</strong>
+                  <br />
+                  {{ r.licenseNo }}
                 </td>
                 <td>
-                  <strong>{{r.mpi}}</strong>
+                  <strong>{{ r.mpi }}</strong>
                 </td>
                 <td>
-                  <strong>{{r.npi}}</strong>
+                  <strong>{{ r.npi }}</strong>
                 </td>
               </tr>
             </tbody>
@@ -228,40 +255,40 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(r, i) in sessions" :key="('session'+r.sessionId)">
+              <tr v-for="(r, i) in sessions" :key="'session' + r.sessionId">
                 <td>
-                  <v-btn small v-if="r.sessionStatus !== 'Billed'" :loading="btnLoading[i]" color="primary" @click="markBilled(r, i)">Mark as billed</v-btn>
+                  <v-btn small v-if="r.sessionStatus !== 'Billed'" :loading="btnLoading[i]" color="primary" @click="markBilled(r, i)">Mark as billed </v-btn>
                   <v-chip v-else label disabled color="green" text-color="white">Billed</v-chip>
                 </td>
                 <td>
-                  <strong>{{r.sessionStart | moment("MM/DD/YYYY")}}</strong>
+                  <strong>{{ r.sessionStart | moment("MM/DD/YYYY") }}</strong>
                 </td>
                 <td>
-                  <strong>{{r.userFullname}}</strong>
+                  <strong>{{ r.userFullname }}</strong>
                 </td>
                 <td>
-                  <strong>{{r.sessionType}}</strong>
+                  <strong>{{ r.sessionType }}</strong>
                 </td>
                 <td>
                   <v-icon small>fa-check-circle</v-icon>
-                  {{r.sessionStart | moment("LT")}}
-                  <br>
+                  {{ r.sessionStart | moment("LT") }}
+                  <br />
                   <v-icon small>fa-times-circle</v-icon>
-                  {{r.sessionEnd | moment("LT")}}
+                  {{ r.sessionEnd | moment("LT") }}
                 </td>
                 <td>
-                  <strong>{{r.pos}}</strong>
+                  <strong>{{ r.pos }}</strong>
                 </td>
                 <td class="text-xs-right">
                   <strong>
                     <v-icon small>fa-star</v-icon>
-                    {{r.totalUnits.toLocaleString()}}
+                    {{ r.totalUnits.toLocaleString() }}
                   </strong>
                 </td>
                 <td class="text-xs-right">
                   <strong>
                     <v-icon small>fa-clock</v-icon>
-                    {{(r.totalUnits / 4).toLocaleString()}}
+                    {{ (r.totalUnits / 4).toLocaleString() }}
                   </strong>
                 </td>
               </tr>
@@ -272,13 +299,13 @@
                 <td class="text-xs-right">
                   <strong>
                     <v-icon small>fa-star</v-icon>
-                    {{totalUnits.toLocaleString()}}
+                    {{ totalUnits.toLocaleString() }}
                   </strong>
                 </td>
                 <td class="text-xs-right">
                   <strong>
                     <v-icon small>fa-clock</v-icon>
-                    {{(totalUnits / 4).toLocaleString()}}
+                    {{ (totalUnits / 4).toLocaleString() }}
                   </strong>
                 </td>
               </tr>
@@ -304,13 +331,13 @@ export default {
       report: null,
       datePickerModel: {
         start: this.$moment()
-            .subtract(1, "month")
-            .startOf("month")
-            .format("YYYY-MM-DDTHH:mm"),
+          .subtract(1, "month")
+          .startOf("month")
+          .format("YYYY-MM-DDTHH:mm"),
         end: this.$moment()
-            .subtract(1, "month")
-            .endOf("month")
-            .format("YYYY-MM-DDTHH:mm")
+          .subtract(1, "month")
+          .endOf("month")
+          .format("YYYY-MM-DDTHH:mm")
       },
       required: value => !!value || "This field is required.",
       clients: [],

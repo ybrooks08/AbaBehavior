@@ -16,14 +16,16 @@
                 <select-user v-model="userId" @change="changedUser()"></select-user>
               </v-flex>
               <v-flex xs12 sm6>
-                <v-select box hid :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]" required>
+                <v-select box hid :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]"
+                          required>
                   <template slot="item" slot-scope="{ item }">
                     <v-list-tile-avatar>
-                      <img :style="!item.active ? 'opacity: 0.5': ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`">
+                      <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
                     </v-list-tile-avatar>
                     <v-list-tile-content>
-                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.clientName}}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.dob | moment('utc', "MM/DD/YYYY")}} | Code: {{item.clientCode || 'N/A' }}</v-list-tile-sub-title>
+                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
+                      </v-list-tile-sub-title>
                     </v-list-tile-content>
                   </template>
                 </v-select>
@@ -54,15 +56,15 @@
           <div>
             <v-layout row wrap>
               <v-flex xs2>
-                <img style="object-fit: contain;" src="images/logo.jpg" width="100">
+                <img style="object-fit: contain;" src="images/logo.jpg" width="100" />
               </v-flex>
               <v-flex xs10>
                 <h4>SERVICE LOG</h4>
                 <v-divider></v-divider>
                 <span>
                   FROM:
-                  <strong>{{datePickerModel.start | moment("MM/DD/YYYY")}}</strong> TO:
-                  <strong>{{datePickerModel.end | moment("MM/DD/YYYY")}}</strong>
+                  <strong>{{ datePickerModel.start | moment("MM/DD/YYYY") }}</strong> TO:
+                  <strong>{{ datePickerModel.end | moment("MM/DD/YYYY") }}</strong>
                 </span>
               </v-flex>
             </v-layout>
@@ -71,41 +73,41 @@
               <tr>
                 <td>
                   <small>BA/RBT Name:</small>
-                  <br>
-                  <span>{{report.user.firstname}} {{report.user.lastname}}</span>
+                  <br />
+                  <span>{{ report.user.firstname }} {{ report.user.lastname }}</span>
                 </td>
                 <td>
                   <small>Recipient's Name:</small>
-                  <br>
-                  <span>{{report.client.firstname}} {{report.client.lastname}}</span>
+                  <br />
+                  <span>{{ report.client.firstname }} {{ report.client.lastname }}</span>
                 </td>
                 <td>
                   <small>Physician(s) name:</small>
-                  <br>
+                  <br />
                   <template v-for="r in report.client.referrals">
-                    <span :key="r.npi">{{r.referralFullname}} | NPI: {{r.npi}}</span>
-                    <br :key="'break'+r.npi">
+                    <span :key="r.npi">{{ r.referralFullname }} | NPI: {{ r.npi }}</span>
+                    <br :key="'break' + r.npi" />
                   </template>
                 </td>
               </tr>
               <tr>
                 <td>
                   <small>Provider number:</small>
-                  <br>
-                  <span>{{report.user.mpi}}</span>
+                  <br />
+                  <span>{{ report.user.mpi }}</span>
                 </td>
                 <td>
                   <small>Code:</small>
-                  <br>
-                  <span>{{report.client.code}}</span>
+                  <br />
+                  <span>{{ report.client.code }}</span>
                 </td>
                 <td rowspan="2">
                   <small>PA Number(s):</small>
-                  <br>
+                  <br />
                   <span>
                     <label v-for="a in report.client.assessments" :key="a.paNumber">
-                      <template v-if="report.client.assessments.length > 1">|</template>
-                      {{a.paNumber}}
+                      <div v-if="report.client.assessments.length > 1">|</div>
+                      {{ a.paNumber }}
                     </label>
                   </span>
                 </td>
@@ -113,24 +115,14 @@
               <tr>
                 <td>
                   <small>License number:</small>
-                  <br>
-                  <span>{{report.user.licenseNo}}</span>
+                  <br />
+                  <span>{{ report.user.licenseNo }}</span>
                 </td>
                 <td>
                   <small>Npi:</small>
-                  <br>
-                  <span>{{report.user.npi}}</span>
+                  <br />
+                  <span>{{ report.user.npi }}</span>
                 </td>
-                <!-- <td>
-                  <small>PA Number(s):</small>
-                  <br>
-                  <span>
-                    <label v-for="a in report.client.assessments" :key="a.paNumber">
-                      <template v-if="report.client.assessments.length > 1">|</template>
-                      {{a.paNumber}}
-                    </label>
-                  </span>
-                </td> -->
               </tr>
             </table>
           </div>
@@ -144,53 +136,57 @@
                 <th>HOURS</th>
                 <th>LOC</th>
                 <th class="text-xs-left">CAREGIVER</th>
-                <th>SIGN</th>
+                <th>CAREGIVER SIGN</th>
+                <th>PROVIDER SIGN</th>
               </tr>
             </thead>
 
             <tbody class="report-content">
-              <tr v-for="s in report.sessions" :key="'session'+s.sessionId">
-                <td class="text-xs-center" style="vertical-align: middle;">{{s.sessionStart | moment('MM/DD/YYYY')}}</td>
-                <td class="text-xs-center" style="vertical-align: middle;">{{s.sessionStart | moment('LT')}}</td>
-                <td class="text-xs-center" style="vertical-align: middle;">{{s.sessionEnd | moment('LT')}}</td>
-                <td class="text-xs-center" style="vertical-align: middle;">{{s.totalUnits.toLocaleString()}}</td>
-                <td class="text-xs-center" style="vertical-align: middle;">{{(s.totalUnits / 4).toLocaleString()}}</td>
-                <td class="text-xs-center" style="vertical-align: middle;">{{s.posCode}}</td>
-                <td class="text-xs-left" style="vertical-align: middle;">{{s.sessionTypeCode !=3 ? s.caregiverFullname : s.caregiverFullnameSupervision}}</td>
+              <tr v-for="s in report.sessions" :key="'session' + s.sessionId">
+                <td class="text-xs-center" style="vertical-align: middle;">{{ s.sessionStart | moment("MM/DD/YYYY") }}</td>
+                <td class="text-xs-center" style="vertical-align: middle;">{{ s.sessionStart | moment("LT") }}</td>
+                <td class="text-xs-center" style="vertical-align: middle;">{{ s.sessionEnd | moment("LT") }}</td>
+                <td class="text-xs-center" style="vertical-align: middle;">{{ s.totalUnits.toLocaleString() }}</td>
+                <td class="text-xs-center" style="vertical-align: middle;">{{ (s.totalUnits / 4).toLocaleString() }}</td>
+                <td class="text-xs-center" style="vertical-align: middle;">{{ s.posCode }}</td>
+                <td class="text-xs-left" style="vertical-align: middle;">{{ s.sessionTypeCode != 3 ? s.caregiverFullname : s.caregiverFullnameSupervision }}</td>
                 <td class="text-xs-center" style="vertical-align: middle;">
                   <span v-if="!s.sign"></span>
-                  <img v-else style="object-fit: contain; max-height: 20px;" :src="!s.sign || s.sign.sign">
+                  <img v-else style="object-fit: contain; max-height: 20px;" :src="!s.sign || s.sign.sign" />
+                </td>
+                <td class="text-xs-center" style="vertical-align: middle;">
+                  <span v-if="!report.user.userSign"></span>
+                  <img v-else style="object-fit: contain; max-height: 20px;" :src="report.user.userSign.sign" />
                 </td>
               </tr>
 
               <tr class="grey lighten-2">
                 <td colspan="3">Total</td>
                 <td class="px-1 text-xs-center">
-                  {{totalUnits.toLocaleString()}}
+                  {{ totalUnits.toLocaleString() }}
                 </td>
                 <td class="px-1 text-xs-center">
-                  {{(totalUnits / 4).toLocaleString()}}
+                  {{ (totalUnits / 4).toLocaleString() }}
                 </td>
-                <td colspan="3"></td>
+                <td colspan="4"></td>
               </tr>
 
-              <!-- <tr>
-                <td colspan="8">&nbsp;</td>
-              </tr> -->
               <tr>
-                <td style="height: 50px !important;" colspan="6">
+                <td style="height: 50px !important;" colspan="10">
                   <small>Signature:</small>
-                  <br>
+                  <br />
                   <span v-if="!report.user.userSign"></span>
-                  <img v-else class="ml-2" style="object-fit: contain; max-height: 30px;" :src="report.user.userSign.sign">
-                  <br>
-                  <strong>{{report.user.firstname}} {{report.user.lastname}}, {{report.user.rol.rolName}}</strong>
+                  <img v-else class="ml-2" style="object-fit: contain; max-height: 30px;" :src="report.user.userSign.sign" />
+                  <br />
+                  <strong>{{ report.user.firstname }} {{ report.user.lastname }}, {{ report.user.rol.rolName }}</strong>
+                  <br />
+                  <span>{{ report.user.licenseNo }}</span>
                 </td>
-                <td style="height: 50px !important;" colspan="2">
-                  <small>Date:</small>
-                  <br>
-                  <span>{{new Date() | moment('MMMM, Do YYYY')}}</span>
-                </td>
+                <!-- <td style="height: 50px !important;" colspan="2">
+                    <small>Date:</small>
+                    <br>
+                    <span>{{new Date() | moment('MMMM, Do YYYY')}}</span>
+                  </td> -->
               </tr>
             </tbody>
           </table>
