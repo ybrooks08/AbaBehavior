@@ -914,6 +914,18 @@ export default {
             }
           }
         });
+      } else {
+        try {
+          this.loadingSession = true;
+          await sessionServicesApi.editSessionNotes(this.session);
+          if (exit) this.close();
+          this.$toast.success("Session saved successful");
+          this.loadSessionData();
+        } catch (error) {
+          this.$toast.error(error.message || error);
+        } finally {
+          this.loadingSession = false;
+        }
       }
     },
 

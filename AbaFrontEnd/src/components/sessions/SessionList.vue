@@ -34,7 +34,6 @@
         </v-tabs>
       </template>
     </v-toolbar>
-    <!-- <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear> -->
 
     <v-tabs-items v-model="tabModel">
       <v-tab-item key="allSessionsTab" v-if="showOpen">
