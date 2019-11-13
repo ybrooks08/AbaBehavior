@@ -73,13 +73,14 @@ namespace AbaBackend.DataModel
     public BehaviorAnalysisCode BehaviorAnalysisCode { get; set; }
     public SessionNote SessionNote { get; set; }
     public SessionSupervisionNote SessionSupervisionNote { get; set; }
-    // public List<SessionCollectBehavior> SessionCollectBehaviors { get; set; }
-    // public List<SessionCollectReplacement> SessionCollectReplacements { get; set; }
     public List<SessionProblemNote> SessionProblemNotes { get; set; }
     public List<SessionLog> SessionLogs { get; set; }
     public SessionSign Sign { get; set; }
     public List<SessionCollectBehaviorV2> SessionCollectBehaviorsV2 { get; set; }
     public List<SessionCollectReplacementV2> SessionCollectReplacementsV2 { get; set; }
+    public int? SessionAnalystId { get; set; }
+    [ForeignKey("SessionAnalystId")]
+    public User SessionAnalyst { get; set; }
 
   }
 }

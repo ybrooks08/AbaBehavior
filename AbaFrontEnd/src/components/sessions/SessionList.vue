@@ -3,7 +3,15 @@
     <v-toolbar dark class="secondary">
       <v-toolbar-title>Sessions</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-text-field v-model="search" placeholder="Search" prepend-icon="fa-search" clearable hide-details single-line solo-inverted></v-text-field>
+      <v-text-field
+        v-model="search"
+        placeholder="Search"
+        prepend-icon="fa-search"
+        clearable
+        hide-details
+        single-line
+        solo-inverted
+      ></v-text-field>
       <!-- <v-menu class="mr-0" bottom left :disabled="loading">
         <v-btn slot="activator" icon :disabled="loading">
           <v-icon>fa-ellipsis-v</v-icon>
@@ -39,26 +47,37 @@
       <v-tab-item key="allSessionsTab" v-if="showOpen">
         <v-card flat>
           <v-card-text class="pa-0">
-            <session-list-table :search="search" :items="sessions" :loading="loading"></session-list-table>
+            <session-list-table
+              :search="search"
+              :items="sessions"
+              :loading="loading"
+            ></session-list-table>
           </v-card-text>
         </v-card>
       </v-tab-item>
       <v-tab-item key="readyToReview" v-if="showOpen">
         <v-card flat>
           <v-card-text class="pa-0">
-            <session-list-table :search="search" :items="sessionsReadyToReview" :loading="loading"></session-list-table>
+            <session-list-table
+              :search="search"
+              :items="sessionsReadyToReview"
+              :loading="loading"
+            ></session-list-table>
           </v-card-text>
         </v-card>
       </v-tab-item>
       <v-tab-item key="lastWeekClosedSessions">
         <v-card flat>
           <v-card-text class="pa-0">
-            <session-list-table :search="search" :items="sessionsClosed" :loading="loading"></session-list-table>
+            <session-list-table
+              :search="search"
+              :items="sessionsClosed"
+              :loading="loading"
+            ></session-list-table>
           </v-card-text>
         </v-card>
       </v-tab-item>
     </v-tabs-items>
-
   </v-card>
 </template>
 
@@ -114,7 +133,10 @@ export default {
       try {
         this.sessions = [];
         let sessionsLocal = [];
-        const sessions = await userApi.getSessionList(this.days, this.showClosed);
+        const sessions = await userApi.getSessionList(
+          this.days,
+          this.showClosed
+        );
         //let sessions2 = Object.freeze(sessions);
         sessions.forEach(e => {
           e.sessionStart = this.$moment(e.sessionStart).local();
@@ -168,5 +190,4 @@ export default {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

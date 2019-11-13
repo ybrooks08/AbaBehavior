@@ -375,7 +375,7 @@ namespace AbaBackend.Infrastructure.Utils
 
     public async Task<Client> GetClientById(int clientId)
     {
-      return await _dbContext.Clients.FirstOrDefaultAsync(w => w.ClientId.Equals(clientId));
+      return await _dbContext.Clients.Include(i => i.Assignments).ThenInclude(i => i.User).FirstOrDefaultAsync(w => w.ClientId.Equals(clientId));
     }
 
     public async Task<(string Color, string Text)> ChangeSessionStatus(ChangeSessionStatus changeSessionStatus)

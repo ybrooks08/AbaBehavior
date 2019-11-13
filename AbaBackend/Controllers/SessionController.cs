@@ -126,11 +126,15 @@ namespace AbaBackend.Controllers
           //check if user can create after x hours and have any pass
           if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session beacuse exced the hours allowed and you dont have any pass.");
 
+          //get current client analist
+          var analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).Select(s => s.UserId).FirstOrDefault();
+
           session.SessionStart = session.SessionStart.ToUniversalTime();
           session.SessionEnd = session.SessionEnd.ToUniversalTime();
           session.TotalUnits = Convert.ToInt32((session.SessionEnd - session.SessionStart).TotalMinutes / 15);
           session.UserId = user.UserId;
           session.BehaviorAnalysisCodeId = Convert.ToInt32(user.Rol.BehaviorAnalysisCodeId);
+          session.SessionAnalystId = analyst;
           await _dbContext.Sessions.AddAsync(session);
           await _dbContext.SaveChangesAsync();
 
@@ -174,6 +178,7 @@ namespace AbaBackend.Controllers
               ReplacementId = r.ReplacementId
             });
           }
+
           await _dbContext.SaveChangesAsync();
 
           await _utils.RemovePassIfApply(user, session.SessionStart);
@@ -307,6 +312,13 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        var x = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+        var lead = await _dbContext.Assignments
+          .Where(w => w.ClientId == x.ClientId)
+          .Where(w => w.User.RolId == 2 && w.Active)
+          .Select(s => s.User).Include(i => i.UserSign)
+          .FirstOrDefaultAsync();
+
         var session = await _dbContext
           .Sessions
           .AsNoTracking()
@@ -323,6 +335,8 @@ namespace AbaBackend.Controllers
             UserLicense = s.User.LicenseNo,
             s.User.UserSign,
             s.User.UserId,
+            Analyst = s.SessionAnalyst == null ? lead : s.SessionAnalyst,
+            AnalystSign = s.SessionAnalyst.UserSign == null ? lead.UserSign : s.SessionAnalyst.UserSign,
             UserRol = s.User.Rol.RolName,
             UserRolShort = s.User.Rol.RolShortName,
             s.TotalUnits,
@@ -423,6 +437,7 @@ namespace AbaBackend.Controllers
               : null
           })
           .FirstOrDefaultAsync();
+
         return Ok(session);
       }
       catch (Exception e)
@@ -481,6 +496,9 @@ namespace AbaBackend.Controllers
       try
       {
         var user = await _utils.GetUserByUsername(session.User.Username);
+        var currentSession = await _dbContext.Sessions.AsNoTracking().FirstOrDefaultAsync(s => s.SessionId == session.SessionId);
+        if ((currentSession.SessionStatus == SessionStatus.Checked || currentSession.SessionStatus == SessionStatus.Billed || currentSession.SessionStatus == SessionStatus.Reviewed) && user.RolId != 1) throw new Exception("This session has been checked, billed or reviewed. You cannot edit it.");
+
         //check if user can create after x hours and have any pass
         if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not edit this session beacuse exced the hours allowed and you dont have any pass.");
 
@@ -734,6 +752,7 @@ namespace AbaBackend.Controllers
               await _dbContext.CompetencyCheckClientParams.AddAsync(item);
               await _dbContext.SaveChangesAsync();
             }
+
             transaction.Commit();
           }
         }

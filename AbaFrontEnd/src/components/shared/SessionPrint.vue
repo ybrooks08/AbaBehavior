@@ -57,7 +57,7 @@
               <v-flex xs8 style="display:flex; flex-direction: column;"><span class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code">{{ d.description }} ({{ d.code }})</span>
               </v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Medicaid ID:</v-flex>
-              <v-flex xs8>{{sessionPrint.memberNo}}</v-flex>
+              <v-flex xs8>{{ sessionPrint.memberNo }}</v-flex>
             </v-layout>
           </v-flex>
           <v-flex xs12>
@@ -65,18 +65,21 @@
               <v-divider></v-divider>
               <table class="table-horizontal" width="100%">
                 <tr class="no-page-break">
-                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Caregiver:</td>
+                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                    Caregiver:
+                  </td>
                   <td class="pl-1">{{ sessionPrint.caregiver }} ({{ sessionPrint.caregiverType }})</td>
                 </tr>
                 <tr class="no-page-break">
-                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Caregiver notes:</td>
+                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                    Caregiver notes:
+                  </td>
                   <td class="pl-1" v-html="breakLine(sessionPrint.caregiverNote)"></td>
                 </tr>
                 <template v-if="sessionPrint.sessionTypeNum === 2">
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%">
-                      <v-icon small>{{ sessionPrint.caregiverTraining.caregiverTrainingObservationFeedback ? "fa-check-circle" : "far fa-circle" }}
-                      </v-icon>
+                      <v-icon small>{{ sessionPrint.caregiverTraining.caregiverTrainingObservationFeedback ? "fa-check-circle" : "far fa-circle" }}</v-icon>
                     </td>
                     <td class="pl-1">
                       Observation of recipients's interaction with parent/caregiver/others
@@ -85,7 +88,8 @@
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%">
                       <v-icon small>
-                        {{ sessionPrint.caregiverTraining.caregiverTrainingParentCaregiverTraining ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                        {{ sessionPrint.caregiverTraining.caregiverTrainingParentCaregiverTraining ? "fa-check-circle" : "far fa-circle" }}
+                      </v-icon>
                     </td>
                     <td class="pl-1">
                       Parent/Caregiver training
@@ -93,19 +97,22 @@
                   </tr>
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%">
-                      <v-icon small>{{ sessionPrint.caregiverTraining.caregiverTrainingCompetencyCheck ? "fa-check-circle" : "far fa-circle" }}
-                      </v-icon>
+                      <v-icon small>{{ sessionPrint.caregiverTraining.caregiverTrainingCompetencyCheck ? "fa-check-circle" : "far fa-circle" }}</v-icon>
                     </td>
                     <td class="pl-1">
                       Competency check of caregiver
                     </td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Others:</td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Others:
+                    </td>
                     <td class="pl-1" v-html="breakLine(sessionPrint.caregiverTraining.caregiverTrainingOther)"></td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Summary:</td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Summary:
+                    </td>
                     <td class="pl-1" v-html="breakLine(sessionPrint.caregiverTraining.caregiverTrainingSummary)"></td>
                   </tr>
                 </template>
@@ -119,7 +126,9 @@
                     </td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Work with:</td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Work with:
+                    </td>
                     <td class="pl-1">
                       <span v-for="w in sessionSupervisionWorkWithCodes" :key="'w-' + w.text"> {{ w.text }} | </span>
                     </td>
@@ -130,18 +139,21 @@
                     </td>
                     <td class="pl-1">
                       <v-icon small>{{ sessionPrint.supervisionNote.briefObservation ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Observation and feedback regarding interaction of BCaBA<br />
+                      Observation and feedback regarding interaction of BCaBA<br/>
                       <v-icon small>{{ sessionPrint.supervisionNote.briefReplacement ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Replacement/Acquisition Programs Implementation monitoring<br />
+                      Replacement/Acquisition Programs Implementation monitoring<br/>
                       <v-icon small>{{ sessionPrint.supervisionNote.briefGeneralization ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Generalization of Treatment<br />
+                      Generalization of Treatment<br/>
                       <v-icon small>{{ sessionPrint.supervisionNote.briefBCaBaTraining ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      BCaBA training and oversight<br />
+                      BCaBA training and oversight<br/>
                       <v-icon small>{{ sessionPrint.supervisionNote.briefInService ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      In-Service Education Training (for session participants)<br />
-                      <div style="padding-left: 20px;">Subject: {{ sessionPrint.supervisionNote.briefInServiceSubject || "N/A" }}</div>
+                      In-Service Education Training (for session participants)<br/>
+                      <div style="padding-left: 20px;">
+                        Subject:
+                        {{ sessionPrint.supervisionNote.briefInServiceSubject || "N/A" }}
+                      </div>
                       <v-icon small>{{ sessionPrint.supervisionNote.briefOther ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Other<br />
+                      Other<br/>
                       <div style="padding-left: 20px;" v-html="breakLine(sessionPrint.supervisionNote.briefOtherDescription)"></div>
                     </td>
                   </tr>
@@ -254,7 +266,9 @@
                     </td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Next schedule:</td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Next schedule:
+                    </td>
                     <td class="pl-1">
                       <span v-if="sessionPrint.supervisionNote.nextScheduledDate">{{ sessionPrint.supervisionNote.nextScheduledDate | moment("utc", "LL") }}</span>
                       <span v-else>N/A</span>
@@ -263,11 +277,15 @@
                 </template>
                 <template v-if="sessionPrint.sessionTypeNum === 1">
                   <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">RISK BEHAVIOR</td>
+                    <td class="font-weight-medium text-xs-right">
+                      RISK BEHAVIOR
+                    </td>
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Risk behavior:</td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Risk behavior:
+                    </td>
                     <td class="pl-1">
                       {{ sessionPrint.sessionNote.riskBehavior }}
                     </td>
@@ -277,12 +295,14 @@
                       <v-icon small>{{ sessionPrint.sessionNote.crisisInvolved ? "fa-check-circle" : "far fa-circle" }}</v-icon>
                     </td>
                     <td class="pl-1">
-                      Crisis involved<br />
+                      Crisis involved<br/>
                       <div v-html="breakLine(sessionPrint.sessionNote.crisisInvolvedExplain)"></div>
                     </td>
                   </tr>
                   <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">REINFORCERS</td>
+                    <td class="font-weight-medium text-xs-right">
+                      REINFORCERS
+                    </td>
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
@@ -314,7 +334,9 @@
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">Participation level:</td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Participation level:
+                    </td>
                     <td class="pl-1">
                       {{ sessionPrint.sessionNote.participationLevel }}
                     </td>
@@ -408,7 +430,9 @@
                     </tr>
                   </template>
                   <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">PROB/REPLAC</td>
+                    <td class="font-weight-medium text-xs-right">
+                      PROB/REPLAC
+                    </td>
                     <td></td>
                   </tr>
                   <tr class="no-page-break" v-for="p in sessionPrint.sessionNote.problems" :key="p.problem">
@@ -417,7 +441,9 @@
                       <table class="table-print">
                         <tr>
                           <th width="50%">During which activity ocurred</th>
-                          <th width="50%">Replacements and intervention used</th>
+                          <th width="50%">
+                            Replacements and intervention used
+                          </th>
                         </tr>
                         <tr>
                           <td width="50%" v-html="breakLine(p.duringWichActivities || 'N/A')"></td>
@@ -426,7 +452,7 @@
                             <v-divider class="pb-1"></v-divider>
                             <template v-for="r in p.sessionProblemReplacements">
                               <v-icon small :key="p + r">fa-check-circle</v-icon>
-                              {{ r }}<br :key="'br' + p + r" />
+                              {{ r }}<br :key="'br' + p + r"/>
                             </template>
                           </td>
                         </tr>
@@ -434,7 +460,9 @@
                     </td>
                   </tr>
                   <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">DATA COLLECTION</td>
+                    <td class="font-weight-medium text-xs-right">
+                      DATA COLLECTION
+                    </td>
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
@@ -444,7 +472,9 @@
                     <td class="pl-1">
                       <table class="table-print">
                         <tr v-for="b in collection.collectBehaviors" :key="b.sessionCollectBehaviorV2Id">
-                          <td width="50%">{{ b.behavior.problemBehaviorDescription }}</td>
+                          <td width="50%">
+                            {{ b.behavior.problemBehaviorDescription }}
+                          </td>
                           <td width="50%">
                             {{ getTotalBehaviors(b) }}
                           </td>
@@ -459,7 +489,9 @@
                     <td class="pl-1">
                       <table class="table-print">
                         <tr v-for="b in collection.collectReplacements" :key="b.sessionCollectReplacementV2Id">
-                          <td width="50%">{{ b.replacement.replacementProgramDescription }}</td>
+                          <td width="50%">
+                            {{ b.replacement.replacementProgramDescription }}
+                          </td>
                           <td width="50%">
                             {{ getTotalReplacement(b) }}
                           </td>
@@ -479,33 +511,36 @@
               </div>
               <div v-else>
                 <div style="max-height: 50px; height: 50px;" class="mb-2">
-                  <img style="height:100%;" :src="sessionPrint.userSign.sign" />
+                  <img style="height:100%;" :src="sessionPrint.userSign.sign"/>
                 </div>
                 <v-divider></v-divider>
               </div>
               <div>
-                <label>Signed by <strong>{{ sessionPrint.userFullname }}</strong> on {{ sessionPrint.sessionStart | moment("LL") }}</label><br />
+                <label>Signed by <strong>{{ sessionPrint.userFullname }}</strong> on {{ sessionPrint.sessionStart | moment("LL") }}</label><br/>
                 <small>{{ sessionPrint.userLicense }}</small>
               </div>
             </v-flex>
+
             <v-flex class="pt-5" text-xs-center xs6 v-if="hasLeadSign">
-              <div v-if="!sessionExtraInfo.lead.userSign">
+              <div v-if="!sessionPrint.analystSign">
                 <div style="min-height: 100px;" class="mb-2"></div>
                 <v-divider></v-divider>
               </div>
               <div v-else>
                 <div style="max-height: 50px; height: 50px;" class="mb-2">
-                  <img style="height:100%" :src="sessionExtraInfo.lead.userSign.sign" />
+                  <img style="height:100%" :src="sessionPrint.analystSign.sign"/>
                 </div>
                 <v-divider></v-divider>
               </div>
               <div>
                 <label>
-                  Reviewed by <strong>{{ sessionExtraInfo.lead.firstname }} {{ sessionExtraInfo.lead.lastname }}</strong> on
+                  Reviewed by
+                  <strong>{{ sessionPrint.analyst.firstname }} {{ sessionPrint.analyst.lastname }}</strong>
+                  on
                   {{ sessionPrint.sessionStart | moment("add", "1 days", "LL") }}
                 </label>
-                <br />
-                <small>{{ sessionExtraInfo.lead.licenseNo }}</small>
+                <br/>
+                <small>{{ sessionPrint.analyst.licenseNo }}</small>
               </div>
             </v-flex>
           </v-layout>
@@ -529,7 +564,7 @@ export default {
 
   computed: {
     hasLeadSign() {
-      return this.sessionPrint.userId !== this.sessionExtraInfo.lead.userId;
+      return this.sessionPrint.userId !== this.sessionPrint.analyst.userId;
     }
   },
 
@@ -575,18 +610,21 @@ export default {
         },
         sessionNote: {
           riskBehavior: null
+        },
+        analyst: {
+          userId: 0
         }
       },
       collection: {
         collectBehaviors: [],
         collectReplacements: []
       },
-      sessionSupervisionWorkWithCodes: [],
-      sessionExtraInfo: {
-        lead: {
-          userId: null
-        }
-      }
+      sessionSupervisionWorkWithCodes: []
+      //      sessionExtraInfo: {
+      //        lead: {
+      //          userId: null
+      //        }
+      //      }
     };
   },
 
@@ -616,7 +654,7 @@ export default {
         }
         this.collection.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.sessionId);
         this.collection.collectReplacements = await sessionServicesApi.getCollectReplacements(this.sessionId);
-        this.sessionExtraInfo = await sessionServicesApi.getSessionPrintExtraInfo(this.sessionId);
+        //this.sessionExtraInfo = await sessionServicesApi.getSessionPrintExtraInfo(this.sessionId);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -638,7 +676,7 @@ export default {
       let total = b.total;
       let completed = b.completed != null ? b.completed : 0;
       let percent = total == 0 ? 0 : (completed / total) * 100;
-      return `${percent.toFixed(0)}%`;
+      return `${ percent.toFixed(0) }%`;
     },
 
     getTotalReplacement(c) {
@@ -646,7 +684,7 @@ export default {
       let total = c.total;
       let completed = c.completed;
       let percent = total == 0 ? 0 : (completed / total) * 100;
-      return `${percent.toFixed(0)}%`;
+      return `${ percent.toFixed(0) }%`;
     },
 
     breakLine(s) {
