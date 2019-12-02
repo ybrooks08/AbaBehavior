@@ -839,7 +839,11 @@ namespace AbaBackend.Controllers
     {
       try
       {
-        var note = await _dbContext.MonthlyNotes.FirstOrDefaultAsync(w => w.MonthlyNoteId == monthlyNoteId);
+        var note = await _dbContext.MonthlyNotes
+          .Include(i => i.MonthlyAnalyst)
+          .Include(i => i.MonthlyAssistant)
+          .Include(i => i.MonthlyRbt)
+          .FirstOrDefaultAsync(w => w.MonthlyNoteId == monthlyNoteId);
         var client = await _dbContext.Clients
           .Where(f => f.ClientId == note.ClientId)
           .Select(s => new

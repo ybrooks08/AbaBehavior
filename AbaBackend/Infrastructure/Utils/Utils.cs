@@ -8,6 +8,7 @@ using AbaBackend.Infrastructure.Extensions;
 using AbaBackend.Model.Client;
 using AbaBackend.Model.Session;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -26,9 +27,11 @@ namespace AbaBackend.Infrastructure.Utils
     private readonly IHttpContextAccessor _httpContext;
     private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
+    private readonly IHostingEnvironment _env;
 
-    public Utils(AbaDbContext dbContext, IHttpContextAccessor httpContext, ILogger<Utils> logger, IConfiguration configuration)
+    public Utils(AbaDbContext dbContext, IHttpContextAccessor httpContext, ILogger<Utils> logger, IConfiguration configuration, IHostingEnvironment env)
     {
+      _env = env;
       _dbContext = dbContext;
       _httpContext = httpContext;
       _logger = logger;
@@ -305,11 +308,26 @@ namespace AbaBackend.Infrastructure.Utils
 
     public async Task<string> CheckMaxHoursClientsInDay(DateTime date, int clientId, int totalUnits)
     {
+      date = date.Date;//.ToUniversalTime();
       var maxUnits = Convert.ToInt32(_configuration["Session:MaxUnitsClientSessionByDay"]);
-      var allSessionsUnits = await _dbContext.Sessions
-        .Where(w => w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date))
-        .Select(s => s.TotalUnits)
-        .SumAsync();
+      TimeZoneInfo easternTime;
+      try
+      {
+        easternTime = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+      }
+      catch (Exception ex)
+      {
+        easternTime = TimeZoneInfo.FindSystemTimeZoneById("US/Eastern");
+      }
+      //date = TimeZoneInfo.ConvertTimeFromUtc(date, easternTime).Date;
+      var allSessions = await _dbContext.Sessions
+        .Where(w => w.ClientId.Equals(clientId) && TimeZoneInfo.ConvertTimeFromUtc(w.SessionStart, easternTime).Date.Equals(date))
+        .ToListAsync();
+      var allSessionsUnits = allSessions.Select(s => s.TotalUnits).Sum();
+      // await _dbContext.Sessions
+      //   .Where(w => w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.ToUniversalTime().Date))
+      //   .Select(s => s.TotalUnits)
+      //   .SumAsync();
       var totalUnitsToCreate = allSessionsUnits + totalUnits;
       if (totalUnitsToCreate > maxUnits) return $"You can't create this session because client exceeds the {maxUnits} units per day.";
       return "ok";
@@ -343,7 +361,8 @@ namespace AbaBackend.Infrastructure.Utils
     public async Task<string> CheckMaxHoursByClientInSchool(DateTime date, int userId, int clientId, int totalUnits)
     {
       var user = await GetCurrentUser();
-      var maxUnits = Convert.ToInt32(_configuration[$"Session:MaxUnitsByClientInSchool"]);
+      //hardcoded for client 37 Jeremiah add 2 more hours
+      var maxUnits = clientId == 37 ? 24 : Convert.ToInt32(_configuration[$"Session:MaxUnitsByClientInSchool"]);
       var allSessionsUnits = await _dbContext.Sessions
         .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date) && w.Pos.Equals(Pos.School))
         .Select(s => s.TotalUnits)

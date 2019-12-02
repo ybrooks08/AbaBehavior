@@ -96,6 +96,8 @@ namespace AbaBackend.Controllers
             if (bcaba.Count == 0) throw new Exception("Client haven't any BCBAB service/user.");
           }
 
+          // session.SessionStart = session.SessionStart.ToUniversalTime();
+          // session.SessionEnd = session.SessionEnd.ToUniversalTime();
           //check if client doesn't exceds max units per day (initial 8 hours = 32 units)
           var check = await _utils.CheckMaxHoursClientsInDay(session.SessionStart, session.ClientId, session.TotalUnits);
           if (check != "ok") throw new Exception(check);
@@ -497,7 +499,7 @@ namespace AbaBackend.Controllers
       {
         var user = await _utils.GetUserByUsername(session.User.Username);
         var currentSession = await _dbContext.Sessions.AsNoTracking().FirstOrDefaultAsync(s => s.SessionId == session.SessionId);
-        if ((currentSession.SessionStatus == SessionStatus.Checked || currentSession.SessionStatus == SessionStatus.Billed || currentSession.SessionStatus == SessionStatus.Reviewed) && user.RolId != 1) throw new Exception("This session has been checked, billed or reviewed. You cannot edit it.");
+        if ((currentSession.SessionStatus == SessionStatus.Billed || currentSession.SessionStatus == SessionStatus.Reviewed) && user.RolId != 1) throw new Exception("This session has been checked, billed or reviewed. You cannot edit it.");
 
         //check if user can create after x hours and have any pass
         if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not edit this session beacuse exced the hours allowed and you dont have any pass.");
@@ -543,6 +545,7 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        var client = await _utils.GetClientById(clientId);
         var date = Convert.ToDateTime(dateStr);
         var monthlyLookUp = await _dbContext.MonthlyNotes
           .Where(w => w.ClientId.Equals(clientId))
@@ -550,19 +553,25 @@ namespace AbaBackend.Controllers
           .FirstOrDefaultAsync();
         if (monthlyLookUp == null)
         {
+          var analyst = client.Assignments?.Where(w => w.Active && w.User.RolId == 2).FirstOrDefault();
+          var assistant = client.Assignments?.Where(w => w.Active && w.User.RolId == 3).FirstOrDefault();
+          var rbt = client.Assignments?.Where(w => w.Active && w.User.RolId == 4).FirstOrDefault();
           var newMonthlyNote = new MonthlyNote
           {
             ClientId = clientId,
             MonthlyNoteDate = date.Date,
             Month = date.Month,
-            Year = date.Year
+            Year = date.Year,
+            MonthlyAnalystId = analyst?.UserId,
+            MonthlyAssistantId = assistant?.UserId,
+            MonthlyRbtId = rbt?.UserId
           };
           await _dbContext.MonthlyNotes.AddAsync(newMonthlyNote);
           await _dbContext.SaveChangesAsync();
           monthlyLookUp = newMonthlyNote;
         }
 
-        return Ok(monthlyLookUp);
+        return Ok(new { note = monthlyLookUp, Assignments = client.Assignments?.ToList() });
       }
       catch (Exception e)
       {

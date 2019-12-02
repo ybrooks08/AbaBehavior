@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AbaBackend.DataModel
 {
@@ -23,5 +24,14 @@ namespace AbaBackend.DataModel
     public DateTime MonthlyNoteDate { get; set; }
     public int Year { get; set; }
     public int Month { get; set; }
+    public int? MonthlyRbtId { get; set; }
+    [ForeignKey("MonthlyRbtId")]
+    public User MonthlyRbt { get; set; }
+    public int? MonthlyAnalystId { get; set; }
+    [ForeignKey("MonthlyAnalystId")]
+    public User MonthlyAnalyst { get; set; }
+    public int? MonthlyAssistantId { get; set; }
+    [ForeignKey("MonthlyAssistantId")]
+    public User MonthlyAssistant { get; set; }
   }
 }

@@ -6,13 +6,14 @@
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
 
           <v-toolbar color="secondary" dark tabs dense>
-            <v-toolbar-title>Monthly notes {{note.monthlyNoteDate | moment('utc', 'MMMM/YYYY')}}</v-toolbar-title>
+            <v-toolbar-title>Monthly notes {{note.monthlyNoteDate | moment("utc", "MMMM/YYYY")}}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-tabs slot="extension" dark show-arrows v-model="tabModel">
               <v-tab key="summary">Summary</v-tab>
               <v-tab key="extra">Extra</v-tab>
               <v-tab key="changes">Changes</v-tab>
               <v-tab key="recomendations">Recomendations</v-tab>
+              <v-tab key="staff">Staff</v-tab>
             </v-tabs>
           </v-toolbar>
           <v-tabs-items v-model="tabModel">
@@ -98,6 +99,44 @@
                 </v-card-text>
               </v-card>
             </v-tab-item>
+            <v-tab-item key="staff">
+              <v-card flat>
+                <v-card-text class="pa-2">
+                  <v-container fluid grid-list-sm pa-0>
+                    <v-layout row wrap>
+                      <v-flex xs12>
+                        <v-select box :loading="loading" :disabled="loading" :items="clientAnalysts" v-model="note.monthlyAnalystId" label="Monthly analyst" prepend-inner-icon="fa-user" item-value="userId">
+                          <template slot="selection" slot-scope="data">
+                            {{ data.item.firstname }} {{ data.item.lastname }}
+                          </template>
+                          <template slot="item" slot-scope="data">
+                            {{ data.item.firstname }} {{ data.item.lastname }}
+                          </template>
+                        </v-select>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-select box :loading="loading" :disabled="loading" :items="clientAsistants" v-model="note.monthlyAssistantId" label="Monthly assistant" prepend-inner-icon="fa-user" item-value="userId">
+                          <template slot="selection" slot-scope="data">
+                            {{ data.item.firstname }} {{ data.item.lastname }}
+                          </template>
+                          <template slot="item" slot-scope="data">
+                            {{ data.item.firstname }} {{ data.item.lastname }}
+                          </template>
+                        </v-select>
+                        <v-select box :loading="loading" :disabled="loading" :items="clientRbts" v-model="note.monthlyRbtId" label="Monthly assistant" prepend-inner-icon="fa-user" item-value="userId">
+                          <template slot="selection" slot-scope="data">
+                            {{ data.item.firstname }} {{ data.item.lastname }}
+                          </template>
+                          <template slot="item" slot-scope="data">
+                            {{ data.item.firstname }} {{ data.item.lastname }}
+                          </template>
+                        </v-select>
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
           </v-tabs-items>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -119,6 +158,9 @@ export default {
     return {
       loading: false,
       tabModel: 0,
+      clientRbts: [],
+      clientAnalysts: [],
+      clientAsistants: [],
       note: {
         monthlySummary: null,
         commentsAboutCaregiver: null,
@@ -134,7 +176,10 @@ export default {
         refer2OtherServices: false,
         changesCurrentPlan: false,
         extraNotes: null,
-        monthlyNoteDate: new Date()
+        monthlyNoteDate: new Date(),
+        monthlyRbtId: null,
+        monthlyAnalystId: null,
+        monthlyAssistantId: null
       }
     };
   },
@@ -155,7 +200,11 @@ export default {
   methods: {
     async loadMonthlyNote() {
       try {
-        this.note = await sessionServicesApi.getMonthlyNote(this.activeClientId, this.$moment(this.activeDate).format("YYYY-MM-DD"));
+        const data = await sessionServicesApi.getMonthlyNote(this.activeClientId, this.$moment(this.activeDate).format("YYYY-MM-DD"));
+        this.clientRbts = data.assignments.map(m => m.user).filter(f => f.rolId === 4);
+        this.clientAnalysts = data.assignments.map(m => m.user).filter(f => f.rolId === 2);
+        this.clientAsistants = data.assignments.map(m => m.user).filter(f => f.rolId === 3);
+        this.note = data.note;
       } catch (error) {
         this.$toast.error(error.message || error);
       }
@@ -168,6 +217,9 @@ export default {
     async save() {
       try {
         this.loading = true;
+        delete this.note.monthlyAnalyst;
+        delete this.note.monthlyAssistant;
+        delete this.note.monthlyRbt;
         await sessionServicesApi.editMonthlyNote(this.note);
         this.close();
       } catch (error) {
