@@ -79,7 +79,10 @@
                   <td class="px-1 text-xs-right">
                     <span v-if="clientAsistant.length > 0">Assistant:</span>
                   </td>
-                  <td class="px-1 text-xs-left">
+                  <td v-if="note.monthlyAssistant" class="px-1 text-xs-left">
+                    <span>{{ note.monthlyAssistant.firstname }} {{ note.monthlyAssistant.lastname }} <label v-if="note.monthlyAssistant.licenseNo">({{note.monthlyAssistant.licenseNo}})</label></span>
+                  </td>
+                  <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAsistant">
                       <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
                       <br :key="'br' + u.userId"/>
@@ -88,14 +91,20 @@
                 </tr>
                 <tr>
                   <td class="px-1 text-xs-right">RBT:</td>
-                  <td class="px-1 text-xs-left">
+                  <td v-if="note.monthlyRbt" class="px-1 text-xs-left">
+                    <span>{{ note.monthlyRbt.firstname }} {{ note.monthlyRbt.lastname }} <label v-if="note.monthlyRbt.licenseNo">({{note.monthlyRbt.licenseNo}})</label></span>
+                  </td>
+                  <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientRbt">
                       <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
                       <br :key="'br' + u.userId"/>
                     </template>
                   </td>
                   <td class="px-1 text-xs-right">Analyst:</td>
-                  <td class="px-1 text-xs-left">
+                  <td v-if="note.monthlyAnalyst" class="px-1 text-xs-left">
+                    <span>{{ note.monthlyAnalyst.firstname }} {{ note.monthlyAnalyst.lastname }} <label v-if="note.monthlyAnalyst.licenseNo">({{note.monthlyAnalyst.licenseNo}})</label></span>
+                  </td>
+                  <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAnalyst">
                       <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
                       <br :key="'br' + u.userId"/>
@@ -413,7 +422,7 @@ export default {
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
-        console.log(this.clientProblems)
+        console.log(this.clientProblems);
         this.clientReplacements = monthlyData.replacements;
         this.behIds = this.clientProblems.map(w => w.problemId);
         this.repIds = this.clientReplacements.map(w => w.replacementId);
