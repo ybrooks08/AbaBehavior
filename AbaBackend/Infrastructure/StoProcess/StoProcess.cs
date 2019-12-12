@@ -71,7 +71,6 @@ namespace AbaBackend.Infrastructure.StoProcess
             var allWeeks = valuesByWeek.Take(weeks).ToList();
             if (checkWeeks >= weeks)
             {
-              // sto.WeekStart = allWeeks.First().Start;
               sto.WeekStart = firstDayOfSto;
               sto.WeekEnd = allWeeks.Last().End;
               sto.Status = StoStatus.Mastered;
@@ -128,7 +127,6 @@ namespace AbaBackend.Infrastructure.StoProcess
             var allWeeks = valuesByWeek.Take(weeks).ToList();
             if (checkWeeks >= weeks)
             {
-              //sto.WeekStart = allWeeks.First().Start;
               sto.WeekStart = firstDayOfSto;
               sto.WeekEnd = allWeeks.Last().End;
               sto.Status = StoStatus.Mastered;

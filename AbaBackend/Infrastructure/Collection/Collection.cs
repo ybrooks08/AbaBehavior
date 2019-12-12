@@ -255,6 +255,96 @@ namespace AbaBackend.Infrastructure.Collection
       return res;
     }
 
+    public async Task<object> GetClientBehaviorMonthlyChart(int clientId, int problemId, DateTime? end = null)
+    {
+      var dataSet = new List<MultiSerieChart>();
+      var plotLines = new List<PlotLine>();
+      var plotBands = new List<PlotBand>();
+      var clientProblem = (await _utils.GetClientBehaviors(clientId)).FirstOrDefault(w => w.ProblemId == problemId);
+      if (clientProblem == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
+
+      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
+      var firstWeekStart = clientProblem?.BaselineFrom ?? currentPeriod.start;
+      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+      DateTime lastWeekEnd = end ?? DateTime.Today;
+      while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
+      var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
+
+      var allCollection = await GetCollectionBehaviors(firstWeekStart, lastWeekEnd, clientId, new List<int> { problemId });
+      var allCaregiverCollection = await GetCollectionBehaviorsCaregiver(firstWeekStart, lastWeekEnd, clientId, new List<int> { problemId });
+
+      var notes = await _dbContext.ClientChartNotes
+        .Where(w => w.ClientId == clientId)
+        .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
+        .Where(w => w.ChartNoteDate >= firstWeekStart && w.ChartNoteDate <= lastWeekEnd)
+        .OrderBy(o => o.ChartNoteDate)
+        .ToListAsync();
+
+      var data = new List<int?>();
+      var collection = GetClientProblemsByWeek(problemId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection, clientProblem.ProblemBehavior.IsPercent);
+      data.AddRange(collection.Select(s => s.Total));
+
+      dataSet.Add(new MultiSerieChart
+      {
+        Data = data,
+        Name = $"{clientProblem.ProblemBehavior.ProblemBehaviorDescription}{(clientProblem.ProblemBehavior.IsPercent ? "(%)" : "")}"
+      });
+
+      var baseLineStart = 0;
+      var baseLineEnd = 0;
+      var legend = new List<string>();
+      var calWeekStartLegend = firstWeekStart;
+      for (int i = 0; i < totalWeeks; i++)
+      {
+        var calWeekEnd = calWeekStartLegend.AddDays(6);
+        legend.Add(calWeekEnd.ToString("M/d/yy"));
+        var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
+        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i });
+        if (clientProblem.BaselineFrom >= calWeekStartLegend && clientProblem.BaselineFrom <= calWeekEnd) baseLineStart = i;
+        if (clientProblem.BaselineTo >= calWeekStartLegend && clientProblem.BaselineTo <= calWeekEnd) baseLineEnd = i;
+        calWeekStartLegend = calWeekStartLegend.AddDays(7);
+      }
+
+      if (baseLineStart != 0 || baseLineEnd != 0) plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
+      if (baseLineEnd != 0)
+      {
+        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "ShortDot" });
+        baseLineEnd++;
+        dataSet.First().Data.Insert(baseLineEnd, null);
+        legend.Insert(baseLineEnd, "");
+      }
+      var start = baseLineEnd == 0 ? collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null).i - 1 : baseLineEnd + 1;
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "ShortDot" });
+      plotLines.ForEach(w =>
+      {
+        if (w.Value > baseLineEnd + 1) w.Value += 1;
+      });
+
+
+      var res = new OkObjectResult(new
+      {
+        chartOptions = new
+        {
+          series = dataSet,
+          xAxis = new
+          {
+            categories = legend,
+            plotLines,
+            plotBands,
+            title = new { enabled = false },
+            crosshair = true
+          },
+          title = new { text = "" },
+          chart = new { type = "spline", height = 200 },
+          yAxis = new { title = new { text = "Count" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
+          legend = new { enabled = false },
+          exporting = new { enabled = false }
+        },
+      }).Value;
+
+      return res;
+    }
+
     public int? GetClientReplacements(List<CollectionRep> collections, List<CollectionRepCaregiver> collectionsCaregiver)
     {
       var collectionNoData = collections.Count(w => w.NoData);
@@ -402,6 +492,95 @@ namespace AbaBackend.Infrastructure.Collection
       return res;
     }
 
+    public async Task<object> GetClientReplacementMonthlyChart(int clientId, int replacementId, DateTime? end = null)
+    {
+      var dataSet = new List<MultiSerieChart>();
+      var plotLines = new List<PlotLine>();
+      var plotBands = new List<PlotBand>();
+      var clientReplacement = (await _utils.GetClientReplacements(clientId)).FirstOrDefault(w => w.ReplacementId == replacementId);
+      if (clientReplacement == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
+
+      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
+      var firstWeekStart = clientReplacement?.BaselineFrom ?? currentPeriod.start;
+      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+      DateTime lastWeekEnd = end ?? DateTime.Today;
+      while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
+      var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
+
+      var allCollection = await GetCollectionReplacements(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
+      var allCaregiverCollection = await GetCollectionReplacementsCaregiver(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
+
+      var notes = await _dbContext.ClientChartNotes
+        .Where(w => w.ClientId == clientId)
+        .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
+        .Where(w => w.ChartNoteDate >= firstWeekStart && w.ChartNoteDate <= lastWeekEnd)
+        .OrderBy(o => o.ChartNoteDate)
+        .ToListAsync();
+
+      var data = new List<int?>();
+      var collection = GetClientReplacementsByWeek(replacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
+      data.AddRange(collection.Select(s => s.Total));
+
+      dataSet.Add(new MultiSerieChart
+      {
+        Data = data,
+        Name = clientReplacement.Replacement.ReplacementProgramDescription,
+      });
+
+      var baseLineStart = 0;
+      var baseLineEnd = 0;
+      var legend = new List<string>();
+      var calWeekStartLegend = firstWeekStart;
+      for (int i = 0; i < totalWeeks; i++)
+      {
+        var calWeekEnd = calWeekStartLegend.AddDays(6);
+        legend.Add(calWeekEnd.ToString("M/d/yy"));
+        var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
+        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i });
+        if (clientReplacement.BaselineFrom >= calWeekStartLegend && clientReplacement.BaselineFrom <= calWeekEnd) baseLineStart = i;
+        if (clientReplacement.BaselineTo >= calWeekStartLegend && clientReplacement.BaselineTo <= calWeekEnd) baseLineEnd = i;
+        calWeekStartLegend = calWeekStartLegend.AddDays(7);
+      }
+
+      if (baseLineStart != 0 || baseLineEnd != 0) plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
+      if (baseLineEnd != 0)
+      {
+        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "ShortDot" });
+        baseLineEnd++;
+        dataSet.First().Data.Insert(baseLineEnd, null);
+        legend.Insert(baseLineEnd, "");
+      }
+      var start = baseLineEnd == 0 ? collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null).i - 1 : baseLineEnd + 1;
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "ShortDot" });
+      plotLines.ForEach(w =>
+      {
+        if (w.Value > baseLineEnd + 1) w.Value += 1;
+      });
+
+      var res = new OkObjectResult(new
+      {
+        chartOptions = new
+        {
+          series = dataSet,
+          xAxis = new
+          {
+            categories = legend,
+            plotLines,
+            plotBands,
+            title = new { enabled = false },
+            crosshair = true
+          },
+          title = new { text = "" },
+          chart = new { type = "spline", height = 200 },
+          yAxis = new { title = new { text = "Trials percent" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
+          legend = new { enabled = false },
+          exporting = new { enabled = false }
+        },
+      }).Value;
+
+      return res;
+    }
+
     public async Task<List<int?>> GetClientBehaviorChartValuesWeek(int clientId, int problemId, DateTime? start = null, DateTime? end = null)
     {
       var problem = await _dbContext.ProblemBehaviors.FirstAsync(w => w.ProblemId == problemId);
@@ -496,24 +675,27 @@ namespace AbaBackend.Infrastructure.Collection
       var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
       //var totalWeeks = ((end - start).Days + 1) / 7;
 
+      var stoCalculated = await GetProblemStoOnDate(clientId, month.AddMonths(1).AddDays(-1));
+
       var behaviors = await _utils.GetClientBehaviors(clientId);
       foreach (var behavior in behaviors)
       {
         var weekValues = await GetClientBehaviorChartValuesWeek(clientId, behavior.ProblemId, start, end);
-        var stos = (await _dbContext.ClientProblemSTOs
+
+        var stos = stoCalculated
             .Where(w => w.ClientProblemId == behavior.ClientProblemId)
-            .OrderBy(o => o.ClientProblemStoId)
-            .ToListAsync())
-          .Select((s, i) => new ClientStoBehaviorContract
-          {
-            Weeks = s.Weeks,
-            Quantity = s.Quantity,
-            Status = s.Status.ToString(),
-            StatusNo = s.Status,
-            Index = i + 1,
-            Start = s.WeekStart,
-            End = s.WeekEnd
-          }).ToList();
+            .SelectMany(s => s.STOs)
+            .ToList()
+            .Select((s, i) => new ClientStoBehaviorContract
+            {
+              Weeks = s.Weeks,
+              Quantity = s.Quantity,
+              Status = s.Status.ToString(),
+              StatusNo = s.Status,
+              Index = i + 1,
+              Start = s.WeekStart,
+              End = s.WeekEnd
+            }).ToList();
 
         var newBeh = new MonthlyBehaviorContract
         {
@@ -521,6 +703,8 @@ namespace AbaBackend.Infrastructure.Collection
           IsPercent = behavior.ProblemBehavior.IsPercent,
           ProblemId = behavior.ProblemId,
           Baseline = behavior.BaselineCount,
+          BaselineFrom = behavior.BaselineFrom,
+          BaselineTo = behavior.BaselineTo,
           WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,
           Total = weekValues.Sum(),
           Stos = stos,
@@ -540,36 +724,185 @@ namespace AbaBackend.Infrastructure.Collection
       var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
       //var totalWeeks = ((end - start).Days + 1) / 7;
 
+      var stoCalculated = await GetReplacementStoOnDate(clientId, month.AddMonths(1).AddDays(-1));
+
       var replacements = await _utils.GetClientReplacements(clientId);
       foreach (var replacement in replacements)
       {
         var weekValues = await GetClientReplacementChartValuesWeek(clientId, replacement.ReplacementId, start, end);
-        var stos = (await _dbContext.ClientReplacementSTOs
+        var stos = stoCalculated
             .Where(w => w.ClientReplacementId == replacement.ClientReplacementId)
-            .OrderBy(o => o.ClientReplacementStoId)
-            .ToListAsync())
-          .Select((s, i) => new ClientStoReplacementContract
-          {
-            Weeks = s.Weeks,
-            Percent = s.Percent,
-            Status = s.Status.ToString(),
-            StatusNo = s.Status,
-            Index = i + 1,
-            Start = s.WeekStart,
-            End = s.WeekEnd
-          }).ToList();
+            .SelectMany(s => s.STOs)
+            .ToList()
+            .Select((s, i) => new ClientStoReplacementContract
+            {
+              Weeks = s.Weeks,
+              Percent = s.Percent,
+              Status = s.Status.ToString(),
+              StatusNo = s.Status,
+              Index = i + 1,
+              Start = s.WeekStart,
+              End = s.WeekEnd,
+              LevelAssistance = s.LevelAssistance
+            }).ToList();
 
         var newRpl = new MonthlyReplacementContract
         {
           Replacement = replacement.Replacement.ReplacementProgramDescription,
           ReplacementId = replacement.ReplacementId,
-          ProblemId = replacement.ReplacementId,
           Baseline = replacement.BaselinePercent,
+          BaselineFrom = replacement.BaselineFrom,
+          BaselineTo = replacement.BaselineTo,
           WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,
-          //Total = weekValues.Sum(),
           Stos = stos,
         };
         data.Add(newRpl);
+      }
+      return data;
+    }
+
+    async Task<List<ClientProblem>> GetProblemStoOnDate(int clientId, DateTime endDate)
+    {
+      var data = new List<ClientProblem>();
+
+      var (_, start, end) = await _utils.GetClientWholePeriod(clientId);
+      var firstWeekStart = start;
+      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+      while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
+
+      var clientBehaviors = await _utils.GetClientBehaviors(clientId, false);
+      if (clientBehaviors.Count == 0) return data;
+
+      var clientBehaviorsListId = clientBehaviors.Select(s => s.ProblemId).ToList();
+      var allStos = await _dbContext.ClientProblemSTOs.AsNoTracking().Where(w => clientBehaviors.Select(s => s.ClientProblemId).Contains(w.ClientProblemId)).ToListAsync();
+      var forcedSto = await _dbContext.ClientProblemSTOs.AsNoTracking().Where(w => w.MasteredForced && clientBehaviors.Select(s => s.ClientProblemId).Contains(w.ClientProblemId)).ToListAsync();
+      allStos.ForEach(f => f.Status = StoStatus.Unknow);
+
+      var allCollection = await GetCollectionBehaviors(firstWeekStart, endDate, clientId, clientBehaviorsListId);
+      var allCaregiverCollection = await GetCollectionBehaviorsCaregiver(firstWeekStart, endDate, clientId, clientBehaviorsListId);
+
+      foreach (var clientBehavior in clientBehaviors)
+      {
+        var newBeh = new ClientProblem
+        {
+          Active = clientBehavior.Active,
+          BaselineCount = clientBehavior.BaselineCount,
+          BaselineFrom = clientBehavior.BaselineFrom,
+          BaselineTo = clientBehavior.BaselineTo,
+          ClientId = clientBehavior.ClientId,
+          ClientProblemId = clientBehavior.ClientProblemId,
+          ProblemBehavior = clientBehavior.ProblemBehavior,
+          ProblemId = clientBehavior.ProblemId
+        };
+
+        var valuesByWeek = GetClientProblemsByWeek(clientBehavior.ProblemId, firstWeekStart, endDate, allCollection, allCaregiverCollection, clientBehavior.ProblemBehavior.IsPercent);
+        var stos = allStos.Where(w => w.ClientProblemId == clientBehavior.ClientProblemId).OrderBy(o => o.ClientProblemStoId).ToList();
+        var forced = forcedSto.Where(w => w.ClientProblemId == clientBehavior.ClientProblemId).OrderBy(o => o.ClientProblemStoId).ToList();
+        if (stos.Count == 0) continue;
+        var firstDayOfSto = forced.Count > 0 ? ((DateTime)forced.Last().WeekEnd).AddDays(1) : valuesByWeek.First().Start;
+
+        foreach (var sto in stos)
+        {
+          var qty = sto.Quantity;
+          var weeks = sto.Weeks;
+
+          var e = false;
+          do
+          {
+            var checkWeeks = valuesByWeek.Take(weeks).Count(w => w.Total <= qty);
+            var allWeeks = valuesByWeek.Take(weeks).ToList();
+            if (checkWeeks >= weeks)
+            {
+              sto.WeekStart = firstDayOfSto;
+              sto.WeekEnd = allWeeks.Last().End;
+              sto.Status = StoStatus.Mastered;
+              valuesByWeek.RemoveRange(0, weeks);
+              e = true;
+              firstDayOfSto = Convert.ToDateTime(sto.WeekEnd).AddDays(1);
+            }
+            else if (valuesByWeek.Count > 0) valuesByWeek.RemoveRange(0, 1);
+            if (valuesByWeek.Count <= 0) e = true;
+          } while (!e);
+          if (valuesByWeek.Count == 0) break;
+        }
+
+        var currentSto = allStos.Where(w => w.ClientProblemId == clientBehavior.ClientProblemId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientProblemStoId).FirstOrDefault();
+        if (currentSto != null) currentSto.Status = StoStatus.InProgress;
+        newBeh.STOs = stos;
+        data.Add(newBeh);
+      }
+
+      return data;
+    }
+
+    async Task<List<ClientReplacement>> GetReplacementStoOnDate(int clientId, DateTime endDate)
+    {
+      var data = new List<ClientReplacement>();
+
+      var (_, start, end) = await _utils.GetClientWholePeriod(clientId);
+      var firstWeekStart = start;
+      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+      while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
+
+      var clientReplacements = await _utils.GetClientReplacements(clientId, false);
+      if (clientReplacements.Count == 0) return data;
+
+      var clientReplacementsListId = clientReplacements.Select(s => s.ReplacementId).ToList();
+      var allStos = await _dbContext.ClientReplacementSTOs.AsNoTracking().Where(w => clientReplacements.Select(s => s.ClientReplacementId).Contains(w.ClientReplacementId)).ToListAsync();
+      var forcedSto = await _dbContext.ClientReplacementSTOs.AsNoTracking().Where(w => w.MasteredForced && clientReplacements.Select(s => s.ClientReplacementId).Contains(w.ClientReplacementId)).ToListAsync();
+      allStos.ForEach(f => f.Status = StoStatus.Unknow);
+
+      var allCollection = await GetCollectionReplacements(firstWeekStart, endDate, clientId, clientReplacementsListId);
+      var allCaregiverCollection = await GetCollectionReplacementsCaregiver(firstWeekStart, endDate, clientId, clientReplacementsListId);
+
+      foreach (var clientReplacement in clientReplacements)
+      {
+        var newRep = new ClientReplacement
+        {
+          Active = clientReplacement.Active,
+          BaselinePercent = clientReplacement.BaselinePercent,
+          BaselineFrom = clientReplacement.BaselineFrom,
+          BaselineTo = clientReplacement.BaselineTo,
+          ClientId = clientReplacement.ClientId,
+          ClientReplacementId = clientReplacement.ClientReplacementId,
+          Replacement = clientReplacement.Replacement,
+          ReplacementId = clientReplacement.ReplacementId
+        };
+
+        var valuesByWeek = GetClientReplacementsByWeek(clientReplacement.ReplacementId, firstWeekStart, endDate, allCollection, allCaregiverCollection);
+        var stos = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId).OrderBy(o => o.ClientReplacementStoId).ToList();
+        var forced = forcedSto.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId).OrderBy(o => o.ClientReplacementStoId).ToList();
+        if (stos.Count == 0) continue;
+        var firstDayOfSto = forced.Count > 0 ? ((DateTime)forced.Last().WeekEnd).AddDays(1) : valuesByWeek.First().Start;
+
+        foreach (var sto in stos)
+        {
+          var qty = sto.Percent;
+          var weeks = sto.Weeks;
+
+          var e = false;
+          do
+          {
+            var checkWeeks = valuesByWeek.Take(weeks).Count(w => w.Total >= qty);
+            var allWeeks = valuesByWeek.Take(weeks).ToList();
+            if (checkWeeks >= weeks)
+            {
+              sto.WeekStart = firstDayOfSto;
+              sto.WeekEnd = allWeeks.Last().End;
+              sto.Status = StoStatus.Mastered;
+              valuesByWeek.RemoveRange(0, weeks);
+              e = true;
+              firstDayOfSto = Convert.ToDateTime(sto.WeekEnd).AddDays(1);
+            }
+            else if (valuesByWeek.Count > 0) valuesByWeek.RemoveRange(0, 1);
+            if (valuesByWeek.Count <= 0) e = true;
+          } while (!e);
+          if (valuesByWeek.Count == 0) break;
+        }
+        var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
+        if (currentSto != null) currentSto.Status = StoStatus.InProgress;
+        newRep.STOs = stos;
+        data.Add(newRep);
       }
       return data;
     }

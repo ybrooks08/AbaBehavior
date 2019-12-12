@@ -22,6 +22,8 @@ namespace AbaBackend.Infrastructure.Collection
     public int? Total { get; set; }
     public int ProblemId { get; set; }
     public bool IsPercent { get; internal set; }
+    public DateTime? BaselineFrom { get; internal set; }
+    public DateTime? BaselineTo { get; internal set; }
   }
 
   public class ClientStoBehaviorContract
@@ -42,8 +44,9 @@ namespace AbaBackend.Infrastructure.Collection
     public decimal? WeekAverage { get; set; }
     public List<ClientStoReplacementContract> Stos { get; set; }
     public int? Total { get; set; }
-    public int ProblemId { get; set; }
     public int ReplacementId { get; set; }
+    public DateTime? BaselineFrom { get; internal set; }
+    public DateTime? BaselineTo { get; internal set; }
   }
 
   public class ClientStoReplacementContract
@@ -55,6 +58,7 @@ namespace AbaBackend.Infrastructure.Collection
     public int Index { get; set; }
     public DateTime? Start { get; set; }
     public DateTime? End { get; set; }
+    public string LevelAssistance { get; set; }
   }
 
   public interface ICollection
@@ -63,6 +67,8 @@ namespace AbaBackend.Infrastructure.Collection
     Task<List<Collection.CollectionBehCaregiver>> GetCollectionBehaviorsCaregiver(DateTime start, DateTime end, int clientId, List<int> problemId);
     int? GetClientProblems(List<Collection.CollectionBeh> collection, List<Collection.CollectionBehCaregiver> caregiverCollection, bool isPercent);
     Task<object> GetClientBehaviorChart(int clientId, List<int> problems, DateTime? start = null, DateTime? end = null);
+    Task<object> GetClientBehaviorMonthlyChart(int clientId, int problemId, DateTime? end = null);
+    Task<object> GetClientReplacementMonthlyChart(int clientId, int replacementId, DateTime? end = null);
     List<ValueWeek> GetClientProblemsByWeek(int problemId, DateTime firstWeekStart, DateTime lastWeekEnd, List<Collection.CollectionBeh> allCollection, List<Collection.CollectionBehCaregiver> allCaregiverCollection, bool isPercent);
 
     Task<List<Collection.CollectionRep>> GetCollectionReplacements(DateTime start, DateTime end, int clientId, List<int> replacementId);

@@ -15,5 +15,6 @@ namespace AbaBackend.DataModel
     [NotMapped]
     public int Index { get; set; }
     public bool MasteredForced { get; set; }
+    public string LevelAssistance { get; set; }
   }
 }

@@ -7,13 +7,13 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="1.60.6" />
+    <PackageReference Include="Dapper" Version="2.0.30" />
     <PackageReference Include="epplus.core" Version="1.5.4" />
-    <PackageReference Include="HangFire" Version="1.7.5" />
-    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.1" />
-    <PackageReference Include="MailKit" Version="2.2.0" />
+    <PackageReference Include="HangFire" Version="1.7.7" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.3" />
+    <PackageReference Include="MailKit" Version="2.4.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.5" />
-    <PackageReference Include="Sendgrid" Version="9.11.0" />
+    <PackageReference Include="Sendgrid" Version="9.12.0" />
   </ItemGroup>
 </Project>

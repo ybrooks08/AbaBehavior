@@ -22,7 +22,8 @@
                     </v-list-tile-title>
                     <v-list-tile-sub-title>
                       Status:
-                      <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : 'orange--text'">{{ p.status }}</strong> &nbsp;&nbsp;&nbsp;
+                      <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : 'orange--text'">{{ p.status }}</strong>
+                      &nbsp;&nbsp;&nbsp;
                       <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("utc", "MM/DD/YYYY") }} - {{ p.weekEnd | moment("utc", "MM/DD/YYYY") }}</small> &nbsp;&nbsp;&nbsp;
                       <small v-if="p.masteredForced" class="red white--text px-1" small label>Forced</small>
                     </v-list-tile-sub-title>
@@ -79,7 +80,8 @@
                   <v-subheader style="float: right;">{{ isPercent ? "Percent" : "Frecuency" }}</v-subheader>
                 </v-flex>
                 <v-flex xs12 md3>
-                  <v-text-field ref="focusInput" solo hide-details v-model="clientProblemSto.quantity" type="number" :rules="[required]" required :append-icon="isPercent ? 'fa-percent fa-sm' : 'fa-frown fa-sm'"></v-text-field>
+                  <v-text-field ref="focusInput" solo hide-details v-model="clientProblemSto.quantity" type="number" :rules="[required]" required
+                                :append-icon="isPercent ? 'fa-percent fa-sm' : 'fa-frown fa-sm'"></v-text-field>
                 </v-flex>
                 <v-flex xs12 md1>
                   <v-subheader>in</v-subheader>

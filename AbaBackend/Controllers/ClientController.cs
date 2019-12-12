@@ -971,7 +971,8 @@ namespace AbaBackend.Controllers
                         s.WeekStart,
                         s.WeekEnd,
                         Status = s.Status.ToString(),
-                        s.MasteredForced
+                        s.MasteredForced,
+                        s.LevelAssistance
                       })
                       .OrderBy(o => o.ClientReplacementStoId)
                       .ToListAsync();

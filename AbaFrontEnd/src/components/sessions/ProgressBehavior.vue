@@ -105,6 +105,7 @@ export default {
       try {
         if (!this.activeClientId) return;
         this.loading = true;
+        console.log(this.dateEnd);
         let data = await sessionServicesApi.getProblemsChartData(this.activeClientId, this.behaviorId, this.dateStart, this.dateEnd);
         this.chartOptions = data.chartOptions;
         this.notes = data.notes;

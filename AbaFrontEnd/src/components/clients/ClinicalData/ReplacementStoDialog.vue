@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-dialog persistent width="600" v-model="open">
+    <v-dialog persistent width="800" v-model="open">
       <v-card class="grey lighten-3">
         <v-toolbar dark dense fluid>
           <v-toolbar-title>STOs for {{ data.replacement.replacementProgramDescription }}</v-toolbar-title>
@@ -18,6 +18,7 @@
                   <v-list-tile-content>
                     <v-list-tile-title class="body-2">
                       Get <span class="purple--text font-weight-black">{{ p.percent }}% or more</span> in <span class="purple--text font-weight-black">{{ p.weeks }}</span> consecutive week(s)
+                      <label v-if="p.levelAssistance">with <span class="blue--text font-weight-black">{{p.levelAssistance}}</span></label>
                     </v-list-tile-title>
                     <v-list-tile-sub-title>
                       Status:
@@ -76,20 +77,23 @@
           <div v-show="formShow" class="pt-2">
             <v-form ref="form" autocomplete="off" v-model="formValid">
               <v-layout row wrap>
-                <v-flex xs12 md2>
-                  <v-subheader style="float: right;">Percent</v-subheader>
+                <v-flex xs12 sm3>
+                  <v-text-field hide-details ref="focusInput" box label="Percent" v-model="clientReplacementSto.percent" type="number" :rules="[required]" required append-icon="fa-percent fa-sm"
+                                background-color="white">
+                  </v-text-field>
                 </v-flex>
-                <v-flex xs12 md3>
-                  <v-text-field solo ref="focusInput" hide-details v-model="clientReplacementSto.percent" type="number" :rules="[required]" required append-icon="fa-percent fa-sm"></v-text-field>
-                </v-flex>
-                <v-flex xs12 md1>
+                <v-flex xs12 sm1 align-self-center>
                   <v-subheader>in</v-subheader>
                 </v-flex>
-                <v-flex xs12 md2>
-                  <v-text-field solo hide-details v-model="clientReplacementSto.weeks" type="number" :rules="[required]" required append-icon="fa-calendar-alt fa-sm"></v-text-field>
+                <v-flex xs12 sm2>
+                  <v-text-field hide-details box label="Weeks" v-model="clientReplacementSto.weeks" type="number" :rules="[required]" required append-icon="fa-calendar-alt fa-sm"
+                                background-color="white"></v-text-field>
                 </v-flex>
-                <v-flex xs12 md4>
-                  <v-subheader>consecutive weeks</v-subheader>
+                <v-flex xs12 sm1 align-self-center>
+                  <v-subheader>width</v-subheader>
+                </v-flex>
+                <v-flex xs12 sm5>
+                  <v-select :items="levels" box label="Level of assistance" hide-details background-color="white" v-model="clientReplacementSto.levelAssistance" clearable></v-select>
                 </v-flex>
               </v-layout>
               <div class="text-xs-right">
@@ -101,7 +105,9 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-btn :disabled="loading || formShow" :loading="loading" outline color="purple" @click="reCalculate()"> <v-icon left small>fa-calculator</v-icon> RE-CALC </v-btn>
+          <v-btn :disabled="loading || formShow" :loading="loading" outline color="purple" @click="reCalculate()">
+            <v-icon left small>fa-calculator</v-icon> RE-CALC
+          </v-btn>
           <v-spacer />
           <v-btn :disabled="loading" :loading="loading" color="primary" @click="$emit('closed')">Close</v-btn>
         </v-card-actions>
@@ -152,11 +158,13 @@ export default {
         weeks: null,
         masteredForced: false,
         weekEnd: null,
-        weekStart: null
+        weekStart: null,
+        levelAssistance: null
       },
       forceStoDialogShow: false,
       forceFromTo: null,
-      sto: null
+      sto: null,
+      levels: ["Full Physical Prompt", "Partial Physical Assistance", "Modeling", "Gestual or Visual Prompt", "Direct verbal Prompt", "Cue (using a light, Cocker, bell)", "independently level"]
     };
   },
 
@@ -180,6 +188,7 @@ export default {
       this.clientReplacementSto.masteredForced = s.masteredForced;
       this.clientReplacementSto.weekStart = s.weekStart;
       this.clientReplacementSto.weekEnd = s.weekEnd;
+      this.clientReplacementSto.levelAssistance = s.levelAssistance;
       this.formShow = true;
     },
 

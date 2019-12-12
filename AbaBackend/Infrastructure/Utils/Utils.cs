@@ -27,11 +27,11 @@ namespace AbaBackend.Infrastructure.Utils
     private readonly IHttpContextAccessor _httpContext;
     private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
-    private readonly IHostingEnvironment _env;
+    //private readonly IHostingEnvironment _env;
 
-    public Utils(AbaDbContext dbContext, IHttpContextAccessor httpContext, ILogger<Utils> logger, IConfiguration configuration, IHostingEnvironment env)
+    public Utils(AbaDbContext dbContext, IHttpContextAccessor httpContext, ILogger<Utils> logger, IConfiguration configuration)
     {
-      _env = env;
+      //_env = env;
       _dbContext = dbContext;
       _httpContext = httpContext;
       _logger = logger;
@@ -315,7 +315,7 @@ namespace AbaBackend.Infrastructure.Utils
       {
         easternTime = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         easternTime = TimeZoneInfo.FindSystemTimeZoneById("US/Eastern");
       }
@@ -362,7 +362,7 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var user = await GetCurrentUser();
       //hardcoded for client 37 Jeremiah add 2 more hours
-      var maxUnits = clientId == 37 ? 24 : Convert.ToInt32(_configuration[$"Session:MaxUnitsByClientInSchool"]);
+      var maxUnits = clientId == 37 || clientId == 79 ? 24 : Convert.ToInt32(_configuration[$"Session:MaxUnitsByClientInSchool"]);
       var allSessionsUnits = await _dbContext.Sessions
         .Where(w => w.UserId.Equals(userId) && w.ClientId.Equals(clientId) && w.SessionStart.Date.Equals(date.Date) && w.Pos.Equals(Pos.School))
         .Select(s => s.TotalUnits)

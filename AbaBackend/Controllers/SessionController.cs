@@ -129,7 +129,7 @@ namespace AbaBackend.Controllers
           if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session beacuse exced the hours allowed and you dont have any pass.");
 
           //get current client analist
-          var analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).Select(s => s.UserId).FirstOrDefault();
+          int? analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).FirstOrDefault()?.UserId ?? null;
 
           session.SessionStart = session.SessionStart.ToUniversalTime();
           session.SessionEnd = session.SessionEnd.ToUniversalTime();
@@ -325,6 +325,7 @@ namespace AbaBackend.Controllers
           .Sessions
           .AsNoTracking()
           .Where(w => w.SessionId.Equals(sessionId))
+          .Include(i => i.SessionAnalyst).ThenInclude(i => i.UserSign)
           .Select(s => new
           {
             s.ClientId,
@@ -337,8 +338,8 @@ namespace AbaBackend.Controllers
             UserLicense = s.User.LicenseNo,
             s.User.UserSign,
             s.User.UserId,
-            Analyst = s.SessionAnalyst == null ? lead : s.SessionAnalyst,
-            AnalystSign = s.SessionAnalyst.UserSign == null ? lead.UserSign : s.SessionAnalyst.UserSign,
+            Analyst = s.SessionAnalyst,
+            AnalystSign = s.SessionAnalyst.UserSign,
             UserRol = s.User.Rol.RolName,
             UserRolShort = s.User.Rol.RolShortName,
             s.TotalUnits,
@@ -602,6 +603,22 @@ namespace AbaBackend.Controllers
       if (clientId == 0) return Ok();
       var problems = problemId == "0" ? new List<int>() : problemId.Split(',').Select(int.Parse).ToList();
       var chartData = await _collection.GetClientBehaviorChart(clientId, problems, dateStart, dateEnd);
+      return Ok(chartData);
+    }
+
+    [HttpGet("[action]/{clientId}/{problemId}/{dateEnd?}")]
+    public async Task<IActionResult> GetBehaviorMontlyChart(int clientId, int problemId, DateTime? dateEnd = null)
+    {
+      if (clientId == 0 || problemId == 0) return Ok();
+      var chartData = await _collection.GetClientBehaviorMonthlyChart(clientId, problemId, dateEnd);
+      return Ok(chartData);
+    }
+
+    [HttpGet("[action]/{clientId}/{replacementId}/{dateEnd?}")]
+    public async Task<IActionResult> GetReplacementMontlyChart(int clientId, int replacementId, DateTime? dateEnd = null)
+    {
+      if (clientId == 0 || replacementId == 0) return Ok();
+      var chartData = await _collection.GetClientReplacementMonthlyChart(clientId, replacementId, dateEnd);
       return Ok(chartData);
     }
 
@@ -1009,10 +1026,10 @@ namespace AbaBackend.Controllers
       // await _utils.MidNightProcess();
       //await _utils.SendEmailsAsync();
 
-      var a = _utils.CheckIfuserAllowedDayOfWeek((DayOfWeekBit)62, DateTime.Today);
+      // var a = await _stoProcess.GetStoOnDate(2, new DateTime(2019, 2, 28));
       await Task.Delay(1);
 
-      return Ok(a);
+      return Ok();
     }
 
     [HttpPost("[action]")]

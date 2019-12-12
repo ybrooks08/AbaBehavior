@@ -9,14 +9,16 @@
         <v-card-text>
           <v-layout row wrap>
             <v-flex xs12 sm6>
-              <v-autocomplete box :disabled="loading" :loading="loading" :items="clients" v-model="clientId" label="Client" prepend-inner-icon="fa-user" item-text="clientName" item-value="clientId" @change="clientChanged">
+              <v-autocomplete box :disabled="loading" :loading="loading" :items="clients" v-model="clientId" label="Client" prepend-inner-icon="fa-user" item-text="clientName" item-value="clientId"
+                              @change="clientChanged">
                 <template slot="item" slot-scope="{ item }">
                   <v-list-tile-avatar>
-                    <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`"/>
+                    <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
                   </v-list-tile-avatar>
                   <v-list-tile-content>
                     <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
-                    <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
+                    </v-list-tile-sub-title>
                   </v-list-tile-content>
                 </template>
               </v-autocomplete>
@@ -53,7 +55,7 @@
         <v-card-text class="print-full-width">
           <v-layout row wrap>
             <v-flex xs2>
-              <img style="object-fit: contain;" src="images/logo.jpg" width="100"/>
+              <img style="object-fit: contain;" src="images/logo.jpg" width="100" />
             </v-flex>
             <v-flex xs10>
               <h4>MONTHLY REPORT</h4>
@@ -85,7 +87,7 @@
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAsistant">
                       <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
-                      <br :key="'br' + u.userId"/>
+                      <br :key="'br' + u.userId" />
                     </template>
                   </td>
                 </tr>
@@ -97,7 +99,7 @@
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientRbt">
                       <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
-                      <br :key="'br' + u.userId"/>
+                      <br :key="'br' + u.userId" />
                     </template>
                   </td>
                   <td class="px-1 text-xs-right">Analyst:</td>
@@ -107,7 +109,7 @@
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAnalyst">
                       <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
-                      <br :key="'br' + u.userId"/>
+                      <br :key="'br' + u.userId" />
                     </template>
                   </td>
                 </tr>
@@ -145,33 +147,31 @@
                 </tr>
                 <tr class="no-page-break">
                   <h1 class="subheading font-weight-medium">Behaviors to decrease/Maladaptive behaviors have showed the following progress/lack of progress:</h1>
-                  <table class="table-print">
-                    <thead>
-                      <tr class="grey darken-2 white--text">
-                        <th class="text-xs-left">Behavior</th>
-                        <th style="width: 100px;">Baseline</th>
-                        <th style="width: 100px;">Week Average</th>
-                        <!--<th style="width: 100px;">Total</th>-->
-                      </tr>
-                    </thead>
+                  <template v-if="loading">
+                    <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Loading data...</v-alert>
+                  </template>
+                  <table class="table-print" style="border-right:none;border-left:none;border-bottom:none;border-top:none">
                     <tbody>
                       <template v-for="b in clientProblems">
+                        <tr class="grey darken-2 white--text" :key="'header-b' + b.behavior">
+                          <th class="text-xs-left">Behavior</th>
+                          <th style="width: 150px;">Baseline</th>
+                          <th style="width: 50px;">Week Average</th>
+                        </tr>
                         <tr class="no-page-break" :key="'b' + b.behavior">
-                          <td>
+                          <td class="title pl-3" style="vertical-align: middle;">
                             <strong>{{ b.behavior }}</strong>
                           </td>
-                          <td class="text-xs-center">
-                            {{ b.baseline || "-" }}
+                          <td class="text-xs-center" style="vertical-align: middle;">
+                            <label>{{b.baselineFrom || 'N/A' | moment('utc','MM/DD/YYYY')}} - {{b.baselineTo || 'N/A' | moment('utc','MM/DD/YYYY')}}</label><br>
+                            <label class="font-weight-black">{{ b.baseline || "-" }}</label>
                           </td>
-                          <td class="text-xs-center">
+                          <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
                             {{ Math.round(b.weekAverage) }}
                           </td>
-                          <!--<td class="text-xs-center">-->
-                          <!--  {{ b.total }}-->
-                          <!--</td>-->
                         </tr>
                         <tr class="no-page-break" :key="'bsto' + b.behavior">
-                          <td colspan="4" class="pl-4 pa-0">
+                          <td colspan="4" class="pl-4 pa-0 pb-2">
                             <table class="table-print" style="border: none !important">
                               <template v-if="b.stos.length > 0">
                                 <tr v-for="s in b.stos" :key="'b' + s.index + b.behavior" :class="{ 'yellow lighten-3': s.status.toLowerCase() == 'inprogress' }">
@@ -180,11 +180,12 @@
                                       {{ s.index }}
                                     </v-avatar>
                                   </td>
-                                  <td v-if="!b.isPercent" style="width: 350px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
-                                  <td v-else style="width: 350px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
+                                  <td v-if="!b.isPercent" style="width: 450px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
+                                  <td v-else style="width: 450px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
                                   <td style="border: none !important">
-                                    <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong> &nbsp;&nbsp;</span>
-                                    <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
+                                    <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
+                                              :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
+                                    </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
                                   </td>
                                 </tr>
                               </template>
@@ -194,37 +195,43 @@
                             </table>
                           </td>
                         </tr>
+                        <tr :key="'chart-beh-'+b.behavior" style="border-top:  2px dotted grey !important;">
+                          <td colspan="3">
+                            <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" />
+                          </td>
+                        </tr>
+                        <tr :key="'chart-beh-sep-'+b.behavior">
+                          <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
+                        </tr>
                       </template>
                     </tbody>
                   </table>
                 </tr>
-                <br/>
+                <br />
                 <tr class="no-page-break">
                   <h1 class="subheading font-weight-medium page-break-before">Behaviors to increase/Replacement programs have showed the following progress/lack of progress:</h1>
-                  <table class="table-print">
-                    <thead>
-                      <tr class="grey darken-2 white--text">
-                        <th class="text-xs-left">Replacement</th>
-                        <th style="width: 100px;">Baseline</th>
-                        <th style="width: 100px;">Week Average</th>
-                        <!-- <th style="width: 100px;">Total</th> -->
-                      </tr>
-                    </thead>
+                  <template v-if="loading">
+                    <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Loading data...</v-alert>
+                  </template>
+                  <table class="table-print" style="border-right:none;border-left:none;border-bottom:none;border-top:none">
                     <tbody>
                       <template v-for="r in clientReplacements">
+                        <tr class="grey darken-2 white--text" :key="'header-r' + r.replacement">
+                          <th class="text-xs-left">Replacement</th>
+                          <th style="width: 150px;">Baseline</th>
+                          <th style="width: 50px;">Week Average</th>
+                        </tr>
                         <tr class="no-page-break" :key="'r' + r.replacement">
-                          <td>
+                          <td class="title pl-3" style="vertical-align: middle;">
                             <strong>{{ r.replacement }}</strong>
                           </td>
-                          <td class="text-xs-center">
-                            {{ r.baseline || "-" }}
+                          <td class="text-xs-center" style="vertical-align: middle;">
+                            <label>{{r.baselineFrom || 'N/A' | moment('utc','MM/DD/YYYY')}} - {{r.baselineTo || 'N/A' | moment('utc','MM/DD/YYYY')}}</label><br>
+                            <label>{{ r.baseline || "-" }}</label>
                           </td>
-                          <td class="text-xs-center">
+                          <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
                             {{ Math.round(r.weekAverage) }}
                           </td>
-                          <!-- <td class="text-xs-center">
-                            {{ b.total }}
-                          </td> -->
                         </tr>
                         <tr class="no-page-break" :key="'rsto' + r.replacement">
                           <td colspan="4" class="pl-4 pa-0">
@@ -236,10 +243,12 @@
                                       {{ s.index }}
                                     </v-avatar>
                                   </td>
-                                  <td style="width: 350px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks</td>
+                                  <td style="width: 450px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with
+                                      {{s.levelAssistance}}</label></td>
                                   <td style="border: none !important">
-                                    <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong> &nbsp;&nbsp;</span>
-                                    <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
+                                    <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
+                                              :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
+                                    </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
                                   </td>
                                 </tr>
                               </template>
@@ -249,29 +258,37 @@
                             </table>
                           </td>
                         </tr>
+                        <tr :key="'chart-rep-'+r.replacement" style="border-top:  2px dotted grey !important;">
+                          <td colspan="3">
+                            <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" />
+                          </td>
+                        </tr>
+                        <tr :key="'chart-rep-sep-'+r.replacement">
+                          <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
+                        </tr>
                       </template>
                     </tbody>
                   </table>
                 </tr>
-                <tr>
+                <!-- <tr>
                   <div class="pagebreak"></div>
-                  <table style="width: 100%">
-                    <v-subheader>Graphs for Behavior to Reduction</v-subheader>
-                    <template v-for="p in behArray">
+                  <table style="width: 100%"> -->
+                <!-- <v-subheader>Graphs for Behavior to Reduction</v-subheader> -->
+                <!-- <template v-for="p in behArray">
                       <tr :key="'p' + p" class="no-page-break">
-                        <v-card>
-                          <client-progress-behavior :behaviorId="p" hideNotes></client-progress-behavior>
+                        <v-card v-if="monthEnd">
+                          <client-progress-behavior :behaviorId="p" hideNotes :dateEnd="monthEnd"></client-progress-behavior>
                         </v-card>
                       </tr>
                       <tr :key="'p1' + p">
                         &nbsp;
                       </tr>
-                    </template>
-                    <v-subheader>Graph for Replacement programs</v-subheader>
+                    </template> -->
+                <!-- <v-subheader>Graph for Replacement programs</v-subheader>
                     <template v-for="p in repArray">
                       <tr :key="'r' + p" class="no-page-break">
-                        <v-card>
-                          <client-progress-replacement :replacementId="p" hideNotes></client-progress-replacement>
+                        <v-card v-if="monthEnd">
+                          <client-progress-replacement :replacementId="p" hideNotes :dateEnd="monthEnd"></client-progress-replacement>
                         </v-card>
                       </tr>
                       <tr :key="'r1' + p">
@@ -279,8 +296,8 @@
                       </tr>
                     </template>
                   </table>
-                </tr>
-                <br/>
+                </tr> -->
+                <br />
                 <tr class="no-page-break" v-if="note.extraNotes">
                   <h1 class="subheading font-weight-medium">Extra notes</h1>
                   <p v-html="breakLine(note.extraNotes)"></p>
@@ -335,16 +352,20 @@
 
 <script>
 import userApi from "@/services/api/UserServices";
-import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
-import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
+// import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
+// import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
 import sessionServicesApi from "@/services/api/SessionServices";
 import competencyCheckProgress from "@/components/sessions/CompetencyChecks/CompetencyCheckProgress";
+import BehaviorMonthlyChart from "@/components/shared/charts/BehaviorMonthlyChart";
+import ReplacementMonthlyChart from "@/components/shared/charts/ReplacementMonthlyChart";
 
 export default {
   components: {
-    ClientProgressBehavior,
-    ClientProgressReplacement,
-    competencyCheckProgress
+    // ClientProgressBehavior,
+    // ClientProgressReplacement,
+    competencyCheckProgress,
+    BehaviorMonthlyChart,
+    ReplacementMonthlyChart
   },
 
   data() {
@@ -361,20 +382,21 @@ export default {
       note: null,
       clientProblems: [],
       clientReplacements: [],
-      behIds: [],
-      repIds: [],
-      progress: []
+      // behIds: [],
+      // repIds: [],
+      progress: [],
+      monthEnd: null
     };
   },
 
-  computed: {
-    behArray() {
-      return this.parseToPages(this.behIds, 3);
-    },
-    repArray() {
-      return this.parseToPages(this.repIds, 3);
-    }
-  },
+  // computed: {
+  //   behArray() {
+  //     return this.parseToPages(this.behIds, 3);
+  //   },
+  //   repArray() {
+  //     return this.parseToPages(this.repIds, 3);
+  //   }
+  // },
 
   mounted() {
     this.$store.commit("SET_ACTIVE_CLIENT", 0);
@@ -413,21 +435,28 @@ export default {
       try {
         this.progress = [];
         this.note = null;
+        this.monthEnd = null;
         this.$store.commit("SET_ACTIVE_CLIENT", this.clientId);
         const data = await userApi.getClientMonthlyNote(monthlyNoteId);
         this.note = data.note;
+        const monthStart = this.$moment({ year: this.note.year, month: this.note.month - 1, day: 1 });
+        this.monthEnd = monthStart
+          .clone()
+          .add("1", "months")
+          .subtract("1", "days")
+          .format("YYYY-MM-DD");
         this.client = data.client;
         this.clientRbt = this.client.assignments.filter(f => f.rolId === 4);
         this.clientAnalyst = this.client.assignments.filter(f => f.rolId === 2);
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
-        console.log(this.clientProblems);
         this.clientReplacements = monthlyData.replacements;
-        this.behIds = this.clientProblems.map(w => w.problemId);
-        this.repIds = this.clientReplacements.map(w => w.replacementId);
+        // this.behIds = this.clientProblems.map(w => w.problemId);
+        // this.repIds = this.clientReplacements.map(w => w.replacementId);
         let chartMaxDate = this.notes.find(s => s.value === monthlyNoteId).text;
         this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.clientId, chartMaxDate);
+        // console.log(this.clientProblems);
       } catch (error) {
         this.$toast.error(error);
       } finally {

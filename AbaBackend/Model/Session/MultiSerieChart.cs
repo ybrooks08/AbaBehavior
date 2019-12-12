@@ -23,6 +23,14 @@ namespace AbaBackend.Model.Session
     public int Width { get; set; } = 1;
   }
 
+  public class PlotBand
+  {
+    public Label Label { get; set; }
+    public string Color { get; set; } = "#DAFFCE";
+    public int From { get; set; }
+    public int To { get; set; } = 1;
+  }
+
   public class ChartNoteData
   {
     public List<PlotLine> PlotLines { get; set; }
