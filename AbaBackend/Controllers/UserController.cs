@@ -941,5 +941,19 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
+    
+    [HttpGet("[action]/{userId}")]
+    public async Task<IActionResult> GetSign(int userId)
+    {
+      try
+      {
+        var user = await _utils.GetUserById(userId);
+        return Ok(user);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
   }
 }

@@ -5,7 +5,7 @@
         <v-toolbar dark class="secondary" fluid dense>
           <v-toolbar-title>Client</v-toolbar-title>
         </v-toolbar>
-        <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
+        <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0" />
         <v-card-text>
           <v-layout row wrap>
             <v-flex xs12 sm6>
@@ -24,7 +24,7 @@
               </v-autocomplete>
             </v-flex>
             <v-flex xs12 sm6>
-              <v-select box :loading="loading" :disabled="loading" :items="notes" v-model="monthlyNoteId" label="Monthly note" prepend-inner-icon="fa-calendar-alt" @change="noteChanged"></v-select>
+              <v-select box :loading="loading" :disabled="loading" :items="notes" v-model="monthlyNoteId" label="Monthly note" prepend-inner-icon="fa-calendar-alt" @change="noteChanged" />
             </v-flex>
           </v-layout>
         </v-card-text>
@@ -34,7 +34,7 @@
       <v-card>
         <v-toolbar dark class="secondary no-print" fluid dense>
           <v-toolbar-title>Monthly note</v-toolbar-title>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-menu class="mr-0" bottom left :disabled="loading">
             <v-btn slot="activator" icon :disabled="loading">
               <v-icon>fa-ellipsis-v</v-icon>
@@ -49,7 +49,7 @@
                 </v-list-tile-content>
               </v-list-tile>
             </v-list>
-            <v-divider></v-divider>
+            <v-divider />
           </v-menu>
         </v-toolbar>
         <v-card-text class="print-full-width">
@@ -59,7 +59,7 @@
             </v-flex>
             <v-flex xs10>
               <h4>MONTHLY REPORT</h4>
-              <v-divider></v-divider>
+              <v-divider />
               <table class="v-datatable v-table theme--light print-font-small condensed">
                 <tr>
                   <td class="px-1 text-xs-right">Client:</td>
@@ -119,31 +119,31 @@
               <table style="width: 100%">
                 <tr class="no-page-break" v-if="note.monthlySummary">
                   <h1 class="subheading font-weight-medium">Monthly summary</h1>
-                  <p v-html="breakLine(note.monthlySummary)"></p>
+                  <p v-html="breakLine(note.monthlySummary)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.recipientHealthIssues">
                   <h1 class="subheading font-weight-medium">Recipient's health issues</h1>
-                  <p v-html="breakLine(note.recipientHealthIssues)"></p>
+                  <p v-html="breakLine(note.recipientHealthIssues)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.medication">
                   <h1 class="subheading font-weight-medium">Medication</h1>
-                  <p v-html="breakLine(note.medication)"></p>
+                  <p v-html="breakLine(note.medication)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.barriers2Treatment">
                   <h1 class="subheading font-weight-medium">Barriers to treatment</h1>
-                  <p v-html="breakLine(note.barriers2Treatment)"></p>
+                  <p v-html="breakLine(note.barriers2Treatment)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.familyChanges">
                   <h1 class="subheading font-weight-medium">Family changes</h1>
-                  <p v-html="breakLine(note.familyChanges)"></p>
+                  <p v-html="breakLine(note.familyChanges)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.homeChanges">
                   <h1 class="subheading font-weight-medium">Home changes</h1>
-                  <p v-html="breakLine(note.homeChanges)"></p>
+                  <p v-html="breakLine(note.homeChanges)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.proviverChanges">
                   <h1 class="subheading font-weight-medium">Provider changes</h1>
-                  <p v-html="breakLine(note.proviverChanges)"></p>
+                  <p v-html="breakLine(note.proviverChanges)" />
                 </tr>
                 <tr class="no-page-break">
                   <h1 class="subheading font-weight-medium">Behaviors to decrease/Maladaptive behaviors have showed the following progress/lack of progress:</h1>
@@ -163,7 +163,7 @@
                             <strong>{{ b.behavior }}</strong>
                           </td>
                           <td class="text-xs-center" style="vertical-align: middle;">
-                            <label>{{b.baselineFrom || 'N/A' | moment('utc','MM/DD/YYYY')}} - {{b.baselineTo || 'N/A' | moment('utc','MM/DD/YYYY')}}</label><br>
+                            <label>{{b.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{b.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
                             <label class="font-weight-black">{{ b.baseline || "-" }}</label>
                           </td>
                           <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
@@ -174,7 +174,7 @@
                           <td colspan="4" class="pl-4 pa-0 pb-2">
                             <table class="table-print" style="border: none !important">
                               <template v-if="b.stos.length > 0">
-                                <tr v-for="s in b.stos" :key="'b' + s.index + b.behavior" :class="{ 'yellow lighten-3': s.status.toLowerCase() == 'inprogress' }">
+                                <tr v-for="s in b.stos" :key="'b' + s.index + b.behavior" :class="{ 'yellow lighten-3': s.status.toLowerCase() === 'inprogress' }">
                                   <td class="text-xs-center" style="width: 30px; border: none !important">
                                     <v-avatar size="16" color="grey lighten-2">
                                       {{ s.index }}
@@ -226,7 +226,7 @@
                             <strong>{{ r.replacement }}</strong>
                           </td>
                           <td class="text-xs-center" style="vertical-align: middle;">
-                            <label>{{r.baselineFrom || 'N/A' | moment('utc','MM/DD/YYYY')}} - {{r.baselineTo || 'N/A' | moment('utc','MM/DD/YYYY')}}</label><br>
+                            <label>{{r.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{r.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
                             <label>{{ r.baseline || "-" }}</label>
                           </td>
                           <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
@@ -296,22 +296,21 @@
                       </tr>
                     </template>
                   </table>
-                </tr> -->
-                <br />
+                </tr> --><br />
                 <tr class="no-page-break" v-if="note.extraNotes">
                   <h1 class="subheading font-weight-medium">Extra notes</h1>
-                  <p v-html="breakLine(note.extraNotes)"></p>
+                  <p v-html="breakLine(note.extraNotes)" />
                 </tr>
                 <tr class="no-page-break" v-if="note.commentsAboutCaregiver">
                   <h1 class="subheading font-weight-medium">Comments about caregiver training</h1>
-                  <p v-html="breakLine(note.commentsAboutCaregiver)"></p>
+                  <p v-html="breakLine(note.commentsAboutCaregiver)" />
                 </tr>
                 <tr class="no-page-break" v-if="progress.length > 0">
                   <v-layout row wrap>
                     <v-flex v-for="c in progress" :key="'flex-'+c.chartOptions.title.text" xs6>
                       <v-card>
                         <v-card-text>
-                          <competency-check-progress :key="c.chartOptions.title.text" :options="c.chartOptions"></competency-check-progress>
+                          <competency-check-progress :key="c.chartOptions.title.text" :options="c.chartOptions" />
                         </v-card-text>
                       </v-card>
                     </v-flex>
@@ -320,7 +319,7 @@
                 </tr>
                 <tr class="no-page-break" v-if="note.services2ProvideNextMonth">
                   <h1 class="subheading font-weight-medium">Services to be provided the next month</h1>
-                  <p v-html="breakLine(note.services2ProvideNextMonth)"></p>
+                  <p v-html="breakLine(note.services2ProvideNextMonth)" />
                 </tr>
                 <tr class="no-page-break">
                   <h1 class="subheading font-weight-medium">Recomendations</h1>
@@ -343,6 +342,9 @@
                 </tr>
               </table>
             </v-flex>
+            <v-flex xs6 v-if="note.monthlyAnalyst && note.monthlyAnalyst.userId" class="pt-5">
+              <sign :userId="note.monthlyAnalyst.userId" :date="monthEnd" show-month></sign>
+            </v-flex>
           </v-layout>
         </v-card-text>
       </v-card>
@@ -358,6 +360,7 @@ import sessionServicesApi from "@/services/api/SessionServices";
 import competencyCheckProgress from "@/components/sessions/CompetencyChecks/CompetencyCheckProgress";
 import BehaviorMonthlyChart from "@/components/shared/charts/BehaviorMonthlyChart";
 import ReplacementMonthlyChart from "@/components/shared/charts/ReplacementMonthlyChart";
+import Sign from "@/components/shared/Sign";
 
 export default {
   components: {
@@ -365,7 +368,8 @@ export default {
     // ClientProgressReplacement,
     competencyCheckProgress,
     BehaviorMonthlyChart,
-    ReplacementMonthlyChart
+    ReplacementMonthlyChart,
+    Sign
   },
 
   data() {
@@ -451,12 +455,13 @@ export default {
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
-        this.clientReplacements = monthlyData.replacements;
+        this.clientReplacements = monthlyData.replacements; //.filter(s => s.replacementId == 242);
+        // console.log(this.clientReplacements);
         // this.behIds = this.clientProblems.map(w => w.problemId);
         // this.repIds = this.clientReplacements.map(w => w.replacementId);
         let chartMaxDate = this.notes.find(s => s.value === monthlyNoteId).text;
         this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.clientId, chartMaxDate);
-        // console.log(this.clientProblems);
+        // console.log(this.note.monthlyAnalyst);
       } catch (error) {
         this.$toast.error(error);
       } finally {

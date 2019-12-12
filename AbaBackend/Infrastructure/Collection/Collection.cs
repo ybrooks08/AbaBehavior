@@ -313,7 +313,9 @@ namespace AbaBackend.Infrastructure.Collection
         dataSet.First().Data.Insert(baseLineEnd, null);
         legend.Insert(baseLineEnd, "");
       }
-      var start = baseLineEnd == 0 ? collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null).i - 1 : baseLineEnd + 1;
+
+      var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
+      var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
       plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "ShortDot" });
       plotLines.ForEach(w =>
       {
@@ -550,7 +552,8 @@ namespace AbaBackend.Infrastructure.Collection
         dataSet.First().Data.Insert(baseLineEnd, null);
         legend.Insert(baseLineEnd, "");
       }
-      var start = baseLineEnd == 0 ? collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null).i - 1 : baseLineEnd + 1;
+      var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
+      var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
       plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "ShortDot" });
       plotLines.ForEach(w =>
       {
@@ -803,6 +806,12 @@ namespace AbaBackend.Infrastructure.Collection
 
         foreach (var sto in stos)
         {
+          if (sto.MasteredForced)
+          {
+            sto.Status = StoStatus.Mastered;
+            continue;
+          };
+
           var qty = sto.Quantity;
           var weeks = sto.Weeks;
 
@@ -877,6 +886,11 @@ namespace AbaBackend.Infrastructure.Collection
 
         foreach (var sto in stos)
         {
+          if (sto.MasteredForced)
+          {
+            sto.Status = StoStatus.Mastered;
+            continue;
+          };
           var qty = sto.Percent;
           var weeks = sto.Weeks;
 
