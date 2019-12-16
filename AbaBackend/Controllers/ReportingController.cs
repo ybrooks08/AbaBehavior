@@ -351,8 +351,11 @@ namespace AbaBackend.Controllers
         var mainDataReplacementClientV2 = await _collection.GetCollectionReplacements(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
         var mainDataReplacementCaregiverClientV2 = await _collection.GetCollectionReplacementsCaregiver(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
 
+        
+
         foreach (var problem in problems)
         {
+          decimal weeksWithData = totalWeeks;
           var newRow = new List<Object>
           {
             problem.ProblemBehavior.ProblemBehaviorDescription
@@ -375,7 +378,11 @@ namespace AbaBackend.Controllers
               .ToList();
             var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect, problem.ProblemBehavior.IsPercent);
 
-            if (mainData == null) newRow.Add("N/A");
+            if (mainData == null) 
+            {
+              newRow.Add("N/A");
+              weeksWithData--;
+            }
             else if (!problem.ProblemBehavior.IsPercent)
             {
               sum += mainData ?? 0;
@@ -391,7 +398,8 @@ namespace AbaBackend.Controllers
           }
 
           newRow.Add(!problem.ProblemBehavior.IsPercent ? sum.ToString() : "-");
-          newRow.Add((sum / (decimal)totalWeeks).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
+          newRow.Add(weeksWithData == 0 ? "0" : (sum / weeksWithData).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
+          // newRow.Add((sum / (decimal)totalWeeks).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
           rowsProblems.Add(newRow);
         }
 
@@ -411,6 +419,7 @@ namespace AbaBackend.Controllers
 
         foreach (var replacement in replacements)
         {
+          decimal weeksWithData = totalWeeks;
           var newRow = new List<Object>
           {
             replacement.Replacement.ReplacementProgramDescription
@@ -435,12 +444,16 @@ namespace AbaBackend.Controllers
             var mainData = _collection.GetClientReplacements(mainDataV2, mainDataCaregiverCollect);
 
             sumTotal += mainData ?? 0;
-            if (mainData == null) newRow.Add("N/A");
+            if (mainData == null) 
+            {
+              newRow.Add("N/A");
+              weeksWithData--;
+            }
             else newRow.Add($"{mainData:n0}%");
             monthStart = monthStart.AddDays(7);
           }
 
-          var replacementAve = sumTotal / totalWeeks;
+          var replacementAve = weeksWithData == 0 ? 0 : sumTotal / weeksWithData;// sumTotal / totalWeeks;
           newRow.Add($"{replacementAve:n0}%");
           rowsReplacements.Add(newRow);
         }

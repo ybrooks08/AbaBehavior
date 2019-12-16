@@ -684,7 +684,7 @@ namespace AbaBackend.Infrastructure.Collection
       foreach (var behavior in behaviors)
       {
         var weekValues = await GetClientBehaviorChartValuesWeek(clientId, behavior.ProblemId, start, end);
-
+        var weeksWithData = weekValues.Count(s => s != null);
         var stos = stoCalculated
             .Where(w => w.ClientProblemId == behavior.ClientProblemId)
             .SelectMany(s => s.STOs)
@@ -708,7 +708,7 @@ namespace AbaBackend.Infrastructure.Collection
           Baseline = behavior.BaselineCount,
           BaselineFrom = behavior.BaselineFrom,
           BaselineTo = behavior.BaselineTo,
-          WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,
+          WeekAverage = weeksWithData == 0 ? 0 : weekValues.Sum() / weeksWithData,//(decimal)weekValues.Count,
           Total = weekValues.Sum(),
           Stos = stos,
         };
@@ -733,6 +733,7 @@ namespace AbaBackend.Infrastructure.Collection
       foreach (var replacement in replacements)
       {
         var weekValues = await GetClientReplacementChartValuesWeek(clientId, replacement.ReplacementId, start, end);
+        var weeksWithData = weekValues.Count(s => s != null);
         var stos = stoCalculated
             .Where(w => w.ClientReplacementId == replacement.ClientReplacementId)
             .SelectMany(s => s.STOs)
@@ -756,7 +757,7 @@ namespace AbaBackend.Infrastructure.Collection
           Baseline = replacement.BaselinePercent,
           BaselineFrom = replacement.BaselineFrom,
           BaselineTo = replacement.BaselineTo,
-          WeekAverage = weekValues.Sum() / (decimal)weekValues.Count,
+          WeekAverage = weeksWithData == 0 ? 0 : weekValues.Sum() / weeksWithData,//weekValues.Sum() / (decimal)weekValues.Count,
           Stos = stos,
         };
         data.Add(newRpl);
