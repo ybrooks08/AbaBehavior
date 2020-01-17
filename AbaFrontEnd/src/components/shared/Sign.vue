@@ -56,7 +56,6 @@ export default {
       try {
         this.loading = true;
         this.user = await userApi.getSign(this.userId);
-        console.log(this.user);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {

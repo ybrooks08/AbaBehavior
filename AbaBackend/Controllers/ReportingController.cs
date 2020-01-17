@@ -351,7 +351,6 @@ namespace AbaBackend.Controllers
         var mainDataReplacementClientV2 = await _collection.GetCollectionReplacements(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
         var mainDataReplacementCaregiverClientV2 = await _collection.GetCollectionReplacementsCaregiver(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
 
-        
 
         foreach (var problem in problems)
         {
@@ -378,7 +377,7 @@ namespace AbaBackend.Controllers
               .ToList();
             var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect, problem.ProblemBehavior.IsPercent);
 
-            if (mainData == null) 
+            if (mainData == null)
             {
               newRow.Add("N/A");
               weeksWithData--;
@@ -444,16 +443,17 @@ namespace AbaBackend.Controllers
             var mainData = _collection.GetClientReplacements(mainDataV2, mainDataCaregiverCollect);
 
             sumTotal += mainData ?? 0;
-            if (mainData == null) 
+            if (mainData == null)
             {
               newRow.Add("N/A");
               weeksWithData--;
             }
             else newRow.Add($"{mainData:n0}%");
+
             monthStart = monthStart.AddDays(7);
           }
 
-          var replacementAve = weeksWithData == 0 ? 0 : sumTotal / weeksWithData;// sumTotal / totalWeeks;
+          var replacementAve = weeksWithData == 0 ? 0 : sumTotal / weeksWithData; // sumTotal / totalWeeks;
           newRow.Add($"{replacementAve:n0}%");
           rowsReplacements.Add(newRow);
         }
@@ -531,9 +531,9 @@ namespace AbaBackend.Controllers
         var toDate = Convert.ToDateTime(to).Date;
 
         var collections = (await _dbContext.CaregiverDataCollections
-          .Where(w => w.ClientId == clientId)
-          .Where(w => w.CollectDate.Date >= fromDate && w.CollectDate.Date <= toDate)
-          .ToListAsync())
+            .Where(w => w.ClientId == clientId)
+            .Where(w => w.CollectDate.Date >= fromDate && w.CollectDate.Date <= toDate)
+            .ToListAsync())
           .Select(s => new
           {
             s.ClientId,

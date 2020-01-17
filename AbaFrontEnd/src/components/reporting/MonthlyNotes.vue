@@ -150,62 +150,60 @@
                   <template v-if="loading">
                     <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Loading data...</v-alert>
                   </template>
-                  <table class="table-print" style="border-right:none;border-left:none;border-bottom:none;border-top:none">
-                    <tbody>
-                      <template v-for="b in clientProblems">
-                        <tr class="grey darken-2 white--text" :key="'header-b' + b.behavior">
-                          <th class="text-xs-left">Behavior</th>
-                          <th style="width: 150px;">Baseline</th>
-                          <th style="width: 50px;">Week Average</th>
-                        </tr>
-                        <tr class="no-page-break" :key="'b' + b.behavior">
-                          <td class="title pl-3" style="vertical-align: middle;">
-                            <strong>{{ b.behavior }}</strong>
-                          </td>
-                          <td class="text-xs-center" style="vertical-align: middle;">
-                            <label>{{b.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{b.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
-                            <label class="font-weight-black">{{ b.baseline || "-" }}</label>
-                          </td>
-                          <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
-                            {{ Math.round(b.weekAverage) }}
-                          </td>
-                        </tr>
-                        <tr class="no-page-break" :key="'bsto' + b.behavior">
-                          <td colspan="4" class="pl-4 pa-0 pb-2">
-                            <table class="table-print" style="border: none !important">
-                              <template v-if="b.stos.length > 0">
-                                <tr v-for="s in b.stos" :key="'b' + s.index + b.behavior" :class="{ 'yellow lighten-3': s.status.toLowerCase() === 'inprogress' }">
-                                  <td class="text-xs-center" style="width: 30px; border: none !important">
-                                    <v-avatar size="16" color="grey lighten-2">
-                                      {{ s.index }}
-                                    </v-avatar>
-                                  </td>
-                                  <td v-if="!b.isPercent" style="width: 450px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
-                                  <td v-else style="width: 450px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
-                                  <td style="border: none !important">
-                                    <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
-                                              :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                    </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
-                                  </td>
-                                </tr>
-                              </template>
-                              <tr v-else class="grey--text text--darken-1">
-                                No STO defined
+                  <template v-for="b in clientProblems">
+                    <table class="table-print no-page-break" style="border-right:none;border-left:none;border-bottom:none;border-top:none;" :key="'header-b' + b.behavior">
+                      <tr class="grey darken-2 white--text">
+                        <th class="text-xs-left">Behavior</th>
+                        <th style="width: 150px;">Baseline</th>
+                        <th style="width: 50px;">Week Average</th>
+                      </tr>
+                      <tr class="no-page-break" :key="'b' + b.behavior">
+                        <td class="title pl-3" style="vertical-align: middle;">
+                          <strong>{{ b.behavior }}</strong>
+                        </td>
+                        <td class="text-xs-center" style="vertical-align: middle;">
+                          <label>{{b.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{b.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
+                          <label class="font-weight-black">{{ b.baseline || "-" }}</label>
+                        </td>
+                        <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
+                          {{ Math.round(b.weekAverage) }}
+                        </td>
+                      </tr>
+                      <tr class="no-page-break" :key="'bsto' + b.behavior">
+                        <td colspan="4" class="pl-4 pa-0 pb-2">
+                          <table class="table-print" style="border: none !important">
+                            <template v-if="b.stos.length > 0">
+                              <tr v-for="s in b.stos" :key="'b' + s.index + b.behavior" :class="{ 'yellow lighten-3': s.status.toLowerCase() === 'inprogress' }">
+                                <td class="text-xs-center" style="width: 30px; border: none !important">
+                                  <v-avatar size="16" color="grey lighten-2">
+                                    {{ s.index }}
+                                  </v-avatar>
+                                </td>
+                                <td v-if="!b.isPercent" style="width: 450px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
+                                <td v-else style="width: 450px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
+                                <td style="border: none !important">
+                                  <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
+                                            :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
+                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
+                                </td>
                               </tr>
-                            </table>
-                          </td>
-                        </tr>
-                        <tr :key="'chart-beh-'+b.behavior" style="border-top:  2px dotted grey !important;">
-                          <td colspan="3">
-                            <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" />
-                          </td>
-                        </tr>
-                        <tr :key="'chart-beh-sep-'+b.behavior">
-                          <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
+                            </template>
+                            <tr v-else class="grey--text text--darken-1">
+                              No STO defined
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr :key="'chart-beh-'+b.behavior" style="border-top:  2px dotted grey !important;">
+                        <td colspan="3">
+                          <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" />
+                        </td>
+                      </tr>
+                      <tr :key="'chart-beh-sep-'+b.behavior">
+                        <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </template>
                 </tr>
                 <br />
                 <tr class="no-page-break">
@@ -213,62 +211,60 @@
                   <template v-if="loading">
                     <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Loading data...</v-alert>
                   </template>
-                  <table class="table-print" style="border-right:none;border-left:none;border-bottom:none;border-top:none">
-                    <tbody>
-                      <template v-for="r in clientReplacements">
-                        <tr class="grey darken-2 white--text" :key="'header-r' + r.replacement">
-                          <th class="text-xs-left">Replacement</th>
-                          <th style="width: 150px;">Baseline</th>
-                          <th style="width: 50px;">Week Average</th>
-                        </tr>
-                        <tr class="no-page-break" :key="'r' + r.replacement">
-                          <td class="title pl-3" style="vertical-align: middle;">
-                            <strong>{{ r.replacement }}</strong>
-                          </td>
-                          <td class="text-xs-center" style="vertical-align: middle;">
-                            <label>{{r.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{r.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
-                            <label>{{ r.baseline || "-" }}</label>
-                          </td>
-                          <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
-                            {{ Math.round(r.weekAverage) }}
-                          </td>
-                        </tr>
-                        <tr class="no-page-break" :key="'rsto' + r.replacement">
-                          <td colspan="4" class="pl-4 pa-0">
-                            <table class="table-print" style="border: none !important">
-                              <template v-if="r.stos.length > 0">
-                                <tr v-for="s in r.stos" :key="'r' + s.index + r.replacement" :class="{ 'yellow lighten-3': s.status.toLowerCase() == 'inprogress' }">
-                                  <td class="text-xs-center" style="width: 30px; border: none !important">
-                                    <v-avatar size="16" color="grey lighten-2">
-                                      {{ s.index }}
-                                    </v-avatar>
-                                  </td>
-                                  <td style="width: 450px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with
-                                      {{s.levelAssistance}}</label></td>
-                                  <td style="border: none !important">
-                                    <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
-                                              :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                    </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
-                                  </td>
-                                </tr>
-                              </template>
-                              <tr v-else class="grey--text text--darken-1">
-                                No STO defined
+                  <template v-for="r in clientReplacements">
+                    <table class="table-print no-page-break" style="border-right:none;border-left:none;border-bottom:none;border-top:none" :key="'header-r' + r.replacement">
+                      <tr class="grey darken-2 white--text">
+                        <th class="text-xs-left">Replacement</th>
+                        <th style="width: 150px;">Baseline</th>
+                        <th style="width: 50px;">Week Average</th>
+                      </tr>
+                      <tr class="no-page-break" :key="'r' + r.replacement">
+                        <td class="title pl-3" style="vertical-align: middle;">
+                          <strong>{{ r.replacement }}</strong>
+                        </td>
+                        <td class="text-xs-center" style="vertical-align: middle;">
+                          <label>{{r.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{r.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
+                          <label>{{ r.baseline || "-" }}</label>
+                        </td>
+                        <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
+                          {{ Math.round(r.weekAverage) }}
+                        </td>
+                      </tr>
+                      <tr class="no-page-break" :key="'rsto' + r.replacement">
+                        <td colspan="4" class="pl-4 pa-0">
+                          <table class="table-print" style="border: none !important">
+                            <template v-if="r.stos.length > 0">
+                              <tr v-for="s in r.stos" :key="'r' + s.index + r.replacement" :class="{ 'yellow lighten-3': s.status.toLowerCase() == 'inprogress' }">
+                                <td class="text-xs-center" style="width: 30px; border: none !important">
+                                  <v-avatar size="16" color="grey lighten-2">
+                                    {{ s.index }}
+                                  </v-avatar>
+                                </td>
+                                <td style="width: 450px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with
+                                    {{s.levelAssistance}}</label></td>
+                                <td style="border: none !important">
+                                  <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
+                                            :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
+                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
+                                </td>
                               </tr>
-                            </table>
-                          </td>
-                        </tr>
-                        <tr :key="'chart-rep-'+r.replacement" style="border-top:  2px dotted grey !important;">
-                          <td colspan="3">
-                            <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" />
-                          </td>
-                        </tr>
-                        <tr :key="'chart-rep-sep-'+r.replacement">
-                          <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
+                            </template>
+                            <tr v-else class="grey--text text--darken-1">
+                              No STO defined
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr :key="'chart-rep-'+r.replacement" style="border-top:  2px dotted grey !important;">
+                        <td colspan="3">
+                          <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" />
+                        </td>
+                      </tr>
+                      <tr :key="'chart-rep-sep-'+r.replacement">
+                        <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </template>
                 </tr>
                 <!-- <tr>
                   <div class="pagebreak"></div>

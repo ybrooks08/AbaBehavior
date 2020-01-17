@@ -305,10 +305,11 @@ namespace AbaBackend.Infrastructure.Collection
         calWeekStartLegend = calWeekStartLegend.AddDays(7);
       }
 
-      if (baseLineStart != 0 || baseLineEnd != 0) plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
-      if (baseLineEnd != 0)
+      //if (baseLineStart != 0 || baseLineEnd != 0) 
+      plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
+      // if (baseLineEnd != 0)
       {
-        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "ShortDot" });
+        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "Solid" });
         baseLineEnd++;
         dataSet.First().Data.Insert(baseLineEnd, null);
         legend.Insert(baseLineEnd, "");
@@ -316,7 +317,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
       var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "ShortDot" });
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
       plotLines.ForEach(w =>
       {
         if (w.Value > baseLineEnd + 1) w.Value += 1;
@@ -544,17 +545,18 @@ namespace AbaBackend.Infrastructure.Collection
         calWeekStartLegend = calWeekStartLegend.AddDays(7);
       }
 
-      if (baseLineStart != 0 || baseLineEnd != 0) plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
-      if (baseLineEnd != 0)
+      // if (baseLineStart != 0 || baseLineEnd != 0) 
+      plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
+      // if (baseLineEnd != 0)
       {
-        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "ShortDot" });
+        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "Solid" });
         baseLineEnd++;
         dataSet.First().Data.Insert(baseLineEnd, null);
         legend.Insert(baseLineEnd, "");
       }
       var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
       var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "ShortDot" });
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
       plotLines.ForEach(w =>
       {
         if (w.Value > baseLineEnd + 1) w.Value += 1;
@@ -708,7 +710,7 @@ namespace AbaBackend.Infrastructure.Collection
           Baseline = behavior.BaselineCount,
           BaselineFrom = behavior.BaselineFrom,
           BaselineTo = behavior.BaselineTo,
-          WeekAverage = weeksWithData == 0 ? 0 : weekValues.Sum() / weeksWithData,//(decimal)weekValues.Count,
+          WeekAverage = weeksWithData == 0 ? 0 : weekValues.Sum() / (decimal)weeksWithData,//(decimal)weekValues.Count,
           Total = weekValues.Sum(),
           Stos = stos,
         };
@@ -757,7 +759,7 @@ namespace AbaBackend.Infrastructure.Collection
           Baseline = replacement.BaselinePercent,
           BaselineFrom = replacement.BaselineFrom,
           BaselineTo = replacement.BaselineTo,
-          WeekAverage = weeksWithData == 0 ? 0 : weekValues.Sum() / weeksWithData,//weekValues.Sum() / (decimal)weekValues.Count,
+          WeekAverage = weeksWithData == 0 ? 0 : weekValues.Sum() / (decimal)weeksWithData,//weekValues.Sum() / (decimal)weekValues.Count,
           Stos = stos,
         };
         data.Add(newRpl);
