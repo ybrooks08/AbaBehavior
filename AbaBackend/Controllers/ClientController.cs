@@ -823,7 +823,7 @@ namespace AbaBackend.Controllers
         await _dbContext.SaveChangesAsync();
 
         //update all weekrange and status = unknow
-        await _utils.UpdateClientProblemStos(sto.ClientProblemId);
+        //await _utils.UpdateClientProblemStos(sto.ClientProblemId);
 
         return Ok();
       }
@@ -889,7 +889,7 @@ namespace AbaBackend.Controllers
         var id = entry.ClientProblemId;
         _dbContext.Remove(entry);
         await _dbContext.SaveChangesAsync();
-        await _utils.UpdateClientProblemStos(id);
+        //await _utils.UpdateClientProblemStos(id);
         return Ok();
       }
       catch (Exception e)

@@ -5,7 +5,8 @@
       <v-container fluid grid-list-sm pa-0>
         <v-layout row wrap>
           <v-flex xs6>
-            <span class="headline">{{ sessionPrint.clientName }}</span>
+            <span class="headline">{{ sessionPrint.clientName }}</span><br>
+            <span v-if="sessionPrint.clientDob" class="body-1"><strong>Dob:</strong> {{sessionPrint.clientDob | moment("LL")}}</span>
           </v-flex>
           <v-flex xs6 class="text-xs-right">
             <span class="title grey--text text--darken-2">{{ sessionPrint.sessionStart | moment("LL") }}</span>
@@ -640,7 +641,6 @@ export default {
       try {
         this.loadingSession = true;
         let sessionPrint = await sessionServicesApi.getSessionForPrint(this.sessionId);
-        console.log(sessionPrint);
         let d1 = this.$moment(sessionPrint.sessionStart).local();
         let d2 = this.$moment(sessionPrint.sessionEnd).local();
         sessionPrint.sessionStart = d1;

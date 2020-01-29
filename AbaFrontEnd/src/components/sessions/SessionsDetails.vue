@@ -4,9 +4,9 @@
       <v-flex xs12>
         <new-calendar :clientId="activeClientId" :selectedDate="activeDate.format('YYYY-MM-DD')" />
       </v-flex>
-      <v-flex xs12>
+      <!-- <v-flex xs12>
         <clinical-data-summary :clientId="activeClientId" />
-      </v-flex>
+      </v-flex> -->
       <v-flex xs12>
         <v-card>
           <v-toolbar dark class="secondary" fluid dense>
@@ -55,22 +55,25 @@
 import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
 import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
 import NewCalendar from "@/components/sessions/NewCalendar";
-import ClinicalDataSummary from "@/components/clients/ClinicalData/ClinicalDataSummary";
+// import ClinicalDataSummary from "@/components/clients/ClinicalData/ClinicalDataSummary";
 // import CalendarSessions from "@/components/sessions/CalendarSessions";
 
 export default {
   components: {
     ClientProgressBehavior,
     ClientProgressReplacement,
-    NewCalendar,
-    ClinicalDataSummary
+    NewCalendar
+    // ClinicalDataSummary
     // CalendarSessions
   },
 
   data() {
     return {
       loading: false,
-      whatShow: [{ value: 1, text: "Problem behaviors" }, { value: 2, text: "Replacements" }],
+      whatShow: [
+        { value: 1, text: "Problem behaviors" },
+        { value: 2, text: "Replacements" }
+      ],
       whatShowItem: 1
     };
   },

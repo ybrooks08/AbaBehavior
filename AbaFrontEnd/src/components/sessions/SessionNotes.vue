@@ -830,6 +830,7 @@ export default {
               .format("MM/DD/YYYY");
         }
         this.problemsUnique = this.session.sessionProblemNotes.map(m => m.problemBehavior);
+        console.log(this.session);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -903,6 +904,11 @@ export default {
           } else {
             try {
               this.loadingSession = true;
+              if (this.session.sessionNote) {
+                delete this.session.sessionNote.caregiver;
+              } else {
+                delete this.session.sessionSupervisionNote.caregiver;
+              }
               await sessionServicesApi.editSessionNotes(this.session);
               if (exit) this.close();
               this.$toast.success("Session saved successful");
@@ -917,6 +923,11 @@ export default {
       } else {
         try {
           this.loadingSession = true;
+          if (this.session.sessionNote) {
+            delete this.session.sessionNote.caregiver;
+          } else {
+            delete this.session.sessionSupervisionNote.caregiver;
+          }
           await sessionServicesApi.editSessionNotes(this.session);
           if (exit) this.close();
           this.$toast.success("Session saved successful");
@@ -1009,24 +1020,26 @@ export default {
     },
 
     async markAsReady2Lead() {
-      this.$confirm("Are you sure you want to mark this session as Ready to Analyst(Lead)? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(async res => {
-        if (res) {
-          const model = {
-            sessionId: this.activeSessionId,
-            sessionStatus: 8 //checked
-          };
-          try {
-            if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
-              this.$toast.error("You can not check this session without a valid signature");
-              return;
+      this.$confirm("Are you sure you want to mark this session as Ready to Analyst(Lead)? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(
+        async res => {
+          if (res) {
+            const model = {
+              sessionId: this.activeSessionId,
+              sessionStatus: 8 //checked
+            };
+            try {
+              if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
+                this.$toast.error("You can not check this session without a valid signature");
+                return;
+              }
+              await sessionServicesApi.changeSessionStatus(model);
+              this.close();
+            } catch (error) {
+              this.$toast.error(error);
             }
-            await sessionServicesApi.changeSessionStatus(model);
-            this.close();
-          } catch (error) {
-            this.$toast.error(error);
           }
         }
-      });
+      );
     },
 
     async markAsReviewed() {

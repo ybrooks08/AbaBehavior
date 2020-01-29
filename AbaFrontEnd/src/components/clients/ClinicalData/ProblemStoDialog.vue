@@ -21,11 +21,11 @@
                       Get <span class="purple--text font-weight-black">{{ p.quantity }} or less</span> in <span class="purple--text font-weight-black">{{ p.weeks }}</span> consecutive week(s)
                     </v-list-tile-title>
                     <v-list-tile-sub-title>
-                      Status:
+                      <!-- Status:
                       <strong :class="p.status.toLowerCase() == 'unknow' ? 'red--text' : p.status.toLowerCase() == 'mastered' ? 'green--text' : 'orange--text'">{{ p.status }}</strong>
                       &nbsp;&nbsp;&nbsp;
-                      <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("utc", "MM/DD/YYYY") }} - {{ p.weekEnd | moment("utc", "MM/DD/YYYY") }}</small> &nbsp;&nbsp;&nbsp;
-                      <small v-if="p.masteredForced" class="red white--text px-1" small label>Forced</small>
+                      <small v-if="p.status.toLowerCase() == 'mastered'">{{ p.weekStart | moment("utc", "MM/DD/YYYY") }} - {{ p.weekEnd | moment("utc", "MM/DD/YYYY") }}</small> &nbsp;&nbsp;&nbsp; -->
+                      <label v-if="p.masteredForced" class="red white--text px-1" small label>Mastered Forced</label>
                     </v-list-tile-sub-title>
                   </v-list-tile-content>
                   <v-list-tile-action v-if="hover">
@@ -102,10 +102,10 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-btn :disabled="loading || formShow" :loading="loading" outline color="purple" @click="reCalculate()">
+          <!-- <v-btn :disabled="loading || formShow" :loading="loading" outline color="purple" @click="reCalculate()">
             <v-icon left small>fa-calculator</v-icon>
             RE-CALC
-          </v-btn>
+          </v-btn> -->
           <v-spacer />
           <v-btn :disabled="loading" :loading="loading" color="primary" @click="$emit('closed')">Close</v-btn>
         </v-card-actions>
@@ -232,17 +232,18 @@ export default {
     },
 
     async reCalculate() {
-      try {
-        this.loading = true;
-        await clientApi.adjustStoClientBehavior(this.clientId);
-        this.cancelForm();
-        this.loadClientProblemStos();
-      } catch (error) {
-        console.error(error);
-        this.$toast.error(error);
-      } finally {
-        this.loading = false;
-      }
+      return;
+      // try {
+      //   this.loading = true;
+      //   await clientApi.adjustStoClientBehavior(this.clientId);
+      //   this.cancelForm();
+      //   this.loadClientProblemStos();
+      // } catch (error) {
+      //   console.error(error);
+      //   this.$toast.error(error);
+      // } finally {
+      //   this.loading = false;
+      // }
     },
 
     forceStoDialog(p) {

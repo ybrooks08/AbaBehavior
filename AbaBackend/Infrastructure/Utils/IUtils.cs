@@ -46,5 +46,6 @@ namespace AbaBackend.Infrastructure.Utils
     Task RemovePassIfApply(User user, DateTime sessionStart);
     Task<int> AdjustClientDataCollect(AdjustClientDataCollectModel model);
     bool CheckIfuserAllowedDayOfWeek(DayOfWeekBit days, DateTime date);
+    Task<bool> CheckIfTimeGap(DateTime sessionStart, int userId, int clientId);
   }
 }

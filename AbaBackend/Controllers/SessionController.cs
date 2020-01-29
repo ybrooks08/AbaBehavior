@@ -128,6 +128,9 @@ namespace AbaBackend.Controllers
           //check if user can create after x hours and have any pass
           if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session beacuse exced the hours allowed and you dont have any pass.");
 
+          //check if there is a time gap between sessions
+          if (!(await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId))) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
+
           //get current client analist
           int? analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).FirstOrDefault()?.UserId ?? null;
 
@@ -330,6 +333,7 @@ namespace AbaBackend.Controllers
           {
             s.ClientId,
             ClientName = $"{s.Client.Firstname} {s.Client.Lastname}",
+            ClientDob = s.Client.Dob,
             s.Client.MemberNo,
             ClientDiagnosis = s.Client.ClientDiagnostics.Where(w => w.Active).Select(s1 => new { s1.Diagnosis.Code, s1.Diagnosis.Description }),
             SessionStart = s.SessionStart.ToString("u"),
@@ -1026,10 +1030,10 @@ namespace AbaBackend.Controllers
       // await _utils.MidNightProcess();
       //await _utils.SendEmailsAsync();
 
-      // var a = await _stoProcess.GetStoOnDate(2, new DateTime(2019, 2, 28));
-      await Task.Delay(1);
+      var a = await _collection.GetMonthlyDataReplacement(72, new DateTime(2019, 12, 1));
+      //await Task.Delay(1);
 
-      return Ok();
+      return Ok(a);
     }
 
     [HttpPost("[action]")]

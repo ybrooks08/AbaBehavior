@@ -76,7 +76,8 @@ namespace AbaBackend
         });
     }
 
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils, IStoProcess stoProcess)
+    // public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils, IStoProcess stoProcess)
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AbaDbContext context, IUtils utils)
     {
       app.UseDefaultFiles();
       app.UseStaticFiles();
@@ -103,7 +104,7 @@ namespace AbaBackend
 
       RecurringJob.AddOrUpdate(() => utils.SendEmailsAsync(true), Cron.Hourly);
       RecurringJob.AddOrUpdate(() => utils.MidNightProcess(), Cron.Daily);
-      RecurringJob.AddOrUpdate(() => stoProcess.ProcessStos(), Cron.Daily);
+      // RecurringJob.AddOrUpdate(() => stoProcess.ProcessStos(), Cron.Daily);
     }
 
     public class MyAuthorizationFilter : IDashboardAuthorizationFilter

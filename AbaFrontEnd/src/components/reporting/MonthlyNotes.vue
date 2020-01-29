@@ -184,7 +184,7 @@
                                 <td style="border: none !important">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
                                             :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
+                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc", "MM/DD/YYYY") }}</small>
                                 </td>
                               </tr>
                             </template>
@@ -245,7 +245,7 @@
                                 <td style="border: none !important">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
                                             :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'">{{ s.start | moment("MM/DD/YYYY") }} - {{ s.end | moment("MM/DD/YYYY") }}</small>
+                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc","MM/DD/YYYY") }}</small>
                                 </td>
                               </tr>
                             </template>
@@ -431,6 +431,8 @@ export default {
     },
 
     async noteChanged(monthlyNoteId) {
+      this.clientProblems = [];
+      this.clientReplacements = [];
       this.loading = true;
       try {
         this.progress = [];
