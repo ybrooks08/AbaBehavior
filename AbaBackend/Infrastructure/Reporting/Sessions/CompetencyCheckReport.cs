@@ -66,7 +66,7 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
       void FixedCells()
       {
         ReportingTools.MergeCells(_wsMain, 1, 1, 1, 3);
-        ReportingTools.PutDataInSheet(_wsMain, 1, 1, $"{compCheck.CompetencyCheckType.ToString()} Competency Check (By Lead Analyst)", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Center, Color.Black, Color.White);
+        ReportingTools.PutDataInSheet(_wsMain, 1, 1, $"{compCheck.CompetencyCheckType} Competency Check (By Lead Analyst)", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Center, Color.Black, Color.White);
         _wsMain.Cells[1, 1].Style.Font.Size = 13;
         _wsMain.Cells[1, 1].Style.Font.Bold = true;
 
@@ -75,7 +75,7 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         ReportingTools.PutDataInSheet(_wsMain, 2, 3, $"Total duration (this month): {compCheck.TotalDuration} hrs", ExcelHorizontalAlignment.Right, ExcelVerticalAlignment.Center);
 
         ReportingTools.PutDataInSheet(_wsMain, 3, 1, $"Date", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center, Color.Gray, Color.White);
-        ReportingTools.PutDataInSheet(_wsMain, 3, 2, $"Competency to ({compCheck.CompetencyCheckType.ToString()} name)", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center, Color.Gray, Color.White);
+        ReportingTools.PutDataInSheet(_wsMain, 3, 2, $"Competency to ({compCheck.CompetencyCheckType} name)", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center, Color.Gray, Color.White);
         ReportingTools.PutDataInSheet(_wsMain, 3, 3, $"Evaluation by", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center, Color.Gray, Color.White);
 
         ReportingTools.PutDataInSheet(_wsMain, 4, 1, compCheck.Date.ToShortDateString(), ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center);
@@ -120,8 +120,8 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         ReportingTools.MergeCells(_wsMain, rowScore, 2, rowScore, 3);
         var scoreInstructions = "Score instructions: Score each item above using scale of 0-1 \r\n" +
         "N/A = Problem behavior did not ocurr - no opportunity to observe data collection and recommend intervention. \r\n" +
-        $"0 = {compCheck.CompetencyCheckType.ToString()} was unable to articulate/demostrate what was requested or needed prompts to do it. \r\n" +
-        $"1 = {compCheck.CompetencyCheckType.ToString()} was able to articulate/demostrate what was requested independently. \r\n";
+        $"0 = {compCheck.CompetencyCheckType} was unable to articulate/demostrate what was requested or needed prompts to do it. \r\n" +
+        $"1 = {compCheck.CompetencyCheckType} was able to articulate/demostrate what was requested independently. \r\n";
         _wsMain.Cells[rowScore, 2].Style.Font.Size = 8;
         _wsMain.Cells[rowScore, 2].Style.WrapText = true;
         ReportingTools.PutDataInSheet(_wsMain, rowScore, 2, scoreInstructions, ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Top, fg: Color.Gray);
@@ -134,7 +134,7 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         rowSign++;
         _wsMain.Row(rowSign).Height = 50;
         ReportingTools.PutDataInSheet(_wsMain, rowSign, 1, "Date", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
-        ReportingTools.PutDataInSheet(_wsMain, rowSign, 2, $"{compCheck.CompetencyCheckType.ToString()} signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
+        ReportingTools.PutDataInSheet(_wsMain, rowSign, 2, $"{compCheck.CompetencyCheckType} signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
         ReportingTools.PutDataInSheet(_wsMain, rowSign, 3, "Lead Analyst Signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
 
         return rowSign;

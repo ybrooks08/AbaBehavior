@@ -129,7 +129,7 @@ namespace AbaBackend.Controllers
           if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session beacuse exced the hours allowed and you dont have any pass.");
 
           //check if there is a time gap between sessions
-          if (!(await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId))) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
+          //if (!(await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId))) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
 
           //get current client analist
           int? analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).FirstOrDefault()?.UserId ?? null;
@@ -875,7 +875,7 @@ namespace AbaBackend.Controllers
       {
         var newStatus = await _utils.ChangeSessionStatus(changeSessionStatus);
         if (changeSessionStatus.SessionStatus == SessionStatus.Billed) await _utils.NewEntryLog(changeSessionStatus.SessionId, "Billed", $"Session was billed.", "fa-dollar-sign", "green");
-        else await _utils.NewEntryLog(changeSessionStatus.SessionId, "Status", $"Status changed to: {changeSessionStatus.SessionStatus.ToString()}");
+        else await _utils.NewEntryLog(changeSessionStatus.SessionId, "Status", $"Status changed to: {changeSessionStatus.SessionStatus}");
         return Ok(newStatus);
       }
       catch (Exception e)
@@ -934,7 +934,7 @@ namespace AbaBackend.Controllers
           var to = caregiver.Email;
           var subject = $"Please sign the {session.SessionStart.ToShortDateString()} session.";
           var body = $@"Client: <b>{session.Client.Firstname} {session.Client.Lastname}</b><br>
-                        Units: <b>{session.TotalUnits}</b> ({(session.TotalUnits / 4).ToString("n1")}) hour(s)<br>
+                        Units: <b>{session.TotalUnits}</b> ({session.TotalUnits / 4:n1}) hour(s)<br>
                         Service by: <b>{session.User.Firstname} {session.User.Lastname}</b><br>
                         <br>
                         <a href=""{url.Url}/{token}"">Tap here to sign</a>
@@ -1163,7 +1163,7 @@ namespace AbaBackend.Controllers
         if (session == null) throw new Exception("Session not found");
         session.Pos = (Pos)s.Value;
         await _dbContext.SaveChangesAsync();
-        await _utils.NewEntryLog(session.SessionId, "Pos", $"Session POS edited to {((Pos)s.Value).ToString()}", "fa-clock", "teal");
+        await _utils.NewEntryLog(session.SessionId, "Pos", $"Session POS edited to {(Pos)s.Value}", "fa-clock", "teal");
 
         return Ok();
       }

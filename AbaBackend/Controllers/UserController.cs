@@ -287,7 +287,7 @@ namespace AbaBackend.Controllers
             rolname = u.Rol.RolName.ToString(),
             u.Firstname,
             u.Lastname,
-            fullname = $"{u.Firstname} {u.Lastname} ({u.Rol.RolName.ToString()})",
+            fullname = $"{u.Firstname} {u.Lastname} ({u.Rol.RolName})",
             u.Active,
             u.Created,
             u.Email
@@ -941,7 +941,7 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
-    
+
     [HttpGet("[action]/{userId}")]
     public async Task<IActionResult> GetSign(int userId)
     {
