@@ -191,6 +191,7 @@ export default {
       this.clientProblemSto.weekStart = s.weekStart;
       this.clientProblemSto.weekEnd = s.weekEnd;
       this.formShow = true;
+      this.$nextTick(() => this.$refs.focusInput.focus());
     },
 
     async deleteSto(clientProblemStoId) {
