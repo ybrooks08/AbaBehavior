@@ -241,7 +241,8 @@
                                   </v-avatar>
                                 </td>
                                 <td style="width: 450px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with
-                                    {{s.levelAssistance}}</label></td>
+                                    {{s.levelAssistance}}</label> <label v-if="s.timeMinutes">in
+                                    {{s.timeMinutes}} mins</label></td>
                                 <td style="border: none !important">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
                                             :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
@@ -453,13 +454,9 @@ export default {
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
-        this.clientReplacements = monthlyData.replacements; //.filter(s => s.replacementId == 242);
-        // console.log(this.clientReplacements);
-        // this.behIds = this.clientProblems.map(w => w.problemId);
-        // this.repIds = this.clientReplacements.map(w => w.replacementId);
+        this.clientReplacements = monthlyData.replacements;
         let chartMaxDate = this.notes.find(s => s.value === monthlyNoteId).text;
         this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.clientId, chartMaxDate);
-        // console.log(this.note.monthlyAnalyst);
       } catch (error) {
         this.$toast.error(error);
       } finally {

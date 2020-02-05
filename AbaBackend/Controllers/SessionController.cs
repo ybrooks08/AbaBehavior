@@ -1030,7 +1030,7 @@ namespace AbaBackend.Controllers
       // await _utils.MidNightProcess();
       //await _utils.SendEmailsAsync();
 
-      var a = await _collection.GetMonthlyDataReplacement(72, new DateTime(2019, 12, 1));
+      var a = await _collection.GetMonthlyDataReplacement(68, new DateTime(2020, 1, 1));
       //await Task.Delay(1);
 
       return Ok(a);

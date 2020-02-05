@@ -59,6 +59,7 @@ namespace AbaBackend.Infrastructure.Collection
     public DateTime? Start { get; set; }
     public DateTime? End { get; set; }
     public string LevelAssistance { get; set; }
+    public int? TimeMinutes { get; set; }
   }
 
   public interface ICollection

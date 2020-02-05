@@ -12,6 +12,7 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using MoreLinq;
 
 namespace AbaBackend.Infrastructure.Collection
 {
@@ -731,6 +732,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetReplacementStoOnDate(clientId, end);
 
+      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 165).ToList();
       var replacements = await _utils.GetClientReplacements(clientId);
       foreach (var replacement in replacements)
       {
@@ -749,7 +751,8 @@ namespace AbaBackend.Infrastructure.Collection
               Index = i + 1,
               Start = s.WeekStart,
               End = s.WeekEnd,
-              LevelAssistance = s.LevelAssistance
+              LevelAssistance = s.LevelAssistance,
+              TimeMinutes = s.TimeMinutes
             }).ToList();
 
         var newRpl = new MonthlyReplacementContract
@@ -841,6 +844,7 @@ namespace AbaBackend.Infrastructure.Collection
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
       while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
 
+      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 165).ToList(); ;
       var clientReplacements = await _utils.GetClientReplacements(clientId, false);
       if (clientReplacements.Count == 0) return data;
 
@@ -868,27 +872,52 @@ namespace AbaBackend.Infrastructure.Collection
         var valuesByWeek = GetClientReplacementsByWeek(clientReplacement.ReplacementId, firstWeekStart, endDate, allCollection, allCaregiverCollection);
         var stos = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId).OrderBy(o => o.ClientReplacementStoId).ToList();
         if (stos.Count == 0) continue;
+        var groupStoMinutes = stos.Where(w => w.TimeMinutes != null).Select(s => s.TimeMinutes).Distinct().ToList();
+        var groupStoAssistance = stos.Where(w => w.LevelAssistance != null).Select(s => s.LevelAssistance).Distinct().ToList();
+        var groups = groupStoMinutes.Count > 0 ? groupStoMinutes.Select(s => s.ToString()).ToList() : groupStoAssistance.ToList();
 
-        foreach (var sto in stos)
+        if (groupStoMinutes.Count == 0 && groupStoAssistance.Count == 0) groups.Add("all");
+
+        foreach (var group in groups)
         {
-          if (sto.MasteredForced)
-          {
-            sto.Status = StoStatus.Mastered;
-            continue;
-          };
-          var qty = sto.Percent;
-          var weeks = sto.Weeks;
+          var stoGrouped = groupStoMinutes.Count > 0
+          ? stos.Where(w => w.TimeMinutes == Convert.ToInt32(group)).OrderBy(o => o.ClientReplacementStoId).ToList()
+          : stos.Where(w => w.LevelAssistance == group).OrderBy(o => o.ClientReplacementStoId).ToList();
 
-          var checkWeeks = valuesByWeek.FindConsecutiveGroups(week => week.Total >= qty, weeks).FirstOrDefault();
-          if (checkWeeks != null)
+          if (group == "all") stoGrouped = stos;
+
+          DateTime? maxWeek = null;
+
+          var totalMastered = 0;
+          foreach (var sto in stoGrouped)
           {
-            sto.WeekStart = checkWeeks.First().Start;
-            sto.WeekEnd = checkWeeks.Last().End;
-            sto.Status = StoStatus.Mastered;
+            if (sto.MasteredForced)
+            {
+              sto.Status = StoStatus.Mastered;
+              continue;
+            };
+            var qty = sto.Percent;
+            var weeks = sto.Weeks;
+
+            var checkWeeks = valuesByWeek.FindConsecutiveGroups(week => week.Total >= qty, weeks).FirstOrDefault();
+            if (checkWeeks != null)
+            {
+              sto.WeekStart = checkWeeks.First().Start;
+              sto.WeekEnd = checkWeeks.Last().End;
+              sto.Status = StoStatus.Mastered;
+              totalMastered++;
+              maxWeek = checkWeeks.Last().End;
+            }
+          }
+          if (maxWeek != null) valuesByWeek.RemoveAll(w => w.End <= maxWeek);
+          if (totalMastered != stoGrouped.Count())
+          {
+            var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
+            if (currentSto != null) currentSto.Status = StoStatus.InProgress;
+            break;
           }
         }
-        var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
-        if (currentSto != null) currentSto.Status = StoStatus.InProgress;
+
         newRep.STOs = stos;
         data.Add(newRep);
       }
