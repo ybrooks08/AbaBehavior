@@ -128,9 +128,10 @@ namespace AbaBackend.Infrastructure.Collection
     public int? GetClientProblems(List<CollectionBeh> collection, List<CollectionBehCaregiver> caregiverCollection, bool isPercent)
     {
       var collectionNoData = collection.Count(w => w.NoData);
-      var collectionSum = collection.Sum(s => s.Total);
+      var collectionWithData = collection.Count - collectionNoData;
+      var collectionSum = !isPercent ? collection.Sum(s => s.Total) : collection.Sum(s => s.Total == 0 ? 0 : s.Completed / (decimal)s.Total * 100);
       var collectionCompleted = collection.Sum(s => s.Completed);
-      var percent = collectionSum == 0 ? 0 : collectionCompleted / (decimal)collectionSum * 100;
+      var percent = collectionSum == 0 ? 0 : collectionSum / collectionWithData;//collectionCompleted / (decimal)collectionSum * 100;
       var totalCollection = collectionNoData == collection.Count ? null : !isPercent ? (int?)collectionSum : (int?)Math.Round(percent);
 
       var caregiverCollectionNoData = caregiverCollection.Count(w => w == null);
@@ -352,33 +353,37 @@ namespace AbaBackend.Infrastructure.Collection
     public int? GetClientReplacements(List<CollectionRep> collections, List<CollectionRepCaregiver> collectionsCaregiver)
     {
       var collectionNoData = collections.Count(w => w.NoData);
-      var totalTrial = collections.Sum(s => s.Total);
-      var totalCompleted = collections.Sum(s => s.Completed);
+      var collectionWithData = collections.Count - collectionNoData;
+      var collectionSum = collections.Sum(s => s.Total == 0 ? 0 : s.Completed / (decimal)s.Total * 100);
+      var percent = collectionSum == 0 ? 0 : collectionSum / collectionWithData;
 
-      var hasNoData = collectionNoData == collections.Count;
+      // var totalTrial = collections.Sum(s => s.Total);
+      // var totalCompleted = collections.Sum(s => s.Completed);
+      //
+      // var hasNoData = collectionNoData == collections.Count;
+      //
+      // var caregiverCollection = collectionsCaregiver
+      //   .GroupBy(w => w)
+      //   .Select(s => new
+      //   {
+      //     TotalTrial = s.Sum(w => w.TotalTrial),
+      //     TotalCompleted = s.Sum(w => w.TotalCompleted),
+      //     TotalTrialNull = s.Count(w => w.TotalTrial == null),
+      //     TotalCompletedNull = s.Count(w => w.TotalCompleted == null)
+      //   }).FirstOrDefault();
+      //
+      // var caregiverCollectionNoData = caregiverCollection == null || caregiverCollection.TotalCompleted == null || caregiverCollection.TotalTrial == null ||
+      //                                 (caregiverCollection.TotalTrialNull == collectionsCaregiver.Count);
+      // if (hasNoData & caregiverCollectionNoData) return null;
+      //
+      // var caregiverTotalTrial = caregiverCollection?.TotalTrial ?? 0;
+      // var caregiverTotalCompleted = caregiverCollection?.TotalCompleted ?? 0;
+      //
+      // var trials = totalTrial + caregiverTotalTrial;
+      // var completed = totalCompleted + caregiverTotalCompleted;
+      // var percent = trials == 0 ? 0 : completed / (decimal)trials * 100;
 
-      var caregiverCollection = collectionsCaregiver
-        .GroupBy(w => w)
-        .Select(s => new
-        {
-          TotalTrial = s.Sum(w => w.TotalTrial),
-          TotalCompleted = s.Sum(w => w.TotalCompleted),
-          TotalTrialNull = s.Count(w => w.TotalTrial == null),
-          TotalCompletedNull = s.Count(w => w.TotalCompleted == null)
-        }).FirstOrDefault();
-
-      var caregiverCollectionNoData = caregiverCollection == null || caregiverCollection.TotalCompleted == null || caregiverCollection.TotalTrial == null ||
-                                      (caregiverCollection.TotalTrialNull == collectionsCaregiver.Count);
-      if (hasNoData & caregiverCollectionNoData) return null;
-
-      var caregiverTotalTrial = caregiverCollection?.TotalTrial ?? 0;
-      var caregiverTotalCompleted = caregiverCollection?.TotalCompleted ?? 0;
-
-      var trials = totalTrial + caregiverTotalTrial;
-      var completed = totalCompleted + caregiverTotalCompleted;
-      var percent = trials == 0 ? 0 : completed / (decimal)trials * 100;
-
-      return (int?)percent;
+      return (int?)Math.Round(percent);
     }
 
     public List<ValueWeek> GetClientReplacementsByWeek(int replacementId, DateTime firstWeekStart, DateTime lastWeekEnd, List<CollectionRep> allCollection, List<CollectionRepCaregiver> allCaregiverCollection)
@@ -675,7 +680,7 @@ namespace AbaBackend.Infrastructure.Collection
     public async Task<List<MonthlyBehaviorContract>> GetMonthlyDataBehavior(int clientId, DateTime month)
     {
       var data = new List<MonthlyBehaviorContract>();
-
+      //return data;
       var endMonth = month.AddMonths(1).AddDays(-1);
       var start = month.GetPrevDay(DayOfWeek.Sunday);
       var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
@@ -732,7 +737,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetReplacementStoOnDate(clientId, end);
 
-      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 165).ToList();
+      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 10).ToList();
       var replacements = await _utils.GetClientReplacements(clientId);
       foreach (var replacement in replacements)
       {
@@ -844,7 +849,7 @@ namespace AbaBackend.Infrastructure.Collection
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
       while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
 
-      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 165).ToList(); ;
+      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 10).ToList(); ;
       var clientReplacements = await _utils.GetClientReplacements(clientId, false);
       if (clientReplacements.Count == 0) return data;
 
@@ -910,14 +915,19 @@ namespace AbaBackend.Infrastructure.Collection
             }
           }
           if (maxWeek != null) valuesByWeek.RemoveAll(w => w.End <= maxWeek);
-          if (totalMastered != stoGrouped.Count())
-          {
-            var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
-            if (currentSto != null) currentSto.Status = StoStatus.InProgress;
-            break;
-          }
+          // if (totalMastered != stoGrouped.Count())
+          // {
+          //   var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
+          //   if (currentSto != null) currentSto.Status = StoStatus.InProgress;
+          //   break;
+          // }
         }
 
+        var lastMastered = stos.OrderBy(o => o.ClientReplacementStoId).Where(w => w.Status == StoStatus.Unknow).FirstOrDefault();
+        if (lastMastered != null)
+        {
+          lastMastered.Status = StoStatus.InProgress;
+        }
         newRep.STOs = stos;
         data.Add(newRep);
       }

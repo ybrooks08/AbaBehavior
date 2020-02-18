@@ -15,7 +15,7 @@ namespace AbaBackend.DataModel
     public int ClientId { get; set; }
     public ChartNoteType ChartNoteType { get; set; }
     public DateTime ChartNoteDate { get; set; }
-    [MaxLength(20)]
+    [MaxLength(40)]
     public string Title { get; set; }
     [MaxLength(200)]
     public string Note { get; set; }

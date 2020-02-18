@@ -19,10 +19,11 @@
               </v-layout>
               <v-layout row wrap>
                 <v-flex xs12 sm6>
-                  <v-text-field box :disabled="loading" label="Title" v-model="chartNote.title" required prepend-icon="fa-tag" counter="20" maxlength="20" :rules="[required]"></v-text-field>
+                  <v-text-field box :disabled="loading" label="Title" v-model="chartNote.title" required prepend-icon="fa-tag" counter="40" maxlength="40" :rules="[required]"></v-text-field>
                 </v-flex>
                 <v-flex xs12 sm6>
-                  <v-text-field required label="Note date" box v-model="chartNote.chartNoteDate" mask="##/##/####" prepend-icon="fa-calendar-plus" return-masked-value data-vv-name="notedate" :rules="[required]" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
+                  <v-text-field required label="Note date" box v-model="chartNote.chartNoteDate" mask="##/##/####" prepend-icon="fa-calendar-plus" return-masked-value data-vv-name="notedate"
+                                :rules="[required]" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
                 </v-flex>
               </v-layout>
               <v-layout row wrap>
@@ -44,39 +45,39 @@
 </template>
 
 <script>
-import sessionServicesApi from '@/services/api/SessionServices';
+import sessionServicesApi from "@/services/api/SessionServices";
 
 export default {
   props: {
     id: {
       type: [Number, String],
       required: false,
-      default: 0,
-    },
+      default: 0
+    }
   },
 
   data() {
     return {
       loading: false,
       validForm: false,
-      required: (value) => !!value || 'This field is required.',
+      required: value => !!value || "This field is required.",
       chartNoteTypeEnum: [
         { value: 0, text: "Problems & Replacements" },
         { value: 1, text: "Problems only" },
-        { value: 2, text: "Replacements only" },
+        { value: 2, text: "Replacements only" }
       ],
       chartNote: {
         chartNoteType: 0,
         title: null,
         chartNoteDate: null,
         note: null
-      },
-    }
+      }
+    };
   },
 
   computed: {
     activeClientId() {
-      return this.$store.getters.activeClientId
+      return this.$store.getters.activeClientId;
     }
   },
 
@@ -86,7 +87,7 @@ export default {
 
   methods: {
     close() {
-      this.$router.push('/clients/sessions_details');
+      this.$router.push("/clients/sessions_details");
     },
 
     async loadNote() {
@@ -95,7 +96,9 @@ export default {
         this.chartNote = await sessionServicesApi.getChartNote(this.id);
       } catch (error) {
         this.$toast.error(error);
-      } finally { this.loading = false; }
+      } finally {
+        this.loading = false;
+      }
     },
 
     async submit() {
@@ -112,5 +115,5 @@ export default {
       }
     }
   }
-}
+};
 </script>

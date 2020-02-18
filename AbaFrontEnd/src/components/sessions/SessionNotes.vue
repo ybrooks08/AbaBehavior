@@ -5,7 +5,8 @@
         <v-card class="elevation-12">
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-toolbar :color="(!sessionDetailed ? 'secondary' : sessionDetailed.sessionStatusColor)" dark tabs dense>
-            <v-toolbar-title>Session notes</v-toolbar-title>
+            <v-toolbar-title>Session notes for <strong class="yellow--text" v-if="sessionDetailed">{{sessionDetailed.clientFullname}} <span class="white--text">at</span>
+                ({{sessionDetailed.pos}})</strong></v-toolbar-title>
             <v-spacer></v-spacer>
             <v-chip outline v-if="sessionDetailed" small disabled color="white" text-color="white">
               <v-icon left>fa-info-circle</v-icon>
@@ -672,6 +673,68 @@
       </v-flex>
     </v-layout>
     <edit-time ref="editTimeModal" :sessionId="activeSessionId" :model="editTimeModal" @cancel="editTimeModal = false" @onSubmit="onSubmitEditTime"></edit-time>
+    <v-dialog width="600" persistent transition="slide-y-transition" v-model="checkedModal" v-if="session.sessionType === 1">
+      <v-card>
+        <v-card-title class="warning white--text">
+          <div class="title">Warning, please read carefully</div>
+        </v-card-title>
+        <v-container grid-list-md pa-1>
+          <v-layout row wrap>
+            <v-flex xs12>
+              <v-card-text>
+                Before continue, make sure you <strong class="blue--text">already saved all unsaved data</strong> and you <strong class="blue--text">reviewed all notes carefully.</strong>
+                <v-divider />
+                <v-container fluid grid-list-xs pa-0 v-if="sessionDetailed">
+                  <v-layout row wrap>
+                    <v-flex xs6>
+                      <v-layout row wrap>
+                        <v-flex pb-0 pt-1 class="body-2 text-xs-right" xs4>Date:</v-flex>
+                        <v-flex pb-0 pt-1 xs8>{{sessionDetailed.sessionStart | moment("ddd")}}, {{sessionDetailed.sessionStart | moment("ll")}}</v-flex>
+                        <v-flex py-0 class="body-2 text-xs-right" xs4>Time IN:</v-flex>
+                        <v-flex py-0 xs8>
+                          <v-icon color="green" small>fa-sign-in-alt</v-icon>
+                          {{sessionDetailed.sessionStart | moment("LT")}}
+                        </v-flex>
+                        <v-flex py-0 class="body-2 text-xs-right" xs4>Time OUT:</v-flex>
+                        <v-flex py-0 xs8>
+                          <v-icon color="red" small>fa-sign-out-alt</v-icon>
+                          {{sessionDetailed.sessionEnd | moment("LT")}}
+                        </v-flex>
+                        <v-flex py-0 class="body-2 text-xs-right" xs4>Units:</v-flex>
+                        <v-flex py-0 xs8>
+                          <v-icon small>fa-star</v-icon>
+                          {{sessionDetailed.totalUnits.toLocaleString()}}
+                          <v-icon small>fa-clock</v-icon>
+                          {{(sessionDetailed.totalUnits / 4).toLocaleString()}}
+                        </v-flex>
+                        <v-flex pt-0 pb-1 class="body-2 text-xs-right" xs4>Pos:</v-flex>
+                        <v-flex pt-0 pb-1 xs8><strong class="red--text pulse">{{sessionDetailed.pos.toUpperCase()}}</strong></v-flex>
+                      </v-layout>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+                <v-divider />
+                <v-alert v-if="!progressNoteEmpty" :value="true" color="error" icon="warning">
+                  Your progress notes are empty. Sorry, you can't check this session until you fill the progress notes field.
+                </v-alert>
+                <v-alert v-if="checkedModalInconsistency" :value="true" color="black" outline>
+                  There are inconsistencies between the selected place and the progress notes. Please check your note carefully and if everything is correct you can continue.
+                  <v-divider />
+                  <small class="text--black" v-html="checkedModalInconsistency"></small>
+                </v-alert>
+                Do you want to change the status of this session to {{checkedModalType}}?
+              </v-card-text>
+            </v-flex>
+          </v-layout>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn flat @click="checkedModal = false">Cancel</v-btn>
+            <v-btn color="primary" :disabled="!progressNoteEmpty" @click="onClickCheckedModal">SET AS {{checkedModalType}}</v-btn>
+          </v-card-actions>
+        </v-container>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -742,7 +805,10 @@ export default {
       posEditVisible: false,
       loadingPosEdit: false,
       driveTimeEditVisible: false,
-      loadEditDriveTime: false
+      loadEditDriveTime: false,
+      checkedModal: false,
+      checkedModalType: null,
+      checkedModalInconsistency: null
     };
   },
 
@@ -789,6 +855,9 @@ export default {
     },
     isMobile() {
       return this.$vuetify.breakpoint.xs || this.$vuetify.breakpoint.sm;
+    },
+    progressNoteEmpty() {
+      return this.session.sessionNote.progressNotes;
     }
   },
 
@@ -999,24 +1068,32 @@ export default {
     },
 
     async markAsChecked() {
-      this.$confirm("Are you sure you want to check this session and notes? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(async res => {
-        if (res) {
-          const model = {
-            sessionId: this.activeSessionId,
-            sessionStatus: 5 //checked
-          };
-          try {
-            if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
-              this.$toast.error("You can not check this session without a valid signature");
-              return;
-            }
-            await sessionServicesApi.changeSessionStatus(model);
-            this.close();
-          } catch (error) {
-            this.$toast.error(error);
-          }
-        }
-      });
+      this.checkedModalType = "Checked";
+      if (this.session.sessionType !== 1) {
+        this.onClickCheckedModal();
+        return;
+      }
+      const word = this.sessionDetailed.pos == "School" ? "Home" : "School";
+      this.checkedModalInconsistency = this.checkInconsistency(word);
+      this.checkedModal = true;
+      // this.$confirm("Are you sure you want to check this session and notes? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(async res => {
+      //   if (res) {
+      //     const model = {
+      //       sessionId: this.activeSessionId,
+      //       sessionStatus: 5 //checked
+      //     };
+      //     try {
+      //       if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
+      //         this.$toast.error("You can not check this session without a valid signature");
+      //         return;
+      //       }
+      //       await sessionServicesApi.changeSessionStatus(model);
+      //       this.close();
+      //     } catch (error) {
+      //       this.$toast.error(error);
+      //     }
+      //   }
+      // });
     },
 
     async markAsReady2Lead() {
@@ -1043,20 +1120,29 @@ export default {
     },
 
     async markAsReviewed() {
-      this.$confirm("Are you sure you want to mark as Reviewed and ready to bill this session?").then(async res => {
-        if (res) {
-          const model = {
-            sessionId: this.activeSessionId,
-            sessionStatus: 7 //checked
-          };
-          try {
-            await sessionServicesApi.changeSessionStatus(model);
-            this.close();
-          } catch (error) {
-            this.$toast.error(error);
-          }
-        }
-      });
+      this.checkedModalType = "Reviewed";
+      if (this.session.sessionType !== 1) {
+        this.onClickCheckedModal();
+        return;
+      }
+      const word = this.sessionDetailed.pos == "School" ? "Home" : "School";
+      this.checkedModalInconsistency = this.checkInconsistency(word);
+      this.checkedModal = true;
+
+      // this.$confirm("Are you sure you want to mark as Reviewed and ready to bill this session?").then(async res => {
+      //   if (res) {
+      //     const model = {
+      //       sessionId: this.activeSessionId,
+      //       sessionStatus: 7 //checked
+      //     };
+      //     try {
+      //       await sessionServicesApi.changeSessionStatus(model);
+      //       this.close();
+      //     } catch (error) {
+      //       this.$toast.error(error);
+      //     }
+      //   }
+      // });
     },
 
     editTime() {
@@ -1136,6 +1222,31 @@ export default {
 
     goToData() {
       this.$router.push("/session/session_collect_data");
+    },
+
+    checkInconsistency(word) {
+      const notes = this.session.sessionNote.progressNotes.toLowerCase();
+      let n = notes.search(word.toLowerCase());
+      if (n == -1) return null;
+      const fixed = notes.replace(new RegExp(word.toLowerCase(), "g"), `<strong class="red--text pulse">${word.toLowerCase()}</strong>`);
+      return fixed;
+    },
+
+    async onClickCheckedModal() {
+      const model = {
+        sessionId: this.activeSessionId,
+        sessionStatus: this.checkedModalType == "Checked" ? 5 : 7 //checked or reviewed
+      };
+      try {
+        if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
+          this.$toast.error("You can not check this session without a valid signature");
+          return;
+        }
+        await sessionServicesApi.changeSessionStatus(model);
+        this.close();
+      } catch (error) {
+        this.$toast.error(error);
+      }
     }
   }
 };

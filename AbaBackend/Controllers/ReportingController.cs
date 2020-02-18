@@ -392,7 +392,6 @@ namespace AbaBackend.Controllers
               sum += mainData ?? 0;
               newRow.Add($"{mainData:n0}");
             }
-
             monthStart = monthStart.AddDays(7);
           }
 

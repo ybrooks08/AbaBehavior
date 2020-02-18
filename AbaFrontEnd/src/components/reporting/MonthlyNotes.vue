@@ -5,6 +5,7 @@
         <v-toolbar dark class="secondary" fluid dense>
           <v-toolbar-title>Client</v-toolbar-title>
         </v-toolbar>
+
         <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0" />
         <v-card-text>
           <v-layout row wrap>

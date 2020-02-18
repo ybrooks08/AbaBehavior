@@ -6,7 +6,7 @@
         <v-layout row wrap>
           <v-flex xs6>
             <span class="headline">{{ sessionPrint.clientName }}</span><br>
-            <span v-if="sessionPrint.clientDob" class="body-1"><strong>Dob:</strong> {{sessionPrint.clientDob | moment("LL")}}</span>
+            <span v-if="sessionPrint.clientDob" class="body-1"><strong>Dob:</strong> {{sessionPrint.clientDob | moment("utc","LL")}}</span>
           </v-flex>
           <v-flex xs6 class="text-xs-right">
             <span class="title grey--text text--darken-2">{{ sessionPrint.sessionStart | moment("LL") }}</span>

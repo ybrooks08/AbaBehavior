@@ -1,6 +1,6 @@
 <template>
   <v-dialog @input="change" value="true" width="300">
-    <v-toolbar dark color="teal" dense>
+    <v-toolbar dark :color="headerColor" dense>
       <v-icon>warning</v-icon>
       <v-toolbar-title class="white--text">Warning</v-toolbar-title>
     </v-toolbar>
@@ -16,27 +16,32 @@
 </template>
 
 <script>
-  export default {
-    props: {
-      message: {
-        type: String
-      }
+export default {
+  props: {
+    message: {
+      type: String
     },
-    data() {
-      return {
-        value: false
-      }
+    headerColor: {
+      type: String,
+      required: false,
+      default: "teal"
+    }
+  },
+  data() {
+    return {
+      value: false
+    };
+  },
+  methods: {
+    choose(value) {
+      this.$emit("result", value);
+      this.value = value;
+      this.$destroy();
     },
-    methods: {
-      choose(value) {
-        this.$emit('result', value)
-        this.value = value
-        this.$destroy()
-      },
 
-      change() {
-        this.$destroy()
-      }
+    change() {
+      this.$destroy();
     }
   }
+};
 </script>

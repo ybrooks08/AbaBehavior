@@ -15,8 +15,9 @@ function Install(Vue, options) {
     })
   }
 
-  function show(message, options = {}) {
+  function show(message, headerColor = 'teal', options = {}) {
     options.message = message
+    options.headerColor = headerColor
     return createDialogCmp(options)
   }
 

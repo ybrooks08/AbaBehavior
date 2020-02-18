@@ -139,7 +139,7 @@ export default new Router({
           name: "AddEditCharNote",
           component: () => import(/* webpackChunkName: "AddEditChartNote" */ "@/components/sessions/AddEditChartNote"),
           props: true,
-          meta: { rol: ["analyst", "assistant", "tech"] }
+          meta: { rol: ["admin", "analyst", "assistant", "tech"] }
         },
         {
           path: "/competency_checks",
