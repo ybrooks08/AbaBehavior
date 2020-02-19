@@ -35,6 +35,7 @@ namespace AbaBackend.Infrastructure.Collection
     public int Index { get; set; }
     public DateTime? Start { get; set; }
     public DateTime? End { get; set; }
+    public bool MasteredForced { get; internal set; }
   }
 
   public class MonthlyReplacementContract
@@ -60,6 +61,7 @@ namespace AbaBackend.Infrastructure.Collection
     public DateTime? End { get; set; }
     public string LevelAssistance { get; set; }
     public int? TimeMinutes { get; set; }
+    public bool MasteredForced { get; internal set; }
   }
 
   public interface ICollection

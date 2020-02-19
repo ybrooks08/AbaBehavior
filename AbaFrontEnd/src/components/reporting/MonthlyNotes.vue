@@ -184,8 +184,10 @@
                                 <td v-else style="width: 450px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
                                 <td style="border: none !important">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
-                                            :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc", "MM/DD/YYYY") }}</small>
+                                            :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}
+                                    </strong>
+                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc", "MM/DD/YYYY") }} <span class="grey--text"
+                                          v-if="s.masteredForced">*</span></small>
                                 </td>
                               </tr>
                             </template>
@@ -247,7 +249,8 @@
                                 <td style="border: none !important">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
                                             :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc","MM/DD/YYYY") }}</small>
+                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc","MM/DD/YYYY") }} <span class="grey--text"
+                                          v-if="s.masteredForced">*</span></small>
                                 </td>
                               </tr>
                             </template>
@@ -455,6 +458,7 @@ export default {
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
+        console.log(this.clientProblems);
         this.clientReplacements = monthlyData.replacements;
         let chartMaxDate = this.notes.find(s => s.value === monthlyNoteId).text;
         this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.clientId, chartMaxDate);

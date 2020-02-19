@@ -717,7 +717,8 @@ namespace AbaBackend.Infrastructure.Collection
               StatusNo = s.Status,
               Index = i + 1,
               Start = s.WeekStart,
-              End = s.WeekEnd
+              End = s.WeekEnd,
+              MasteredForced = s.MasteredForced
             }).ToList();
 
         var newBeh = new MonthlyBehaviorContract
@@ -749,7 +750,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetReplacementStoOnDate(clientId, end);
 
-      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 10).ToList();
+      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 12).ToList();
       var replacements = await _utils.GetClientReplacements(clientId);
       foreach (var replacement in replacements)
       {
@@ -769,7 +770,8 @@ namespace AbaBackend.Infrastructure.Collection
               Start = s.WeekStart,
               End = s.WeekEnd,
               LevelAssistance = s.LevelAssistance,
-              TimeMinutes = s.TimeMinutes
+              TimeMinutes = s.TimeMinutes,
+              MasteredForced = s.MasteredForced
             }).ToList();
 
         var newRpl = new MonthlyReplacementContract
@@ -861,7 +863,7 @@ namespace AbaBackend.Infrastructure.Collection
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
       while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
 
-      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 10).ToList(); ;
+      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 12).ToList(); ;
       var clientReplacements = await _utils.GetClientReplacements(clientId, false);
       if (clientReplacements.Count == 0) return data;
 
@@ -906,14 +908,17 @@ namespace AbaBackend.Infrastructure.Collection
 
           DateTime? maxWeek = null;
 
+          var forceNoBreak = false;
           var totalMastered = 0;
           foreach (var sto in stoGrouped)
           {
             if (sto.MasteredForced)
             {
               sto.Status = StoStatus.Mastered;
+              forceNoBreak = true;
               continue;
             };
+            forceNoBreak = false;
             var qty = sto.Percent;
             var weeks = sto.Weeks;
 
@@ -928,6 +933,7 @@ namespace AbaBackend.Infrastructure.Collection
             }
           }
           if (maxWeek != null) valuesByWeek.RemoveAll(w => w.End <= maxWeek);
+          else if (!forceNoBreak) break;
           // if (totalMastered != stoGrouped.Count())
           // {
           //   var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
