@@ -528,7 +528,19 @@ namespace AbaBackend.Infrastructure.Collection
 
       var data = new List<int?>();
       var collection = GetClientReplacementsByWeek(replacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
-      data.AddRange(collection.Select(s => s.Total));
+
+      var allData = collection.Select(s => s.Total);
+
+      var found = false;
+      foreach (var i in allData)
+      {
+        if (i == 0 && !found) data.Add(null);
+        else { data.Add(i); found = true; }
+      }
+
+      //data.AddRange(collection.Select(s => s.Total));
+
+
 
       dataSet.Add(new MultiSerieChart
       {
@@ -882,6 +894,7 @@ namespace AbaBackend.Infrastructure.Collection
         var groups = groupStoMinutes.Count > 0 ? groupStoMinutes.Select(s => s.ToString()).ToList() : groupStoAssistance.ToList();
 
         if (groupStoMinutes.Count == 0 && groupStoAssistance.Count == 0) groups.Add("all");
+
 
         foreach (var group in groups)
         {

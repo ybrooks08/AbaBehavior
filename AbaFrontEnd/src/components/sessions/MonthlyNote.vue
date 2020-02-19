@@ -105,7 +105,8 @@
                   <v-container fluid grid-list-sm pa-0>
                     <v-layout row wrap>
                       <v-flex xs12>
-                        <v-select box :loading="loading" :disabled="loading" :items="clientAnalysts" v-model="note.monthlyAnalystId" label="Monthly analyst" prepend-inner-icon="fa-user" item-value="userId">
+                        <v-select box :loading="loading" :disabled="loading" :items="clientAnalysts" v-model="note.monthlyAnalystId" label="Monthly analyst" prepend-inner-icon="fa-user"
+                                  item-value="userId">
                           <template slot="selection" slot-scope="data">
                             {{ data.item.firstname }} {{ data.item.lastname }}
                           </template>
@@ -115,7 +116,8 @@
                         </v-select>
                       </v-flex>
                       <v-flex xs12>
-                        <v-select box :loading="loading" :disabled="loading" :items="clientAsistants" v-model="note.monthlyAssistantId" label="Monthly assistant" prepend-inner-icon="fa-user" item-value="userId">
+                        <v-select box :loading="loading" :disabled="loading" :items="clientAsistants" v-model="note.monthlyAssistantId" label="Monthly assistant" prepend-inner-icon="fa-user"
+                                  item-value="userId">
                           <template slot="selection" slot-scope="data">
                             {{ data.item.firstname }} {{ data.item.lastname }}
                           </template>
