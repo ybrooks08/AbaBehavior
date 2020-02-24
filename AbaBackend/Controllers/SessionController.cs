@@ -503,11 +503,12 @@ namespace AbaBackend.Controllers
       try
       {
         var user = await _utils.GetUserByUsername(session.User.Username);
+        var currentUser = await _utils.GetCurrentUser();
         var currentSession = await _dbContext.Sessions.AsNoTracking().FirstOrDefaultAsync(s => s.SessionId == session.SessionId);
         if ((currentSession.SessionStatus == SessionStatus.Billed || currentSession.SessionStatus == SessionStatus.Reviewed) && user.RolId != 1) throw new Exception("This session has been checked, billed or reviewed. You cannot edit it.");
 
         //check if user can create after x hours and have any pass
-        if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not edit this session beacuse exced the hours allowed and you dont have any pass.");
+        if (!_utils.CanCreateAfterHours(currentUser, session.SessionStart)) throw new Exception("You can not edit this session beacuse exced the hours allowed and you dont have any pass.");
 
         //if (!ModelState.IsValid) ret
         if (session.SessionStatus != SessionStatus.Checked) _dbContext.Update(session).Property(s => s.SessionStatus).CurrentValue = SessionStatus.Edited;
