@@ -10,15 +10,26 @@
         <v-card-text>
           <v-layout row wrap>
             <v-flex xs12 sm6>
-              <v-autocomplete box :disabled="loading" :loading="loading" :items="clients" v-model="clientId" label="Client" prepend-inner-icon="fa-user" item-text="clientName" item-value="clientId"
-                              @change="clientChanged">
+              <v-autocomplete
+                box
+                :disabled="loading"
+                :loading="loading"
+                :items="clients"
+                v-model="clientId"
+                label="Client"
+                prepend-inner-icon="fa-user"
+                item-text="clientName"
+                item-value="clientId"
+                @change="clientChanged"
+              >
                 <template slot="item" slot-scope="{ item }">
                   <v-list-tile-avatar>
                     <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
                   </v-list-tile-avatar>
                   <v-list-tile-content>
                     <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
-                    <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
+                    <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }"
+                      >{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
                     </v-list-tile-sub-title>
                   </v-list-tile-content>
                 </template>
@@ -26,6 +37,7 @@
             </v-flex>
             <v-flex xs12 sm6>
               <v-select box :loading="loading" :disabled="loading" :items="notes" v-model="monthlyNoteId" label="Monthly note" prepend-inner-icon="fa-calendar-alt" @change="noteChanged" />
+              <!-- <v-btn @click="noteChanged(monthlyNoteId)">Hola</v-btn> -->
             </v-flex>
           </v-layout>
         </v-card-text>
@@ -83,11 +95,15 @@
                     <span v-if="clientAsistant.length > 0">Assistant:</span>
                   </td>
                   <td v-if="note.monthlyAssistant" class="px-1 text-xs-left">
-                    <span>{{ note.monthlyAssistant.firstname }} {{ note.monthlyAssistant.lastname }} <label v-if="note.monthlyAssistant.licenseNo">({{note.monthlyAssistant.licenseNo}})</label></span>
+                    <span
+                      >{{ note.monthlyAssistant.firstname }} {{ note.monthlyAssistant.lastname }} <label v-if="note.monthlyAssistant.licenseNo">({{ note.monthlyAssistant.licenseNo }})</label></span
+                    >
                   </td>
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAsistant">
-                      <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
+                      <span :key="'user' + u.userId"
+                        >{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label></span
+                      >
                       <br :key="'br' + u.userId" />
                     </template>
                   </td>
@@ -95,21 +111,29 @@
                 <tr>
                   <td class="px-1 text-xs-right">RBT:</td>
                   <td v-if="note.monthlyRbt" class="px-1 text-xs-left">
-                    <span>{{ note.monthlyRbt.firstname }} {{ note.monthlyRbt.lastname }} <label v-if="note.monthlyRbt.licenseNo">({{note.monthlyRbt.licenseNo}})</label></span>
+                    <span
+                      >{{ note.monthlyRbt.firstname }} {{ note.monthlyRbt.lastname }} <label v-if="note.monthlyRbt.licenseNo">({{ note.monthlyRbt.licenseNo }})</label></span
+                    >
                   </td>
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientRbt">
-                      <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
+                      <span :key="'user' + u.userId"
+                        >{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label></span
+                      >
                       <br :key="'br' + u.userId" />
                     </template>
                   </td>
                   <td class="px-1 text-xs-right">Analyst:</td>
                   <td v-if="note.monthlyAnalyst" class="px-1 text-xs-left">
-                    <span>{{ note.monthlyAnalyst.firstname }} {{ note.monthlyAnalyst.lastname }} <label v-if="note.monthlyAnalyst.licenseNo">({{note.monthlyAnalyst.licenseNo}})</label></span>
+                    <span
+                      >{{ note.monthlyAnalyst.firstname }} {{ note.monthlyAnalyst.lastname }} <label v-if="note.monthlyAnalyst.licenseNo">({{ note.monthlyAnalyst.licenseNo }})</label></span
+                    >
                   </td>
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAnalyst">
-                      <span :key="'user' + u.userId">{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{u.licenseNo}})</label></span>
+                      <span :key="'user' + u.userId"
+                        >{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label></span
+                      >
                       <br :key="'br' + u.userId" />
                     </template>
                   </td>
@@ -163,7 +187,8 @@
                           <strong>{{ b.behavior }}</strong>
                         </td>
                         <td class="text-xs-center" style="vertical-align: middle;">
-                          <label>{{b.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{b.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
+                          <label>{{ b.baselineFrom || "N/A" | moment("utc", "MM/DD/YYYY") }} - {{ b.baselineTo || "N/A" | moment("utc", "MM/DD/YYYY") }}</label
+                          ><br />
                           <label class="font-weight-black">{{ b.baseline || "-" }}</label>
                         </td>
                         <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
@@ -183,11 +208,13 @@
                                 <td v-if="!b.isPercent" style="width: 450px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
                                 <td v-else style="width: 450px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
                                 <td style="border: none !important">
-                                  <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
-                                            :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}
-                                    </strong>
-                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc", "MM/DD/YYYY") }} <span class="grey--text"
-                                          v-if="s.masteredForced">*</span></small>
+                                  <span v-if="s.status.toLowerCase() !== 'unknow'"
+                                    >Status:
+                                    <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'"
+                                      >{{ s.status }}
+                                    </strong> </span
+                                  >&nbsp;&nbsp;
+                                  <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc", "MM/DD/YYYY") }} <span class="grey--text" v-if="s.masteredForced">*</span></small>
                                 </td>
                               </tr>
                             </template>
@@ -197,12 +224,12 @@
                           </table>
                         </td>
                       </tr>
-                      <tr :key="'chart-beh-'+b.behavior" style="border-top:  2px dotted grey !important;">
+                      <tr :key="'chart-beh-' + b.behavior" style="border-top:  2px dotted grey !important;">
                         <td colspan="3">
                           <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" />
                         </td>
                       </tr>
-                      <tr :key="'chart-beh-sep-'+b.behavior">
+                      <tr :key="'chart-beh-sep-' + b.behavior">
                         <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
                       </tr>
                     </table>
@@ -226,7 +253,8 @@
                           <strong>{{ r.replacement }}</strong>
                         </td>
                         <td class="text-xs-center" style="vertical-align: middle;">
-                          <label>{{r.baselineFrom || "N/A" | moment("utc","MM/DD/YYYY")}} - {{r.baselineTo || "N/A" | moment("utc","MM/DD/YYYY")}}</label><br>
+                          <label>{{ r.baselineFrom || "N/A" | moment("utc", "MM/DD/YYYY") }} - {{ r.baselineTo || "N/A" | moment("utc", "MM/DD/YYYY") }}</label
+                          ><br />
                           <label>{{ r.baseline || "-" }}</label>
                         </td>
                         <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
@@ -243,14 +271,18 @@
                                     {{ s.index }}
                                   </v-avatar>
                                 </td>
-                                <td style="width: 450px; border: none !important">Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with
-                                    {{s.levelAssistance}}</label> <label v-if="s.timeMinutes">in
-                                    {{s.timeMinutes}} mins</label></td>
+                                <td style="width: 450px; border: none !important">
+                                  Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with {{ s.levelAssistance }}</label>
+                                  <label v-if="s.timeMinutes">in {{ s.timeMinutes }} mins</label>
+                                </td>
                                 <td style="border: none !important">
-                                  <span v-if="s.status.toLowerCase() !== 'unknow'">Status: <strong
-                                            :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{ s.status }}</strong>
-                                  </span>&nbsp;&nbsp; <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc","MM/DD/YYYY") }} <span class="grey--text"
-                                          v-if="s.masteredForced">*</span></small>
+                                  <span v-if="s.status.toLowerCase() !== 'unknow'"
+                                    >Status:
+                                    <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{
+                                      s.status
+                                    }}</strong> </span
+                                  >&nbsp;&nbsp;
+                                  <small v-if="s.status.toLowerCase() === 'mastered'"> - {{ s.end | moment("utc", "MM/DD/YYYY") }} <span class="grey--text" v-if="s.masteredForced">*</span></small>
                                 </td>
                               </tr>
                             </template>
@@ -260,12 +292,12 @@
                           </table>
                         </td>
                       </tr>
-                      <tr :key="'chart-rep-'+r.replacement" style="border-top:  2px dotted grey !important;">
+                      <tr :key="'chart-rep-' + r.replacement" style="border-top:  2px dotted grey !important;">
                         <td colspan="3">
                           <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" />
                         </td>
                       </tr>
-                      <tr :key="'chart-rep-sep-'+r.replacement">
+                      <tr :key="'chart-rep-sep-' + r.replacement">
                         <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
                       </tr>
                     </table>
@@ -308,7 +340,7 @@
                 </tr>
                 <tr class="no-page-break" v-if="progress.length > 0">
                   <v-layout row wrap>
-                    <v-flex v-for="c in progress" :key="'flex-'+c.chartOptions.title.text" xs6>
+                    <v-flex v-for="c in progress" :key="'flex-' + c.chartOptions.title.text" xs6>
                       <v-card>
                         <v-card-text>
                           <competency-check-progress :key="c.chartOptions.title.text" :options="c.chartOptions" />
@@ -316,7 +348,7 @@
                       </v-card>
                     </v-flex>
                   </v-layout>
-                  <br>
+                  <br />
                 </tr>
                 <tr class="no-page-break" v-if="note.services2ProvideNextMonth">
                   <h1 class="subheading font-weight-medium">Services to be provided the next month</h1>

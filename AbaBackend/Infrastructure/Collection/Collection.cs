@@ -132,7 +132,7 @@ namespace AbaBackend.Infrastructure.Collection
       var collectionSum = !isPercent ? collection.Sum(s => s.Total) : collection.Sum(s => s.Total == 0 ? 0 : s.Completed / (decimal)s.Total * 100);
       var collectionCompleted = collection.Sum(s => s.Completed);
       var percent = collectionSum == 0 ? 0 : collectionSum / collectionWithData;//collectionCompleted / (decimal)collectionSum * 100;
-      var totalCollection = collectionNoData == collection.Count ? null : !isPercent ? (int?)collectionSum : (int?)Math.Round(percent);
+      var totalCollection = collectionNoData == collection.Count ? null : !isPercent ? (int?)collectionSum : (int?)Math.Round(percent, MidpointRounding.AwayFromZero);
 
       var caregiverCollectionNoData = caregiverCollection.Count(w => w == null);
       var caregiverCollectionSum = caregiverCollection.Sum(s => s.Count);
@@ -353,6 +353,7 @@ namespace AbaBackend.Infrastructure.Collection
     public int? GetClientReplacements(List<CollectionRep> collections, List<CollectionRepCaregiver> collectionsCaregiver)
     {
       var collectionNoData = collections.Count(w => w.NoData);
+      if (collectionNoData == collections.Count()) return null;
       var collectionWithData = collections.Count - collectionNoData;
       var collectionSum = collections.Sum(s => s.Total == 0 ? 0 : s.Completed / (decimal)s.Total * 100);
       var percent = collectionSum == 0 ? 0 : collectionSum / collectionWithData;
@@ -383,7 +384,7 @@ namespace AbaBackend.Infrastructure.Collection
       // var completed = totalCompleted + caregiverTotalCompleted;
       // var percent = trials == 0 ? 0 : completed / (decimal)trials * 100;
 
-      return (int?)Math.Round(percent);
+      return (int?)Math.Round(percent, MidpointRounding.AwayFromZero);
     }
 
     public List<ValueWeek> GetClientReplacementsByWeek(int replacementId, DateTime firstWeekStart, DateTime lastWeekEnd, List<CollectionRep> allCollection, List<CollectionRepCaregiver> allCaregiverCollection)
@@ -750,7 +751,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetReplacementStoOnDate(clientId, end);
 
-      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 12).ToList();
+      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 10).ToList();
       var replacements = await _utils.GetClientReplacements(clientId);
       foreach (var replacement in replacements)
       {
@@ -863,7 +864,7 @@ namespace AbaBackend.Infrastructure.Collection
       firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
       while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
 
-      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 12).ToList(); ;
+      // var clientReplacements = (await _utils.GetClientReplacements(clientId, false)).Where(w => w.ReplacementId == 10).ToList(); ;
       var clientReplacements = await _utils.GetClientReplacements(clientId, false);
       if (clientReplacements.Count == 0) return data;
 
@@ -916,6 +917,7 @@ namespace AbaBackend.Infrastructure.Collection
             {
               sto.Status = StoStatus.Mastered;
               forceNoBreak = true;
+              totalMastered++;
               continue;
             };
             forceNoBreak = false;
@@ -934,7 +936,7 @@ namespace AbaBackend.Infrastructure.Collection
           }
           if (maxWeek != null) valuesByWeek.RemoveAll(w => w.End <= maxWeek);
           else if (!forceNoBreak) break;
-          // if (totalMastered != stoGrouped.Count())
+          if (totalMastered != stoGrouped.Count()) break;
           // {
           //   var currentSto = allStos.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId && w.Status != StoStatus.Mastered).OrderBy(o => o.ClientReplacementStoId).FirstOrDefault();
           //   if (currentSto != null) currentSto.Status = StoStatus.InProgress;
