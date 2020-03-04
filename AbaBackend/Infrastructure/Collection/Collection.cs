@@ -343,7 +343,7 @@ namespace AbaBackend.Infrastructure.Collection
           chart = new { type = "spline", height = 200 },
           yAxis = new { title = new { text = "Count" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
           legend = new { enabled = false },
-          exporting = new { enabled = false }
+          exporting = new { enabled = true }
         },
       }).Value;
 
@@ -597,7 +597,7 @@ namespace AbaBackend.Infrastructure.Collection
           chart = new { type = "spline", height = 200 },
           yAxis = new { title = new { text = "Trials percent" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
           legend = new { enabled = false },
-          exporting = new { enabled = false }
+          exporting = new { enabled = true }
         },
       }).Value;
 

@@ -61,7 +61,8 @@ export default {
         let data = await sessionServicesApi.getBehaviorMontlyChart(this.clientId, this.problemId, this.dateEnd);
         this.chartOptions = data.chartOptions;
       } catch (error) {
-        this.$toast.error(error.message || error);
+        console.log(error.message || error);
+        //this.$toast.error(error.message || error);
       } finally {
         this.loading = false;
       }
