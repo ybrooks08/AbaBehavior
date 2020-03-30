@@ -255,7 +255,7 @@
                         <td class="text-xs-center" style="vertical-align: middle;">
                           <label>{{ r.baselineFrom || "N/A" | moment("utc", "MM/DD/YYYY") }} - {{ r.baselineTo || "N/A" | moment("utc", "MM/DD/YYYY") }}</label
                           ><br />
-                          <label>{{ r.baseline || "-" }}</label>
+                          <label>{{ r.baseline }}</label>
                         </td>
                         <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
                           {{ Math.round(r.weekAverage) }}

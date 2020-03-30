@@ -401,9 +401,9 @@ namespace AbaBackend.Controllers
         referral2Process.DateExpires = referral.DateExpires;
 
         if (referral.ReferralId == 0) await _dbContext.Referrals.AddAsync(referral2Process);
-        await _dbContext.SaveChangesAsync();
         if (referral.ReferralId == 0) await _utils.NewSystemLog(SystemLogType.Info, Module.Client, referral2Process.ClientId, "Created referral", $"A referral was created");
         else await _utils.NewSystemLog(SystemLogType.Info, Module.Client, referral2Process.ClientId, "Edited referral", $"A referral was edited");
+        await _dbContext.SaveChangesAsync();
 
         return Ok(referral2Process);
       }

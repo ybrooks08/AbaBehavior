@@ -19,7 +19,7 @@
               <v-flex class="font-weight-medium text-xs-right" xs4>Provider:</v-flex>
               <v-flex xs8>{{ sessionPrint.userFullname }} ({{ sessionPrint.userRol }})</v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Service:</v-flex>
-              <v-flex xs8>{{ sessionPrint.service }} ({{ sessionPrint.serviceDescription }})</v-flex>
+              <v-flex xs8>{{ sessionPrint.service }} BA ({{ sessionPrint.serviceDescription }})</v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Time IN:</v-flex>
               <v-flex xs8>
                 <v-icon color="green" small>fa-sign-in-alt</v-icon>
