@@ -322,7 +322,7 @@ namespace AbaBackend.Infrastructure.Collection
       plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
       plotLines.ForEach(w =>
       {
-        if (w.Value > baseLineEnd + 1) w.Value += 1;
+        if (w.Value >= baseLineEnd + 1 && w.Label.Text != "Treatment") w.Value += 1;
       });
 
 
@@ -578,7 +578,7 @@ namespace AbaBackend.Infrastructure.Collection
       plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
       plotLines.ForEach(w =>
       {
-        if (w.Value > baseLineEnd + 1) w.Value += 1;
+        if (w.Value >= baseLineEnd + 1 && w.Label.Text != "Treatment") w.Value += 1;
       });
 
       var res = new OkObjectResult(new

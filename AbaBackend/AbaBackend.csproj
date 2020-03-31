@@ -9,14 +9,14 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.30" />
     <PackageReference Include="epplus.core" Version="1.5.4" />
-    <PackageReference Include="HangFire" Version="1.7.7" />
-    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.3" />
-    <PackageReference Include="MailKit" Version="2.4.1" />
+    <PackageReference Include="HangFire" Version="1.7.9" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
+    <PackageReference Include="MailKit" Version="2.5.2" />
     <PackageReference Include="Microsoft.AspNetCore.App">
       <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
       <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.5" />
-    <PackageReference Include="Sendgrid" Version="9.12.0" />
+    <PackageReference Include="Sendgrid" Version="9.13.1" />
   </ItemGroup>
 </Project>

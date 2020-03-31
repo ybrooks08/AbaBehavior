@@ -13,6 +13,7 @@ namespace AbaBackend.DataModel
 
   public enum Pos
   {
+    Telemedicine = 2,
     School = 3,
     Office = 11,
     Home = 12,

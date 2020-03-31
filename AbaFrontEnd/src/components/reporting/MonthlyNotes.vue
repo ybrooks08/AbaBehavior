@@ -272,7 +272,8 @@
                                   </v-avatar>
                                 </td>
                                 <td style="width: 450px; border: none !important">
-                                  Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks <label v-if="s.levelAssistance">with {{ s.levelAssistance }}</label>
+                                  Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks
+                                  <label v-if="s.levelAssistance">with {{ s.levelAssistance }}</label>
                                   <label v-if="s.timeMinutes">in {{ s.timeMinutes }} mins</label>
                                 </td>
                                 <td style="border: none !important">
