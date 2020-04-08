@@ -70,8 +70,8 @@ namespace AbaBackend.Infrastructure.Collection
     Task<List<Collection.CollectionBehCaregiver>> GetCollectionBehaviorsCaregiver(DateTime start, DateTime end, int clientId, List<int> problemId);
     int? GetClientProblems(List<Collection.CollectionBeh> collection, List<Collection.CollectionBehCaregiver> caregiverCollection, bool isPercent);
     Task<object> GetClientBehaviorChart(int clientId, List<int> problems, DateTime? start = null, DateTime? end = null);
-    Task<object> GetClientBehaviorMonthlyChart(int clientId, int problemId, DateTime? end = null);
-    Task<object> GetClientReplacementMonthlyChart(int clientId, int replacementId, DateTime? end = null);
+    Task<object> GetClientBehaviorMonthlyChart(int clientId, int problemId, DateTime end);
+    Task<object> GetClientReplacementMonthlyChart(int clientId, int replacementId, DateTime end);
     List<ValueWeek> GetClientProblemsByWeek(int problemId, DateTime firstWeekStart, DateTime lastWeekEnd, List<Collection.CollectionBeh> allCollection, List<Collection.CollectionBehCaregiver> allCaregiverCollection, bool isPercent);
 
     Task<List<Collection.CollectionRep>> GetCollectionReplacements(DateTime start, DateTime end, int clientId, List<int> replacementId);

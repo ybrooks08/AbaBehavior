@@ -28,8 +28,8 @@
                   </v-list-tile-avatar>
                   <v-list-tile-content>
                     <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
-                    <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }"
-                      >{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
+                    <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">
+                      {{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
                     </v-list-tile-sub-title>
                   </v-list-tile-content>
                 </template>
@@ -95,15 +95,15 @@
                     <span v-if="clientAsistant.length > 0">Assistant:</span>
                   </td>
                   <td v-if="note.monthlyAssistant" class="px-1 text-xs-left">
-                    <span
-                      >{{ note.monthlyAssistant.firstname }} {{ note.monthlyAssistant.lastname }} <label v-if="note.monthlyAssistant.licenseNo">({{ note.monthlyAssistant.licenseNo }})</label></span
-                    >
+                    <span>
+                      {{ note.monthlyAssistant.firstname }} {{ note.monthlyAssistant.lastname }} <label v-if="note.monthlyAssistant.licenseNo">({{ note.monthlyAssistant.licenseNo }})</label>
+                    </span>
                   </td>
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAsistant">
-                      <span :key="'user' + u.userId"
-                        >{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label></span
-                      >
+                      <span :key="'user' + u.userId">
+                        {{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label>
+                      </span>
                       <br :key="'br' + u.userId" />
                     </template>
                   </td>

@@ -257,74 +257,102 @@ namespace AbaBackend.Infrastructure.Collection
       return res;
     }
 
-    public async Task<object> GetClientBehaviorMonthlyChart(int clientId, int problemId, DateTime? end = null)
+    public async Task<object> GetClientBehaviorMonthlyChart(int clientId, int problemId, DateTime end)
     {
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
       var plotBands = new List<PlotBand>();
+      var legend = new List<string>();
+      var data = new List<int?>();
+      DateTime firstDayOfData;
+      var legendDataStartPost = 0;
+      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
       var clientProblem = (await _utils.GetClientBehaviors(clientId)).FirstOrDefault(w => w.ProblemId == problemId);
       if (clientProblem == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
 
-      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-      var firstWeekStart = clientProblem?.BaselineFrom ?? currentPeriod.start;
-      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      DateTime lastWeekEnd = end ?? DateTime.Today;
-      while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-      var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
+      if (clientProblem.BaselineFrom == null || clientProblem.BaselineTo == null)
+      {
+        data.Add(null);
+        data.Add(clientProblem.BaselineCount);
+        legend.Add("");
+        legend.Add("N/A");
+        plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = 0, To = 1 });
+        firstDayOfData = (clientProblem.TreatmentStart ?? currentPeriod.start).StartOfWeek(DayOfWeek.Sunday);
+        legendDataStartPost += 2;
+      }
+      else
+      {
+        var baselineStart = Convert.ToDateTime(clientProblem.BaselineFrom).StartOfWeek(DayOfWeek.Sunday);
+        var baselineEnd = Convert.ToDateTime(clientProblem.BaselineTo);
+        while (baselineEnd.DayOfWeek != DayOfWeek.Saturday) baselineEnd = baselineEnd.AddDays(1);
+        var totalWeeksBaseline = ((baselineEnd - baselineStart).Days + 1) / 7;
 
-      var allCollection = await GetCollectionBehaviors(firstWeekStart, lastWeekEnd, clientId, new List<int> { problemId });
-      var allCaregiverCollection = await GetCollectionBehaviorsCaregiver(firstWeekStart, lastWeekEnd, clientId, new List<int> { problemId });
+        var allCollectionBaseline = await GetCollectionBehaviors(baselineStart, baselineEnd, clientId, new List<int> { problemId });
+        var allCaregiverCollectionBaseline = await GetCollectionBehaviorsCaregiver(baselineStart, baselineEnd, clientId, new List<int> { problemId });
+        var collectionBaseline = GetClientProblemsByWeek(problemId, baselineStart, baselineEnd, allCollectionBaseline, allCaregiverCollectionBaseline, clientProblem.ProblemBehavior.IsPercent);
+        if (collectionBaseline.Count(s => s.Total == 0 || s.Total == null) == collectionBaseline.Count) collectionBaseline.Last().Total = clientProblem.BaselineCount;
+        data.AddRange(collectionBaseline.Select(s => s.Total));
+
+        for (int i = 0; i < totalWeeksBaseline; i++)
+        {
+          var calWeekBaselineEnd = baselineStart.AddDays(6);
+          legend.Add(calWeekBaselineEnd.ToString("M/d/yy"));
+          baselineStart = baselineStart.AddDays(7);
+          legendDataStartPost++;
+        }
+
+        plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = 0, To = totalWeeksBaseline - 1 });
+        firstDayOfData = (clientProblem.TreatmentStart ?? baselineEnd.AddDays(7)).StartOfWeek(DayOfWeek.Sunday);
+      }
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = data.Count - 1, Color = "Blue", DashStyle = "Solid" });
+
+      var allCollection = await GetCollectionBehaviors(firstDayOfData, end, clientId, new List<int> { problemId });
+      var allCaregiverCollection = await GetCollectionBehaviorsCaregiver(firstDayOfData, end, clientId, new List<int> { problemId });
+      var allData = GetClientProblemsByWeek(problemId, firstDayOfData, end, allCollection, allCaregiverCollection, clientProblem.ProblemBehavior.IsPercent);
+      var collection = new List<ValueWeek>();
+      if (clientProblem.TreatmentStart == null)
+      {
+        var found = false;
+        foreach (var i in allData)
+        {
+          if (i.Total != null || found) { collection.Add(i); found = true; }
+        }
+      }
+      else collection = allData;
+
+      firstDayOfData = (DateTime)collection.Select(s => s.Start).Min();
+      var endWeek = end;
+      while (endWeek.DayOfWeek != DayOfWeek.Saturday) endWeek = endWeek.AddDays(1);
+      var totalWeeks = ((endWeek - firstDayOfData).Days + 1) / 7;
 
       var notes = await _dbContext.ClientChartNotes
         .Where(w => w.ClientId == clientId)
         .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Problem)
-        .Where(w => w.ChartNoteDate >= firstWeekStart && w.ChartNoteDate <= lastWeekEnd)
+        .Where(w => w.ChartNoteDate >= firstDayOfData && w.ChartNoteDate <= end)
         .OrderBy(o => o.ChartNoteDate)
         .ToListAsync();
 
-      var data = new List<int?>();
-      var collection = GetClientProblemsByWeek(problemId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection, clientProblem.ProblemBehavior.IsPercent);
+      legend.Add("");
+      data.Add(null);
+      legendDataStartPost++;
       data.AddRange(collection.Select(s => s.Total));
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = legendDataStartPost, Color = "Green", DashStyle = "Solid" });
+
+      var calWeekStartLegend = firstDayOfData;
+      for (int i = 0; i < totalWeeks; i++)
+      {
+        var calWeekEnd = calWeekStartLegend.AddDays(6);
+        legend.Add(calWeekEnd.ToString("M/d/yy"));
+        var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
+        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + legendDataStartPost });
+        calWeekStartLegend = calWeekStartLegend.AddDays(7);
+      }
 
       dataSet.Add(new MultiSerieChart
       {
         Data = data,
         Name = $"{clientProblem.ProblemBehavior.ProblemBehaviorDescription}{(clientProblem.ProblemBehavior.IsPercent ? "(%)" : "")}"
       });
-
-      var baseLineStart = 0;
-      var baseLineEnd = 0;
-      var legend = new List<string>();
-      var calWeekStartLegend = firstWeekStart;
-      for (int i = 0; i < totalWeeks; i++)
-      {
-        var calWeekEnd = calWeekStartLegend.AddDays(6);
-        legend.Add(calWeekEnd.ToString("M/d/yy"));
-        var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
-        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i });
-        if (clientProblem.BaselineFrom >= calWeekStartLegend && clientProblem.BaselineFrom <= calWeekEnd) baseLineStart = i;
-        if (clientProblem.BaselineTo >= calWeekStartLegend && clientProblem.BaselineTo <= calWeekEnd) baseLineEnd = i;
-        calWeekStartLegend = calWeekStartLegend.AddDays(7);
-      }
-
-      //if (baseLineStart != 0 || baseLineEnd != 0) 
-      plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
-      // if (baseLineEnd != 0)
-      {
-        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "Solid" });
-        baseLineEnd++;
-        dataSet.First().Data.Insert(baseLineEnd, null);
-        legend.Insert(baseLineEnd, "");
-      }
-
-      var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
-      var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
-      plotLines.ForEach(w =>
-      {
-        if (w.Value >= baseLineEnd + 1 && w.Label.Text != "Treatment") w.Value += 1;
-      });
-
 
       var res = new OkObjectResult(new
       {
@@ -342,6 +370,205 @@ namespace AbaBackend.Infrastructure.Collection
           title = new { text = "" },
           chart = new { type = "spline", height = 200 },
           yAxis = new { title = new { text = "Count" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
+          legend = new { enabled = false },
+          exporting = new { enabled = true }
+        },
+      }).Value;
+
+      return res;
+    }
+
+    public async Task<object> GetClientReplacementMonthlyChart(int clientId, int replacementId, DateTime end)
+    {
+      var dataSet = new List<MultiSerieChart>();
+      var plotLines = new List<PlotLine>();
+      var plotBands = new List<PlotBand>();
+      var legend = new List<string>();
+      var data = new List<int?>();
+      DateTime firstDayOfData;
+      var legendDataStartPost = 0;
+      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
+      var clientReplacement = (await _utils.GetClientReplacements(clientId)).FirstOrDefault(w => w.ReplacementId == replacementId);
+      if (clientReplacement == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
+
+      if (clientReplacement.BaselineFrom == null || clientReplacement.BaselineTo == null)
+      {
+        data.Add(null);
+        data.Add(clientReplacement.BaselinePercent);
+        legend.Add("");
+        legend.Add("N/A");
+        plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = 0, To = 1 });
+        firstDayOfData = (clientReplacement.TreatmentStart ?? currentPeriod.start).StartOfWeek(DayOfWeek.Sunday);
+        legendDataStartPost += 2;
+      }
+      else
+      {
+        var baselineStart = Convert.ToDateTime(clientReplacement.BaselineFrom).StartOfWeek(DayOfWeek.Sunday);
+        var baselineEnd = Convert.ToDateTime(clientReplacement.BaselineTo);
+        while (baselineEnd.DayOfWeek != DayOfWeek.Saturday) baselineEnd = baselineEnd.AddDays(1);
+        var totalWeeksBaseline = ((baselineEnd - baselineStart).Days + 1) / 7;
+
+        var allCollectionBaseline = await GetCollectionReplacements(baselineStart, baselineEnd, clientId, new List<int> { replacementId });
+        var allCaregiverCollectionBaseline = await GetCollectionReplacementsCaregiver(baselineStart, baselineEnd, clientId, new List<int> { replacementId });
+        var collectionBaseline = GetClientReplacementsByWeek(replacementId, baselineStart, baselineEnd, allCollectionBaseline, allCaregiverCollectionBaseline);
+        if (collectionBaseline.Count(s => s.Total == 0 || s.Total == null) == collectionBaseline.Count) collectionBaseline.Last().Total = clientReplacement.BaselinePercent;
+        data.AddRange(collectionBaseline.Select(s => s.Total));
+
+
+        for (int i = 0; i < totalWeeksBaseline; i++)
+        {
+          var calWeekBaselineEnd = baselineStart.AddDays(6);
+          legend.Add(calWeekBaselineEnd.ToString("M/d/yy"));
+          baselineStart = baselineStart.AddDays(7);
+          legendDataStartPost++;
+        }
+
+        plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = 0, To = totalWeeksBaseline - 1 });
+        firstDayOfData = (clientReplacement.TreatmentStart ?? baselineEnd.AddDays(7)).StartOfWeek(DayOfWeek.Sunday);
+      }
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = data.Count - 1, Color = "Blue", DashStyle = "Solid" });
+
+      var allCollection = await GetCollectionReplacements(firstDayOfData, end, clientId, new List<int> { replacementId });
+      var allCaregiverCollection = await GetCollectionReplacementsCaregiver(firstDayOfData, end, clientId, new List<int> { replacementId });
+      var allData = GetClientReplacementsByWeek(replacementId, firstDayOfData, end, allCollection, allCaregiverCollection);
+      var collection = new List<ValueWeek>();
+      if (clientReplacement.TreatmentStart == null)
+      {
+        var found = false;
+        foreach (var i in allData)
+        {
+          if (i.Total != 0 && i.Total != null || found) { collection.Add(i); found = true; }
+        }
+      }
+      else collection = allData;
+
+      firstDayOfData = (DateTime)collection.Select(s => s.Start).Min();
+      var endWeek = end;
+      while (endWeek.DayOfWeek != DayOfWeek.Saturday) endWeek = endWeek.AddDays(1);
+      var totalWeeks = ((endWeek - firstDayOfData).Days + 1) / 7;
+
+      var notes = await _dbContext.ClientChartNotes
+        .Where(w => w.ClientId == clientId)
+        .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
+        .Where(w => w.ChartNoteDate >= firstDayOfData && w.ChartNoteDate <= end)
+        .OrderBy(o => o.ChartNoteDate)
+        .ToListAsync();
+
+      legend.Add("");
+      data.Add(null);
+      legendDataStartPost++;
+      data.AddRange(collection.Select(s => s.Total));
+      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = legendDataStartPost, Color = "Green", DashStyle = "Solid" });
+
+      var calWeekStartLegend = firstDayOfData;
+      for (int i = 0; i < totalWeeks; i++)
+      {
+        var calWeekEnd = calWeekStartLegend.AddDays(6);
+        legend.Add(calWeekEnd.ToString("M/d/yy"));
+        var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
+        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + legendDataStartPost });
+        calWeekStartLegend = calWeekStartLegend.AddDays(7);
+      }
+
+      dataSet.Add(new MultiSerieChart
+      {
+        Data = data,
+        Name = clientReplacement.Replacement.ReplacementProgramDescription,
+      });
+
+      // var dataSet = new List<MultiSerieChart>();
+      // var plotLines = new List<PlotLine>();
+      // var plotBands = new List<PlotBand>();
+      // var clientReplacement = (await _utils.GetClientReplacements(clientId)).FirstOrDefault(w => w.ReplacementId == replacementId);
+      // if (clientReplacement == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
+
+      // var currentPeriod = await _utils.GetClientWholePeriod(clientId);
+      // var firstWeekStart = clientReplacement?.BaselineFrom ?? currentPeriod.start;
+      // firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
+      // DateTime lastWeekEnd = end ?? DateTime.Today;
+      // while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
+      // var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
+
+      // var allCollection = await GetCollectionReplacements(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
+      // var allCaregiverCollection = await GetCollectionReplacementsCaregiver(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
+
+      // var notes = await _dbContext.ClientChartNotes
+      //   .Where(w => w.ClientId == clientId)
+      //   .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
+      //   .Where(w => w.ChartNoteDate >= firstWeekStart && w.ChartNoteDate <= lastWeekEnd)
+      //   .OrderBy(o => o.ChartNoteDate)
+      //   .ToListAsync();
+
+      // var data = new List<int?>();
+      // var collection = GetClientReplacementsByWeek(replacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
+
+      // var allData = collection.Select(s => s.Total);
+
+      // var found = false;
+      // foreach (var i in allData)
+      // {
+      //   if (i == 0 && !found) data.Add(null);
+      //   else { data.Add(i); found = true; }
+      // }
+
+      // //data.AddRange(collection.Select(s => s.Total));
+
+
+
+      // dataSet.Add(new MultiSerieChart
+      // {
+      //   Data = data,
+      //   Name = clientReplacement.Replacement.ReplacementProgramDescription,
+      // });
+
+      // var baseLineStart = 0;
+      // var baseLineEnd = 0;
+      // var legend = new List<string>();
+      // var calWeekStartLegend = firstWeekStart;
+      // for (int i = 0; i < totalWeeks; i++)
+      // {
+      //   var calWeekEnd = calWeekStartLegend.AddDays(6);
+      //   legend.Add(calWeekEnd.ToString("M/d/yy"));
+      //   var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
+      //   foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i });
+      //   if (clientReplacement.BaselineFrom >= calWeekStartLegend && clientReplacement.BaselineFrom <= calWeekEnd) baseLineStart = i;
+      //   if (clientReplacement.BaselineTo >= calWeekStartLegend && clientReplacement.BaselineTo <= calWeekEnd) baseLineEnd = i;
+      //   calWeekStartLegend = calWeekStartLegend.AddDays(7);
+      // }
+
+      // // if (baseLineStart != 0 || baseLineEnd != 0) 
+      // plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
+      // // if (baseLineEnd != 0)
+      // {
+      //   plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "Solid" });
+      //   baseLineEnd++;
+      //   dataSet.First().Data.Insert(baseLineEnd, null);
+      //   legend.Insert(baseLineEnd, "");
+      // }
+      // var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
+      // var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
+      // plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
+      // plotLines.ForEach(w =>
+      // {
+      //   if (w.Value >= baseLineEnd + 1 && w.Label.Text != "Treatment") w.Value += 1;
+      // });
+
+      var res = new OkObjectResult(new
+      {
+        chartOptions = new
+        {
+          series = dataSet,
+          xAxis = new
+          {
+            categories = legend,
+            plotLines,
+            plotBands,
+            title = new { enabled = false },
+            crosshair = true
+          },
+          title = new { text = "" },
+          chart = new { type = "spline", height = 200 },
+          yAxis = new { title = new { text = "Trials percent" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
           legend = new { enabled = false },
           exporting = new { enabled = true }
         },
@@ -502,109 +729,6 @@ namespace AbaBackend.Infrastructure.Collection
       return res;
     }
 
-    public async Task<object> GetClientReplacementMonthlyChart(int clientId, int replacementId, DateTime? end = null)
-    {
-      var dataSet = new List<MultiSerieChart>();
-      var plotLines = new List<PlotLine>();
-      var plotBands = new List<PlotBand>();
-      var clientReplacement = (await _utils.GetClientReplacements(clientId)).FirstOrDefault(w => w.ReplacementId == replacementId);
-      if (clientReplacement == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
-
-      var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-      var firstWeekStart = clientReplacement?.BaselineFrom ?? currentPeriod.start;
-      firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      DateTime lastWeekEnd = end ?? DateTime.Today;
-      while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-      var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
-
-      var allCollection = await GetCollectionReplacements(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
-      var allCaregiverCollection = await GetCollectionReplacementsCaregiver(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
-
-      var notes = await _dbContext.ClientChartNotes
-        .Where(w => w.ClientId == clientId)
-        .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
-        .Where(w => w.ChartNoteDate >= firstWeekStart && w.ChartNoteDate <= lastWeekEnd)
-        .OrderBy(o => o.ChartNoteDate)
-        .ToListAsync();
-
-      var data = new List<int?>();
-      var collection = GetClientReplacementsByWeek(replacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
-
-      var allData = collection.Select(s => s.Total);
-
-      var found = false;
-      foreach (var i in allData)
-      {
-        if (i == 0 && !found) data.Add(null);
-        else { data.Add(i); found = true; }
-      }
-
-      //data.AddRange(collection.Select(s => s.Total));
-
-
-
-      dataSet.Add(new MultiSerieChart
-      {
-        Data = data,
-        Name = clientReplacement.Replacement.ReplacementProgramDescription,
-      });
-
-      var baseLineStart = 0;
-      var baseLineEnd = 0;
-      var legend = new List<string>();
-      var calWeekStartLegend = firstWeekStart;
-      for (int i = 0; i < totalWeeks; i++)
-      {
-        var calWeekEnd = calWeekStartLegend.AddDays(6);
-        legend.Add(calWeekEnd.ToString("M/d/yy"));
-        var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
-        foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i });
-        if (clientReplacement.BaselineFrom >= calWeekStartLegend && clientReplacement.BaselineFrom <= calWeekEnd) baseLineStart = i;
-        if (clientReplacement.BaselineTo >= calWeekStartLegend && clientReplacement.BaselineTo <= calWeekEnd) baseLineEnd = i;
-        calWeekStartLegend = calWeekStartLegend.AddDays(7);
-      }
-
-      // if (baseLineStart != 0 || baseLineEnd != 0) 
-      plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
-      // if (baseLineEnd != 0)
-      {
-        plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "Solid" });
-        baseLineEnd++;
-        dataSet.First().Data.Insert(baseLineEnd, null);
-        legend.Insert(baseLineEnd, "");
-      }
-      var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
-      var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
-      plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
-      plotLines.ForEach(w =>
-      {
-        if (w.Value >= baseLineEnd + 1 && w.Label.Text != "Treatment") w.Value += 1;
-      });
-
-      var res = new OkObjectResult(new
-      {
-        chartOptions = new
-        {
-          series = dataSet,
-          xAxis = new
-          {
-            categories = legend,
-            plotLines,
-            plotBands,
-            title = new { enabled = false },
-            crosshair = true
-          },
-          title = new { text = "" },
-          chart = new { type = "spline", height = 200 },
-          yAxis = new { title = new { text = "Trials percent" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
-          legend = new { enabled = false },
-          exporting = new { enabled = true }
-        },
-      }).Value;
-
-      return res;
-    }
-
     public async Task<List<int?>> GetClientBehaviorChartValuesWeek(int clientId, int problemId, DateTime? start = null, DateTime? end = null)
     {
       var problem = await _dbContext.ProblemBehaviors.FirstAsync(w => w.ProblemId == problemId);
@@ -701,6 +825,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetProblemStoOnDate(clientId, end);
 
+      // var behaviors = (await _utils.GetClientBehaviors(clientId)).Where(w => w.ProblemId == 16).ToList();
       var behaviors = await _utils.GetClientBehaviors(clientId);
       foreach (var behavior in behaviors)
       {
@@ -743,7 +868,7 @@ namespace AbaBackend.Infrastructure.Collection
     public async Task<List<MonthlyReplacementContract>> GetMonthlyDataReplacement(int clientId, DateTime month)
     {
       var data = new List<MonthlyReplacementContract>();
-
+      //return data;
       var endMonth = month.AddMonths(1).AddDays(-1);
       var start = month.GetPrevDay(DayOfWeek.Sunday);
       var end = endMonth.GetPrevDay(DayOfWeek.Saturday);
@@ -751,7 +876,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetReplacementStoOnDate(clientId, end);
 
-      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 10).ToList();
+      // var replacements = (await _utils.GetClientReplacements(clientId)).Where(w => w.ReplacementId == 2).ToList();
       var replacements = await _utils.GetClientReplacements(clientId);
       foreach (var replacement in replacements)
       {

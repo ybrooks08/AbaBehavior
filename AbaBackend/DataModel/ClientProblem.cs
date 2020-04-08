@@ -14,5 +14,6 @@ namespace AbaBackend.DataModel
     public bool Active { get; set; } = true;
     public ProblemBehavior ProblemBehavior { get; set; }
     public List<ClientProblemSto> STOs { get; set; }
+    public DateTime? TreatmentStart { get; set; }
   }
 }
