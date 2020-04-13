@@ -12,21 +12,34 @@
               <v-avatar>
                 <v-icon>fa-star</v-icon>
               </v-avatar>
-              Units available: {{unitsAvailable.toLocaleString()}}
+              Units available: {{ unitsAvailable.toLocaleString() }}
             </v-chip>
+            <v-chip v-if="week.allowed" label class="mb-3" color="info" text-color="white"> Week allowed: {{ week.allowed }} </v-chip>
+            <v-chip label class="mb-3" color="warning" text-color="white"> Week total: {{ week.total }} </v-chip>
             <v-form ref="form" autocomplete="off" v-model="validForm">
               <v-layout row wrap>
                 <v-flex sm12>
-                  <v-subheader>{{activeDate | moment('LL')}}</v-subheader>
-                  <v-text-field box required label="Session date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" data-vv-name="dateSelected"
-                                :rules="errors.collect('dateSelected')" v-validate="'required|date_format:MM/dd/yyyy'" />
+                  <v-subheader>{{ activeDate | moment("LL") }}</v-subheader>
+                  <v-text-field
+                    box
+                    required
+                    label="Session date"
+                    v-model="dateSelected"
+                    return-masked-value
+                    prepend-icon="fa-calendar"
+                    mask="##/##/####"
+                    data-vv-name="dateSelected"
+                    :rules="errors.collect('dateSelected')"
+                    v-validate="'required|date_format:MM/dd/yyyy'"
+                    @change="changedDate"
+                  />
                 </v-flex>
                 <v-flex sm12>
                   <v-select box :disabled="loading" label="Pos" v-model="session.pos" required :items="posEnum" prepend-icon="fa-map-marker-alt" :rules="[required]">
                     <template slot="selection" slot-scope="data">
                       <div class="input-group__selections__comma">
                         {{ data.item.text }} &nbsp;
-                        <span class="grey--text text--darken-1">({{data.item.value}})</span>
+                        <span class="grey--text text--darken-1">({{ data.item.value }})</span>
                       </div>
                     </template>
                     <template slot="item" slot-scope="data">
@@ -36,7 +49,7 @@
                         </v-list-tile-avatar>
                         <v-list-tile-content>
                           <v-list-tile-title v-html="data.item.text"></v-list-tile-title>
-                          <v-list-tile-sub-title>Code: {{data.item.value}}</v-list-tile-sub-title>
+                          <v-list-tile-sub-title>Code: {{ data.item.value }}</v-list-tile-sub-title>
                         </v-list-tile-content>
                       </template>
                     </template>
@@ -53,7 +66,7 @@
               </v-layout>
               <v-layout row wrap>
                 <v-flex xs12>
-                  <v-alert type="info" :value="durationMins > 0">Units: {{units}} | Mins: {{durationMins}} | Hrs: {{(durationMins / 60).toFixed(1)}}</v-alert>
+                  <v-alert type="info" :value="durationMins > 0">Units: {{ units }} | Mins: {{ durationMins }} | Hrs: {{ (durationMins / 60).toFixed(1) }}</v-alert>
                 </v-flex>
               </v-layout>
             </v-form>
@@ -94,7 +107,11 @@ export default {
         pos: null
       },
       unitsAvailable: 0,
-      dateSelected: null
+      dateSelected: null,
+      week: {
+        allowed: null,
+        total: null
+      }
     };
   },
 
@@ -118,6 +135,7 @@ export default {
     this.timeStart = this.$moment(this.activeDate).format("HH:00");
     this.posEnum = await masterTableApi.getPosCodes();
     this.unitsAvailable = await sessionServicesApi.getUnitsAvailable(this.activeClientId, this.$moment(this.activeDate).format("YYYY-MM-DD"), "");
+    await this.getUnitsByWeek();
   },
 
   methods: {
@@ -153,15 +171,37 @@ export default {
           "red"
         ).then(async res => {
           if (res) {
-            await sessionServicesApi.addSession(this.session);
-            this.close();
+            try {
+              await sessionServicesApi.addSession(this.session);
+              this.close();
+            } catch (error) {
+              console.log("hola");
+              this.$toast.error(error.message || error);
+            }
           }
         });
       } catch (error) {
+        console.log("hola");
         this.$toast.error(error.message || error);
       } finally {
         this.loading = false;
       }
+    },
+
+    async getUnitsByWeek() {
+      try {
+        this.loading = true;
+        this.week = await sessionServicesApi.getUnitsByWeek(this.activeClientId, this.$moment(this.dateSelected).format("YYYY-MM-DD"), "");
+        console.log(this.week);
+      } catch (error) {
+        console.error(error.message || error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async changedDate() {
+      await this.getUnitsByWeek();
     }
   }
 };

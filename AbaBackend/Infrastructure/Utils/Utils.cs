@@ -745,5 +745,25 @@ namespace AbaBackend.Infrastructure.Utils
       if (allSessionsClient.Any()) return false;
       return true;
     }
+
+    public async Task<(int? Allowed, int Total)> GetUnitsInWeek(DateTime date, int userId, int clientId)
+    {
+      var user = await GetUserById(userId);
+      var assessment = (await GetClientValidAssessmentsForUser((DateTime)date, clientId, user)).OrderByDescending(o => o.EndDate).FirstOrDefault();
+      if (assessment == null) return (Allowed: 0, Total: 0);
+
+      var firstDate = date.StartOfWeek(DayOfWeek.Sunday);
+      var endDate = date;
+      while (endDate.DayOfWeek != DayOfWeek.Saturday) endDate = endDate.AddDays(1);
+
+      var unitsSum = await _dbContext.Sessions
+        .Where(w => w.SessionStart.Date >= firstDate.Date && w.SessionStart.Date <= endDate.Date)
+        .Where(w => w.ClientId.Equals(clientId))
+        .Where(w => w.BehaviorAnalysisCodeId.Equals(user.Rol.BehaviorAnalysisCodeId))
+        .Select(s => s.TotalUnits)
+        .SumAsync();
+
+      return (Allowed: assessment.TotalUnitsWeek, Total: unitsSum);
+    }
   }
 }

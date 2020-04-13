@@ -3,7 +3,8 @@ import Vue from "vue";
 export default {
   addSession(session) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/add-session", session)
+      Vue.axios
+        .post("api/session/add-session", session)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -11,7 +12,8 @@ export default {
 
   getSessions(clientId, date) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-sessions/${clientId}/${Vue.moment(date).format("YYYY-MM-DD")}`)
+      Vue.axios
+        .get(`api/session/get-sessions/${clientId}/${Vue.moment(date).format("YYYY-MM-DD")}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -19,7 +21,8 @@ export default {
 
   getSession(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-session/${sessionId}`)
+      Vue.axios
+        .get(`api/session/get-session/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -27,7 +30,8 @@ export default {
 
   getSessionDetailed(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetSessionDetailed/${sessionId}`)
+      Vue.axios
+        .get(`api/session/GetSessionDetailed/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -35,7 +39,8 @@ export default {
 
   getSessionForPrint(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetSessionForPrint/${sessionId}`)
+      Vue.axios
+        .get(`api/session/GetSessionForPrint/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -43,7 +48,8 @@ export default {
 
   addSessionMissingProblems(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/add-session-missing-problems/${sessionId}`)
+      Vue.axios
+        .get(`api/session/add-session-missing-problems/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -51,7 +57,8 @@ export default {
 
   editSessionNotes(sessionNote) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/edit-session-notes", sessionNote)
+      Vue.axios
+        .post("api/session/edit-session-notes", sessionNote)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -59,7 +66,8 @@ export default {
 
   getUnitsAvailable(clientId, date, userName) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-units-available/${clientId}/${date}/${userName}`)
+      Vue.axios
+        .get(`api/session/get-units-available/${clientId}/${date}/${userName}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -67,7 +75,8 @@ export default {
 
   getSessionsCalendar(clientId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-sessions-calendar/${clientId}`)
+      Vue.axios
+        .get(`api/session/get-sessions-calendar/${clientId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -75,7 +84,8 @@ export default {
 
   getMonthlyNote(clientId, dateStr) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-monthly-note/${clientId}/${dateStr}`)
+      Vue.axios
+        .get(`api/session/get-monthly-note/${clientId}/${dateStr}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -83,7 +93,8 @@ export default {
 
   editMonthlyNote(monthlyNote) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/edit-monthly-note", monthlyNote)
+      Vue.axios
+        .post("api/session/edit-monthly-note", monthlyNote)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -91,7 +102,8 @@ export default {
 
   getMetricSessionProblems(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-metric-session-problems/${sessionId}`)
+      Vue.axios
+        .get(`api/session/get-metric-session-problems/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -99,7 +111,8 @@ export default {
 
   getMetricSessionReplacements(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-metric-session-replacements/${sessionId}`)
+      Vue.axios
+        .get(`api/session/get-metric-session-replacements/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -107,7 +120,8 @@ export default {
 
   changeMetricProblem(metricProblem) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/change-metric-problem", metricProblem)
+      Vue.axios
+        .post("api/session/change-metric-problem", metricProblem)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -115,7 +129,8 @@ export default {
 
   changeMetricReplacement(metricReplacement) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/change-metric-replacement", metricReplacement)
+      Vue.axios
+        .post("api/session/change-metric-replacement", metricReplacement)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -123,7 +138,8 @@ export default {
 
   getProblemsChartData(clientId, behaviorId, dateStart, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetProblemBehaviorsChart/${clientId}/${behaviorId}/${dateStart}/${dateEnd}`)
+      Vue.axios
+        .get(`api/session/GetProblemBehaviorsChart/${clientId}/${behaviorId}/${dateStart}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -131,7 +147,8 @@ export default {
 
   getBehaviorMontlyChart(clientId, behaviorId, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetBehaviorMontlyChart/${clientId}/${behaviorId}/${dateEnd}`)
+      Vue.axios
+        .get(`api/session/GetBehaviorMontlyChart/${clientId}/${behaviorId}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -139,7 +156,8 @@ export default {
 
   getReplacementsChartData(clientId, replacementId, dateStart, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetReplacementProgramChart/${clientId}/${replacementId}/${dateStart}/${dateEnd}`)
+      Vue.axios
+        .get(`api/session/GetReplacementProgramChart/${clientId}/${replacementId}/${dateStart}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -147,7 +165,8 @@ export default {
 
   getReplacementMontlyChart(clientId, replacementId, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetReplacementMontlyChart/${clientId}/${replacementId}/${dateEnd}`)
+      Vue.axios
+        .get(`api/session/GetReplacementMontlyChart/${clientId}/${replacementId}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -155,7 +174,8 @@ export default {
 
   addEditChartNote(note) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/add-edit-chart-note", note)
+      Vue.axios
+        .post("api/session/add-edit-chart-note", note)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -163,7 +183,8 @@ export default {
 
   getChartNote(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-chart-note/${id}`)
+      Vue.axios
+        .get(`api/session/get-chart-note/${id}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -171,7 +192,8 @@ export default {
 
   deleteChartNote(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/session/delete-chart-note/${id}`)
+      Vue.axios
+        .delete(`api/session/delete-chart-note/${id}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -179,7 +201,8 @@ export default {
 
   deleteSession(id, check = true) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/session/delete-session/${id}/${check}`)
+      Vue.axios
+        .delete(`api/session/delete-session/${id}/${check}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -187,7 +210,8 @@ export default {
 
   getCompetencyCheck(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-competency-check/${id}`)
+      Vue.axios
+        .get(`api/session/get-competency-check/${id}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -195,7 +219,8 @@ export default {
 
   getCompetencyChecks(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/get-competency-checks/${id}`)
+      Vue.axios
+        .get(`api/session/get-competency-checks/${id}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -203,7 +228,8 @@ export default {
 
   addEditCompetencyCheck(comp) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/add-edit-competency-check", comp)
+      Vue.axios
+        .post("api/session/add-edit-competency-check", comp)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -211,7 +237,8 @@ export default {
 
   deleteCompetencyCheck(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/session/delete-competency-check/${id}`)
+      Vue.axios
+        .delete(`api/session/delete-competency-check/${id}`)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -219,9 +246,10 @@ export default {
 
   exportCompetencyChecks(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/export-competency-check/${id}`, {
-        responseType: "blob"
-      })
+      Vue.axios
+        .get(`api/session/export-competency-check/${id}`, {
+          responseType: "blob"
+        })
         .then(response => resolve(response))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -229,15 +257,17 @@ export default {
 
   changeSessionStatus(status) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put("api/session/ChangeSessionStatus", status)
-        .then((newStatus) => resolve(newStatus))
+      Vue.axios
+        .put("api/session/ChangeSessionStatus", status)
+        .then(newStatus => resolve(newStatus))
         .catch(error => reject(error.response.data || error.message));
     });
   },
 
   saveSessionSign(sign) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/SaveSessionSign", sign)
+      Vue.axios
+        .post("api/session/SaveSessionSign", sign)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -245,7 +275,8 @@ export default {
 
   sendUrlSign(url, sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post(`api/session/SendUrlSign/${sessionId}`, url)
+      Vue.axios
+        .post(`api/session/SendUrlSign/${sessionId}`, url)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -253,7 +284,8 @@ export default {
 
   getClientBehaviors(clientId, onlyActive = true) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetClientBehaviors/${clientId}/${onlyActive}`)
+      Vue.axios
+        .get(`api/session/GetClientBehaviors/${clientId}/${onlyActive}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -261,7 +293,8 @@ export default {
 
   saveSessionCollectBehavior(data) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/SaveSessionCollectBehavior", data)
+      Vue.axios
+        .post("api/session/SaveSessionCollectBehavior", data)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -269,7 +302,8 @@ export default {
 
   getCollectBehaviors(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetCollectBehaviors/${sessionId}`)
+      Vue.axios
+        .get(`api/session/GetCollectBehaviors/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -277,7 +311,8 @@ export default {
 
   deleteSessionCollectBehavior(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/session/DeleteSessionCollectBehavior/${id}`)
+      Vue.axios
+        .delete(`api/session/DeleteSessionCollectBehavior/${id}`)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -286,7 +321,8 @@ export default {
   //replacements
   getClientReplacements(clientId, onlyActive = true) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetClientReplacements/${clientId}/${onlyActive}`)
+      Vue.axios
+        .get(`api/session/GetClientReplacements/${clientId}/${onlyActive}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -294,7 +330,8 @@ export default {
 
   saveSessionCollectReplacement(data) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/SaveSessionCollectReplacement", data)
+      Vue.axios
+        .post("api/session/SaveSessionCollectReplacement", data)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -302,7 +339,8 @@ export default {
 
   getCollectReplacements(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetCollectReplacements/${sessionId}`)
+      Vue.axios
+        .get(`api/session/GetCollectReplacements/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -310,7 +348,8 @@ export default {
 
   deleteSessionCollectReplacement(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/session/DeleteSessionCollectReplacement/${id}`)
+      Vue.axios
+        .delete(`api/session/DeleteSessionCollectReplacement/${id}`)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -318,7 +357,8 @@ export default {
 
   rejectSession(session) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/RejectSession", session)
+      Vue.axios
+        .post("api/session/RejectSession", session)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -326,7 +366,8 @@ export default {
 
   getSessionsCalendar2(clientId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetSessionsCalendar2/${clientId}`)
+      Vue.axios
+        .get(`api/session/GetSessionsCalendar2/${clientId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -334,7 +375,8 @@ export default {
 
   editSessionTime(data) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put("api/session/EditSessionTime", data)
+      Vue.axios
+        .put("api/session/EditSessionTime", data)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -342,7 +384,8 @@ export default {
 
   editSessionPos(data) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put("api/session/EditSessionPos", data)
+      Vue.axios
+        .put("api/session/EditSessionPos", data)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -350,7 +393,8 @@ export default {
 
   loadCompetencyCheckProgress(clientId, chartMaxDate = null) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetCompetencyCheckCaregiversCharts/${clientId}/${chartMaxDate}`)
+      Vue.axios
+        .get(`api/session/GetCompetencyCheckCaregiversCharts/${clientId}/${chartMaxDate}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -358,7 +402,8 @@ export default {
 
   getSessionPrintExtraInfo(sessionId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetSessionPrintExtraInfo/${sessionId}`)
+      Vue.axios
+        .get(`api/session/GetSessionPrintExtraInfo/${sessionId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -366,7 +411,8 @@ export default {
 
   editSessionDriveTime(data) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put("api/session/EditSessionDriveTime", data)
+      Vue.axios
+        .put("api/session/EditSessionDriveTime", data)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -374,7 +420,8 @@ export default {
 
   getSessionDetailedForSign(token) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetSessionDetailedForSign/${token}`)
+      Vue.axios
+        .get(`api/session/GetSessionDetailedForSign/${token}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -382,7 +429,8 @@ export default {
 
   getCaregiverCollectionData(date, clientId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetCaregiverCollectionData/${date}/${clientId}`)
+      Vue.axios
+        .get(`api/session/GetCaregiverCollectionData/${date}/${clientId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -390,7 +438,8 @@ export default {
 
   saveCaregiverCollectionData(caregiverDataCollection) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post("api/session/SaveCaregiverCollectionData", caregiverDataCollection)
+      Vue.axios
+        .post("api/session/SaveCaregiverCollectionData", caregiverDataCollection)
         .then(() => resolve())
         .catch(error => reject(error.response.data || error.message));
     });
@@ -398,7 +447,8 @@ export default {
 
   getCaregiverCollectionDataForCalendar(clientId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetCaregiverCollectionDataForCalendar/${clientId}`)
+      Vue.axios
+        .get(`api/session/GetCaregiverCollectionDataForCalendar/${clientId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -406,7 +456,8 @@ export default {
 
   deleteSign(id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/session/DeleteSign/${id}`)
+      Vue.axios
+        .delete(`api/session/DeleteSign/${id}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -414,7 +465,8 @@ export default {
 
   getSessionsCalendar3(clientId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetSessionsCalendar3/${clientId}`)
+      Vue.axios
+        .get(`api/session/GetSessionsCalendar3/${clientId}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -422,7 +474,8 @@ export default {
 
   getClientBehaviorChartValuesWeek(clientId, behaviorId, dateStart, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetClientBehaviorChartValuesWeek/${clientId}/${behaviorId}/${dateStart}/${dateEnd}`)
+      Vue.axios
+        .get(`api/session/GetClientBehaviorChartValuesWeek/${clientId}/${behaviorId}/${dateStart}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -430,7 +483,8 @@ export default {
 
   getClientReplacementChartValuesWeek(clientId, replacementId, dateStart, dateEnd) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/GetClientReplacementChartValuesWeek/${clientId}/${replacementId}/${dateStart}/${dateEnd}`)
+      Vue.axios
+        .get(`api/session/GetClientReplacementChartValuesWeek/${clientId}/${replacementId}/${dateStart}/${dateEnd}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
@@ -438,10 +492,19 @@ export default {
 
   markAssessmentAsBilled(assessmentId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/session/MarkAssessmentAsBilled/${assessmentId}`)
+      Vue.axios
+        .get(`api/session/MarkAssessmentAsBilled/${assessmentId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  getUnitsByWeek(clientId, date, userName) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .get(`api/session/GetUnitsByWeek/${clientId}/${date}/${userName}`)
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
   }
-
 };

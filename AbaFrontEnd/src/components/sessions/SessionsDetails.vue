@@ -7,7 +7,7 @@
       <!-- <v-flex xs12>
         <clinical-data-summary :clientId="activeClientId" />
       </v-flex> -->
-      <v-flex xs12>
+      <!-- <v-flex xs12>
         <v-card>
           <v-toolbar dark class="secondary" fluid dense>
             <v-toolbar-title>Client progress</v-toolbar-title>
@@ -40,28 +40,28 @@
           </v-toolbar>
           <v-card-text class="pa-1">
             <v-subheader inset class="red--text">Problem behaviors</v-subheader>
-            <client-progress-behavior :key="('client-problem' + activeClientId)"></client-progress-behavior>
+            <client-progress-behavior :key="'client-problem' + activeClientId"></client-progress-behavior>
             <v-divider></v-divider>
             <v-subheader inset class="blue--text">Replacements program</v-subheader>
-            <client-progress-replacement :key="('client-replacement' + activeClientId)"></client-progress-replacement>
+            <client-progress-replacement :key="'client-replacement' + activeClientId"></client-progress-replacement>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-flex> -->
     </v-layout>
   </v-container>
 </template>
 
 <script>
-import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
-import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
+// import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
+// import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
 import NewCalendar from "@/components/sessions/NewCalendar";
 // import ClinicalDataSummary from "@/components/clients/ClinicalData/ClinicalDataSummary";
 // import CalendarSessions from "@/components/sessions/CalendarSessions";
 
 export default {
   components: {
-    ClientProgressBehavior,
-    ClientProgressReplacement,
+    // ClientProgressBehavior,
+    // ClientProgressReplacement,
     NewCalendar
     // ClinicalDataSummary
     // CalendarSessions

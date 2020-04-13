@@ -126,7 +126,11 @@ namespace AbaBackend.Controllers
           if (check != "ok") throw new Exception(check);
 
           //check if user can create after x hours and have any pass
-          if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session beacuse exced the hours allowed and you dont have any pass.");
+          if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session bacause exced the hours allowed and you dont have any pass.");
+
+          //check if not pass week
+          var week = await _utils.GetUnitsInWeek(session.SessionStart.Date, user.UserId, session.ClientId);
+          if (week.Allowed != null && week.Total + session.TotalUnits > week.Allowed) throw new Exception("You can not create session bacause exced the units per week.");
 
           //check if there is a time gap between sessions
           //if (!(await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId))) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
@@ -508,7 +512,7 @@ namespace AbaBackend.Controllers
         if ((currentSession.SessionStatus == SessionStatus.Billed || currentSession.SessionStatus == SessionStatus.Reviewed) && user.RolId != 1) throw new Exception("This session has been checked, billed or reviewed. You cannot edit it.");
 
         //check if user can create after x hours and have any pass
-        if (!_utils.CanCreateAfterHours(currentUser, session.SessionStart)) throw new Exception("You can not edit this session beacuse exced the hours allowed and you dont have any pass.");
+        if (!_utils.CanCreateAfterHours(currentUser, session.SessionStart)) throw new Exception("You can not edit this session bacause exced the hours allowed and you dont have any pass.");
 
         //if (!ModelState.IsValid) ret
         if (session.SessionStatus != SessionStatus.Checked) _dbContext.Update(session).Property(s => s.SessionStatus).CurrentValue = SessionStatus.Edited;
@@ -1466,6 +1470,20 @@ namespace AbaBackend.Controllers
       a.Status = 1;
       await _dbContext.SaveChangesAsync();
       return Ok();
+    }
+
+    [HttpGet("[action]/{clientId}/{dateStr}/{userName?}")]
+    public async Task<IActionResult> GetUnitsByWeek(int clientId, string dateStr, string userName)
+    {
+      var date = dateStr == null ? DateTime.Today : Convert.ToDateTime(dateStr);
+      userName = userName ?? User.Identity.Name;
+      var user = await _utils.GetUserByUsername(userName);
+      var units = await _utils.GetUnitsInWeek(date, user.UserId, clientId);
+      return Ok(new
+      {
+        units.Allowed,
+        units.Total
+      });
     }
   }
 }

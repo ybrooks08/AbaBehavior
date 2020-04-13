@@ -16,5 +16,6 @@ namespace AbaBackend.DataModel
     public string PaNumber { get; set; }
     public Client Client { get; set; }
     public int Status { get; set; }  //0 = Not billed, 1 = Billed
+    public int? TotalUnitsWeek { get; set; }
   }
 }

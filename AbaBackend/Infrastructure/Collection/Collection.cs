@@ -320,7 +320,7 @@ namespace AbaBackend.Infrastructure.Collection
       }
       else collection = allData;
 
-      firstDayOfData = (DateTime)collection.Select(s => s.Start).Min();
+      firstDayOfData = collection.Count == 0 ? firstDayOfData : (DateTime)collection.Select(s => s.Start).Min();
       var endWeek = end;
       while (endWeek.DayOfWeek != DayOfWeek.Saturday) endWeek = endWeek.AddDays(1);
       var totalWeeks = ((endWeek - firstDayOfData).Days + 1) / 7;
@@ -437,12 +437,12 @@ namespace AbaBackend.Infrastructure.Collection
         var found = false;
         foreach (var i in allData)
         {
-          if (i.Total != 0 && i.Total != null || found) { collection.Add(i); found = true; }
+          if (i.Total != null || found) { collection.Add(i); found = true; }
         }
       }
       else collection = allData;
 
-      firstDayOfData = (DateTime)collection.Select(s => s.Start).Min();
+      firstDayOfData = collection.Count == 0 ? firstDayOfData : (DateTime)collection.Select(s => s.Start).Min();
       var endWeek = end;
       while (endWeek.DayOfWeek != DayOfWeek.Saturday) endWeek = endWeek.AddDays(1);
       var totalWeeks = ((endWeek - firstDayOfData).Days + 1) / 7;
@@ -825,7 +825,7 @@ namespace AbaBackend.Infrastructure.Collection
 
       var stoCalculated = await GetProblemStoOnDate(clientId, end);
 
-      // var behaviors = (await _utils.GetClientBehaviors(clientId)).Where(w => w.ProblemId == 16).ToList();
+      // var behaviors = (await _utils.GetClientBehaviors(clientId)).Where(w => w.ProblemId == 83).ToList();
       var behaviors = await _utils.GetClientBehaviors(clientId);
       foreach (var behavior in behaviors)
       {
@@ -868,7 +868,7 @@ namespace AbaBackend.Infrastructure.Collection
     public async Task<List<MonthlyReplacementContract>> GetMonthlyDataReplacement(int clientId, DateTime month)
     {
       var data = new List<MonthlyReplacementContract>();
-      //return data;
+      // return data;
       var endMonth = month.AddMonths(1).AddDays(-1);
       var start = month.GetPrevDay(DayOfWeek.Sunday);
       var end = endMonth.GetPrevDay(DayOfWeek.Saturday);

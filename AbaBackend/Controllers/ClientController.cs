@@ -645,7 +645,8 @@ namespace AbaBackend.Controllers
           PaNumber = assessment.PaNumber,
           TotalUnits = assessment.TotalUnits,
           StartDate = assessment.StartDate,
-          EndDate = assessment.EndDate
+          EndDate = assessment.EndDate,
+          TotalUnitsWeek = assessment.TotalUnitsWeek
         };
         _dbContext.Assessments.Update(newAssessment);
         await _dbContext.SaveChangesAsync();

@@ -19,7 +19,7 @@
             </v-btn>
 
             <v-menu :close-on-content-click="false" v-model="addEditCaregiverMenu" bottom left min-width="600">
-              <v-btn v-show="activeTabBasic==2" dark flat @click="addNewCaregiver" slot="activator">
+              <v-btn v-show="activeTabBasic == 2" dark flat @click="addNewCaregiver" slot="activator">
                 <v-icon left>fa-user-shield</v-icon>
                 ADD
               </v-btn>
@@ -29,15 +29,44 @@
                     <v-container grid-list-md pa-0>
                       <v-layout row wrap>
                         <v-flex sm8>
-                          <v-text-field box :disabled="loadingCaregiverForm" label="Fullname" v-model="caregiverForm.caregiverFullname" required prepend-icon="fa-tag" :rules="[required]"></v-text-field>
+                          <v-text-field
+                            box
+                            :disabled="loadingCaregiverForm"
+                            label="Fullname"
+                            v-model="caregiverForm.caregiverFullname"
+                            required
+                            prepend-icon="fa-tag"
+                            :rules="[required]"
+                          ></v-text-field>
                         </v-flex>
                         <v-flex sm4>
-                          <v-select box :disabled="loadingCaregiverForm" label="Relationship" v-model="caregiverType" required :items="caregiversTypes" item-text="description" item-value="caregiverTypeId" prepend-icon="fa-heart" :rules="[required]"></v-select>
+                          <v-select
+                            box
+                            :disabled="loadingCaregiverForm"
+                            label="Relationship"
+                            v-model="caregiverType"
+                            required
+                            :items="caregiversTypes"
+                            item-text="description"
+                            item-value="caregiverTypeId"
+                            prepend-icon="fa-heart"
+                            :rules="[required]"
+                          ></v-select>
                         </v-flex>
                       </v-layout>
                       <v-layout row wrap>
                         <v-flex sm8>
-                          <v-text-field box :disabled="loadingCaregiverForm" label="Email" v-model="caregiverForm.email" type="email" prepend-icon="fa-envelope" data-vv-name="email" :rules="errors.collect('email')" v-validate="'email'"></v-text-field>
+                          <v-text-field
+                            box
+                            :disabled="loadingCaregiverForm"
+                            label="Email"
+                            v-model="caregiverForm.email"
+                            type="email"
+                            prepend-icon="fa-envelope"
+                            data-vv-name="email"
+                            :rules="errors.collect('email')"
+                            v-validate="'email'"
+                          ></v-text-field>
                         </v-flex>
                         <v-flex sm4>
                           <v-text-field box :disabled="loadingCaregiverForm" label="Phone" v-model="caregiverForm.phone" prepend-icon="fa-phone" type="phone" mask="phone"></v-text-field>
@@ -73,7 +102,7 @@
             <v-tab-item key="basic-info">
               <v-card flat>
                 <v-card-title class="pb-0">
-                  <h3 class="headline">{{client.firstname}} {{client.lastname}}</h3>
+                  <h3 class="headline">{{ client.firstname }} {{ client.lastname }}</h3>
                 </v-card-title>
                 <v-card-text>
                   <v-container fluid grid-list-md pa-0>
@@ -81,55 +110,55 @@
                       <v-flex xs12 sm6>
                         <v-layout row wrap>
                           <v-flex class="body-2" xs4>Medical record:</v-flex>
-                          <v-flex xs8>{{client.code || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.code || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Nickname:</v-flex>
-                          <v-flex xs8>{{client.nickname || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.nickname || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Dob:</v-flex>
-                          <v-flex xs8>{{client.dob || new Date() | moment("utc","MMM Do, YYYY")}}</v-flex>
+                          <v-flex xs8>{{ client.dob || new Date() | moment("utc", "MMM Do, YYYY") }}</v-flex>
                           <v-flex class="body-2" xs4>Phone:</v-flex>
-                          <v-flex xs8>{{client.phone | phone}}</v-flex>
+                          <v-flex xs8>{{ client.phone | phone }}</v-flex>
                           <v-flex class="body-2" xs4>Email:</v-flex>
-                          <v-flex xs8>{{client.email || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.email || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Address:</v-flex>
-                          <v-flex xs8>{{client.address || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.address || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Apt:</v-flex>
-                          <v-flex xs8>{{client.apt || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.apt || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>City:</v-flex>
-                          <v-flex xs8>{{client.city || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.city || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>State/Zip:</v-flex>
-                          <v-flex xs8>{{client.state}} {{client.zipcode}}</v-flex>
+                          <v-flex xs8>{{ client.state }} {{ client.zipcode }}</v-flex>
                           <v-flex class="body-2" xs4>Gender:</v-flex>
-                          <v-flex xs8>{{client.gender || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.gender || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Race:</v-flex>
-                          <v-flex xs8>{{client.race || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.race || "N/A" }}</v-flex>
                         </v-layout>
                       </v-flex>
                       <v-flex xs12 sm6 class="hidden-xs-only">
                         <v-layout row wrap>
                           <v-flex class="body-2" xs4>Language:</v-flex>
-                          <v-flex xs8>{{client.primaryLanguage}}</v-flex>
+                          <v-flex xs8>{{ client.primaryLanguage }}</v-flex>
                           <v-flex class="body-2" xs4>Emerg contact:</v-flex>
-                          <v-flex xs8>{{client.emergencyContact || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.emergencyContact || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Emerg email:</v-flex>
-                          <v-flex xs8>{{client.emergencyEmail || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.emergencyEmail || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Emerg phone:</v-flex>
-                          <v-flex xs8>{{client.emergencyPhone | phone}}</v-flex>
+                          <v-flex xs8>{{ client.emergencyPhone | phone }}</v-flex>
                           <v-flex class="body-2" xs4>SS:</v-flex>
-                          <v-flex xs8>{{client.socialSecurity | social-security}}</v-flex>
+                          <v-flex xs8>{{ client.socialSecurity | socialSecurity }}</v-flex>
                           <v-flex class="body-2" xs4>Insurance:</v-flex>
-                          <v-flex xs8>{{client.insurance || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.insurance || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Medicaid ID:</v-flex>
-                          <v-flex xs8>{{client.memberNo || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.memberNo || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>MMA Plan:</v-flex>
-                          <v-flex xs8>{{client.mmaPlan || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.mmaPlan || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>MMA Id No:</v-flex>
-                          <v-flex xs8>{{client.mmaIdNo || "N/A"}}</v-flex>
+                          <v-flex xs8>{{ client.mmaIdNo || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Created:</v-flex>
-                          <v-flex xs8>{{client.created || new Date() | moment("MMM Do, YYYY")}}</v-flex>
+                          <v-flex xs8>{{ client.created || new Date() | moment("MMM Do, YYYY") }}</v-flex>
                           <v-flex class="body-2" xs4>Last edit:</v-flex>
-                          <v-flex xs8>{{client.modified || new Date() | moment("from", "now")}}</v-flex>
+                          <v-flex xs8>{{ client.modified || new Date() | moment("from", "now") }}</v-flex>
                           <v-flex class="body-2" xs4>Active:</v-flex>
-                          <v-flex xs8>{{client.active ? "YES" : "NO"}}</v-flex>
+                          <v-flex xs8>{{ client.active ? "YES" : "NO" }}</v-flex>
                         </v-layout>
                       </v-flex>
                     </v-layout>
@@ -142,7 +171,7 @@
                 <v-flex xs12>
                   <v-card flat>
                     <v-card-text>
-                      <span v-if="client.notes">{{client.notes}}</span>
+                      <span v-if="client.notes">{{ client.notes }}</span>
                       <v-alert v-else value="true" type="warning">
                         <span class="body-2">NO NOTES</span>
                       </v-alert>
@@ -165,15 +194,15 @@
                               </v-avatar>
                             </td>
                             <td class="text-xs-left px-1" style="width: 220px;">
-                              <strong class="body-2">{{item.caregiverFullname}}</strong>
-                              <br>
+                              <strong class="body-2">{{ item.caregiverFullname }}</strong>
+                              <br />
                               <span>
                                 <v-icon small>fa-phone</v-icon>
-                                {{item.phone | phone}}
+                                {{ item.phone | phone }}
                               </span>
                             </td>
                             <td class="text-xs-left px-1 hidden-xs-only">
-                              <v-chip label color="indigo" text-color="white">{{item.caregiverType.description}}</v-chip>
+                              <v-chip label color="indigo" text-color="white">{{ item.caregiverType.description }}</v-chip>
                             </td>
                             <td class="text-xs-right px-1 text-no-wrap">
                               <v-btn icon @click="editCaregiver(item)" class="ma-0">
@@ -199,24 +228,24 @@
                 <v-card-text class="pa-1">
                   <table v-if="!client.referrals || client.referrals.length !== 0" class="v-datatable v-table theme--light">
                     <tbody>
-                      <tr v-for="item in client.referrals" :key="item.referralId" :class="{'red lighten-5 grey--text': !item.active}">
+                      <tr v-for="item in client.referrals" :key="item.referralId" :class="{ 'red lighten-5 grey--text': !item.active }">
                         <td class="text-xs-left px-1" style="width: 60px;">
                           <v-avatar>
                             <v-icon large>fa-user-md</v-icon>
                           </v-avatar>
                         </td>
                         <td class="text-xs-left px-1" style="width: 220px;">
-                          <strong class="body-2">{{item.referralFullname}}</strong>
-                          <br>
-                          <span>{{item.provider}}</span>
+                          <strong class="body-2">{{ item.referralFullname }}</strong>
+                          <br />
+                          <span>{{ item.provider }}</span>
                         </td>
                         <td class="text-xs-left px-1 hidden-xs-only">
-                          <v-chip small label color="indigo" text-color="white">{{item.specialty}}</v-chip>
+                          <v-chip small label color="indigo" text-color="white">{{ item.specialty }}</v-chip>
                         </td>
                         <td class="text-xs-left px-1 hidden-xs-only">
-                          <strong class="body-2">Expires: {{item.dateExpires | moment("utc", "MMM Do, YYYY")}}</strong>
-                          <br>
-                          <span>{{item.dateExpires | moment("utc", "from", "now")}}</span>
+                          <strong class="body-2">Expires: {{ item.dateExpires | moment("utc", "MMM Do, YYYY") }}</strong>
+                          <br />
+                          <span>{{ item.dateExpires | moment("utc", "from", "now") }}</span>
                         </td>
                         <td class="text-xs-center px-0">
                           <v-switch hide-details color="primary" v-model="item.active" @change="changeReferralActive(item)"></v-switch>
@@ -234,7 +263,7 @@
                   </table>
                   <v-alert v-else value="true" type="error">
                     <span class="body-2">NO REFERRALS</span>
-                    <br>
+                    <br />
                   </v-alert>
                 </v-card-text>
               </v-card>
@@ -244,46 +273,57 @@
                 <v-card-text class="pa-1">
                   <table v-if="assessments.length !== 0" class="v-datatable v-table theme--light">
                     <tbody>
-                      <tr v-for="item in assessments" :key="item.assessmentId" :class="{'red lighten-5 grey--text': !$moment().utc().startOf('day').isBetween($moment(item.startDate).utc(), $moment(item.endDate).utc(), null, '[]')}">
+                      <tr
+                        v-for="item in assessments"
+                        :key="item.assessmentId"
+                        :class="{
+                          'red lighten-5 grey--text': !$moment()
+                            .utc()
+                            .startOf('day')
+                            .isBetween($moment(item.startDate).utc(), $moment(item.endDate).utc(), null, '[]')
+                        }"
+                      >
                         <td class="text-xs-left px-1 hidden-xs-only" style="width: 60px;">
                           <v-avatar>
                             <v-icon large>fa-briefcase-medical</v-icon>
                           </v-avatar>
                         </td>
                         <td class="text-xs-left px-1">
-                          <strong class="body-2 hidden-xs-only">{{item.behaviorAnalysisCode.description}}</strong>
-                          <br class="hidden-xs-only">
-                          <span>{{item.behaviorAnalysisCode.hcpcs}}</span>
+                          <strong class="body-2 hidden-xs-only">{{ item.behaviorAnalysisCode.description }}</strong>
+                          <br class="hidden-xs-only" />
+                          <span>{{ item.behaviorAnalysisCode.hcpcs }}</span>
                         </td>
                         <td class="text-xs-left px-1 hidden-xs-only">
                           <strong class="body-2">
                             <v-icon small>fa-unlock</v-icon>
-                            {{item.paNumber}}
+                            {{ item.paNumber }}
                           </strong>
                         </td>
                         <td class="text-xs-left px-1">
                           <strong class="body-2">
                             <v-icon small>fa-star</v-icon>
-                            {{item.totalUnits.toLocaleString()}}
+                            {{ item.totalUnits.toLocaleString() }}
                           </strong>
+                          <template v-if="item.totalUnitsWeek">
+                            <br />
+                            <span class="warning--text">{{ item.totalUnitsWeek }} /week</span>
+                          </template>
                         </td>
                         <td class="text-xs-left px-1 hidden-xs-only">
                           <strong class="body-2">
                             <v-icon small>fa-clock</v-icon>
-                            {{(item.totalUnits / 4).toLocaleString()}} hrs
+                            {{ (item.totalUnits / 4).toLocaleString() }} hrs
                           </strong>
-                          <br>
-                          <span>{{(item.totalUnits * 15).toLocaleString()}} mins</span>
                         </td>
                         <td class="text-xs-left px-1">
                           <strong class="green--text">
                             <v-icon small>fa-calendar-plus</v-icon>
-                            {{item.startDate | moment("utc","MM/DD/YYYY")}}
+                            {{ item.startDate | moment("utc", "MM/DD/YYYY") }}
                           </strong>
-                          <br>
+                          <br />
                           <strong class="red--text">
                             <v-icon small>fa-calendar-minus</v-icon>
-                            {{item.endDate | moment("utc","MM/DD/YYYY")}}
+                            {{ item.endDate | moment("utc", "MM/DD/YYYY") }}
                           </strong>
                         </td>
                         <td class="text-xs-right px-1 text-no-wrap">
@@ -299,7 +339,7 @@
                   </table>
                   <v-alert v-else value="true" type="error">
                     <span class="body-2">NO AUTHORIZATION</span>
-                    <br>
+                    <br />
                   </v-alert>
                 </v-card-text>
               </v-card>
@@ -309,22 +349,22 @@
                 <v-card-text class="pa-1">
                   <table v-if="assignments.length !== 0" class="v-datatable v-table theme--light">
                     <tbody>
-                      <tr v-for="item in assignments" :key="item.assignmentId" :class="{'red lighten-5 grey--text': !item.active}">
+                      <tr v-for="item in assignments" :key="item.assignmentId" :class="{ 'red lighten-5 grey--text': !item.active }">
                         <td class="text-xs-left px-1" style="width: 60px;">
                           <v-avatar>
                             <v-icon large>fa-user-tie</v-icon>
                           </v-avatar>
                         </td>
                         <td class="text-xs-left px-1">
-                          <strong class="body-2">{{item.user.firstname}} {{item.user.lastname}}</strong>
-                          <br>
+                          <strong class="body-2">{{ item.user.firstname }} {{ item.user.lastname }}</strong>
+                          <br />
                           <span>
                             <v-icon small>fa-phone</v-icon>
-                            {{item.user.phone | phone}}
+                            {{ item.user.phone | phone }}
                           </span>
                         </td>
                         <td class="text-xs-left px-1 hidden-xs-only">
-                          <v-chip small label :color="item.active ? 'indigo':'grey'" text-color="white">{{item.user.rol.rolName}}</v-chip>
+                          <v-chip small label :color="item.active ? 'indigo' : 'grey'" text-color="white">{{ item.user.rol.rolName }}</v-chip>
                         </td>
                         <td class="text-xs-right px-1">
                           <v-switch hide-details color="primary" v-model="item.active" @change="changeAssignmentActive(item)"></v-switch>
@@ -339,7 +379,7 @@
                   </table>
                   <v-alert v-else value="true" type="error">
                     <span class="body-2">NO ASSIGNMENTS</span>
-                    <br>
+                    <br />
                   </v-alert>
                 </v-card-text>
               </v-card>
@@ -349,16 +389,16 @@
                 <v-card-text class="pa-1">
                   <table v-if="!client.clientDiagnostics || client.clientDiagnostics.length !== 0" class="v-datatable v-table theme--light">
                     <tbody>
-                      <tr v-for="item in client.clientDiagnostics" :key="item.clientDiagnosisId" :class="{'red lighten-5 grey--text': !item.active}">
+                      <tr v-for="item in client.clientDiagnostics" :key="item.clientDiagnosisId" :class="{ 'red lighten-5 grey--text': !item.active }">
                         <td class="text-xs-left px-1" style="width: 60px;">
                           <v-avatar>
                             <v-icon large>fa-stethoscope</v-icon>
                           </v-avatar>
                         </td>
                         <td class="text-xs-left px-1">
-                          <strong class="body-2">{{item.diagnosis.description}}</strong>
-                          <br>
-                          <span>{{item.diagnosis.code}}</span>
+                          <strong class="body-2">{{ item.diagnosis.description }}</strong>
+                          <br />
+                          <span>{{ item.diagnosis.code }}</span>
                         </td>
                         <td class="text-xs-right px-1">
                           <v-switch hide-details color="primary" v-model="item.active" @change="changeDiagnosisActive(item)"></v-switch>
@@ -373,7 +413,7 @@
                   </table>
                   <v-alert v-else value="true" type="error">
                     <span class="body-2">NO DIAGNOSIS</span>
-                    <br>
+                    <br />
                   </v-alert>
                 </v-card-text>
               </v-card>
@@ -483,6 +523,7 @@ export default {
       this.loadingBasicInfo = true;
       try {
         this.assessments = await clientApi.getAssessments(this.id);
+        console.log(this.assessments);
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -647,6 +688,7 @@ export default {
       this.$refs.assessmentDiag.data.paNumber = a.paNumber;
       this.$refs.assessmentDiag.data.clientId = a.clientId;
       this.$refs.assessmentDiag.data.behaviorAnalysisCodeId = a.behaviorAnalysisCodeId;
+      this.$refs.assessmentDiag.data.totalUnitsWeek = a.totalUnitsWeek;
       this.$refs.assessmentDiag.data.startDate = this.$moment(a.startDate)
         .utc()
         .format("MM/DD/YYYY");

@@ -53,6 +53,14 @@
               <v-icon>fa-ellipsis-v</v-icon>
             </v-btn>
             <v-list>
+              <v-list-tile to="/clients/add_edit_chart_note">
+                <v-list-tile-action>
+                  <v-icon medium>fa-sticky-note</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-content>
+                  <v-list-tile-title>New chart note</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
               <v-list-tile @click="print">
                 <v-list-tile-action>
                   <v-icon medium>fa-print</v-icon>

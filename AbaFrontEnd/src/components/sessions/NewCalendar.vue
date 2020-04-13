@@ -85,7 +85,7 @@
       @cell-dblclick="cellDbClick"
       @view-change="viewChange"
     >
-      <template v-slot:event-renderer="{ event, view }">
+      <template v-slot:event="{ event, view }">
         <v-menu offset-y>
           <template v-slot:activator="{ on }">
             <v-card v-on="on" flat class="white--text pa-1 text-xs-left" :color="event.color" style="height: 100%; margin-left: 1px !important; margin-bottom: 1px !important; cursor: pointer;">
@@ -150,9 +150,7 @@
           </v-list>
         </v-menu>
       </template>
-      <template v-slot:no-event
-        >No sessions</template
-      >
+      <template v-slot:no-event>No sessions</template>
       <!-- <template v-slot:today-button>
         <v-btn icon @click="$store.commit('SET_ACTIVE_DATE', $moment())">
           <v-icon>my_location</v-icon>

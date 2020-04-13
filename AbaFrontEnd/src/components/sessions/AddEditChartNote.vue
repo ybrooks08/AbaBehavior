@@ -4,7 +4,7 @@
       <v-flex sm12 md8 lg6>
         <v-card class="elevation-12">
           <v-toolbar dense dark color="secondary">
-            <v-toolbar-title>{{(id === 0 ? 'Create new' : 'Edit')}} chart quick note</v-toolbar-title>
+            <v-toolbar-title>{{ id === 0 ? "Create new" : "Edit" }} chart quick note</v-toolbar-title>
           </v-toolbar>
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-card-text>
@@ -22,8 +22,19 @@
                   <v-text-field box :disabled="loading" label="Title" v-model="chartNote.title" required prepend-icon="fa-tag" counter="40" maxlength="40" :rules="[required]"></v-text-field>
                 </v-flex>
                 <v-flex xs12 sm6>
-                  <v-text-field required label="Note date" box v-model="chartNote.chartNoteDate" mask="##/##/####" prepend-icon="fa-calendar-plus" return-masked-value data-vv-name="notedate"
-                                :rules="[required]" :error-messages="errors.collect('notedate')" v-validate="'required|date_format:MM/dd/yyyy'"></v-text-field>
+                  <v-text-field
+                    required
+                    label="Note date"
+                    box
+                    v-model="chartNote.chartNoteDate"
+                    mask="##/##/####"
+                    prepend-icon="fa-calendar-plus"
+                    return-masked-value
+                    data-vv-name="notedate"
+                    :rules="[required]"
+                    :error-messages="errors.collect('notedate')"
+                    v-validate="'required|date_format:MM/dd/yyyy'"
+                  ></v-text-field>
                 </v-flex>
               </v-layout>
               <v-layout row wrap>
@@ -36,7 +47,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn :disabled="loading" flat @click="close">Cancel</v-btn>
-            <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="submit">{{id === 0 ? 'Create' : 'Save'}}</v-btn>
+            <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="submit">{{ id === 0 ? "Create" : "Save" }}</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -87,7 +98,8 @@ export default {
 
   methods: {
     close() {
-      this.$router.push("/clients/sessions_details");
+      // this.$router.push("/clients/sessions_details");
+      this.$router.go(-1);
     },
 
     async loadNote() {

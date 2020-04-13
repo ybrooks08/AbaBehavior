@@ -47,5 +47,7 @@ namespace AbaBackend.Infrastructure.Utils
     Task<int> AdjustClientDataCollect(AdjustClientDataCollectModel model);
     bool CheckIfuserAllowedDayOfWeek(DayOfWeekBit days, DateTime date);
     Task<bool> CheckIfTimeGap(DateTime sessionStart, int userId, int clientId);
+    Task<(int? Allowed, int Total)> GetUnitsInWeek(DateTime date, int userId, int clientId);
+
   }
 }

@@ -2,7 +2,7 @@
   <v-dialog width="600" persistent transition="slide-y-transition" v-model="model">
     <v-card>
       <v-card-title class="teal white--text">
-        <div class="title">Add new authorization</div>
+        <div class="title">{{ data.assessmentId == 0 ? "Add new authorization" : "Edit authorization" }}</div>
       </v-card-title>
       <v-container grid-list-md pa-1>
         <v-layout row wrap>
@@ -43,16 +43,19 @@
                     </v-select>
                   </v-flex>
                   <v-layout row wrap>
-                    <v-flex xs8 md5>
+                    <v-flex xs6 md4>
                       <v-text-field box :disabled="loading" label="Total units" v-model="data.totalUnits" prepend-icon="fa-star" mask="#####" :rules="[required]" required></v-text-field>
                     </v-flex>
-                    <v-flex xs4 md3 class="text-xs-center pt-2">
+                    <!-- <v-flex xs4 md3 class="text-xs-center pt-2">
                       <v-chip color="indigo" text-color="white">
                         <v-avatar>
                           <v-icon>fa-clock</v-icon>
                         </v-avatar>
                         {{ minutes }} mins
                       </v-chip>
+                    </v-flex> -->
+                    <v-flex xs6 md4>
+                      <v-text-field box :disabled="loading" label="Total by Week" v-model="data.totalUnitsWeek" prepend-icon="fa-calendar-week" mask="#####" clearable></v-text-field>
                     </v-flex>
                     <v-flex xs12 md4>
                       <v-text-field box :disabled="loading" label="PA Number" v-model="data.paNumber" prepend-icon="fa-key" :rules="[required]" require></v-text-field>
@@ -99,7 +102,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn :disabled="loading" flat @click="cancel">Cancel</v-btn>
-          <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="saveChanges">Add</v-btn>
+          <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="saveChanges">{{ data.assessmentId == 0 ? "Add authorization" : "Edit authorization" }}</v-btn>
         </v-card-actions>
       </v-container>
     </v-card>
@@ -133,7 +136,8 @@ export default {
         totalUnits: 0,
         paNumber: null,
         startDate: null,
-        endDate: null
+        endDate: null,
+        totalUnitsWeek: null
       }
     };
   },
