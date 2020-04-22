@@ -33,7 +33,8 @@ namespace AbaBackend.Controllers
     }
 
     [HttpGet("[action]/{from}/{to}/{clientId}/{behaviorAnalysisCodeId}")]
-    public async Task<IActionResult> GetBillingGuide(string from, string to, int clientId, int behaviorAnalysisCodeId)
+    public async Task<IActionResult> GetBillingGuide(string from, string to, int clientId,
+        int behaviorAnalysisCodeId)
     {
       try
       {
@@ -41,55 +42,61 @@ namespace AbaBackend.Controllers
         var toDate = Convert.ToDateTime(to).Date;
 
         var client = await _dbContext.Clients
-          .AsNoTracking()
-          .Where(w => w.ClientId.Equals(clientId))
-          .Select(s => new
-          {
-            MemberId = s.MemberNo,
-            s.Firstname,
-            s.Lastname,
-            s.Dob,
-            s.Code,
-            Diagnosis = s.ClientDiagnostics.Where(w => w.Active).Select(sd => new
+            .AsNoTracking()
+            .Where(w => w.ClientId.Equals(clientId))
+            .Select(s => new
             {
-              sd.Diagnosis.Code,
-              sd.Diagnosis.Description
-            }),
-            Assessments = s.Assessments.Where(w => (w.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId) || w.BehaviorAnalysisCodeId == 1 || w.BehaviorAnalysisCodeId == 2) && (w.StartDate <= toDate && fromDate <= w.EndDate))
-              .Select(a => new
+              MemberId = s.MemberNo,
+              s.Firstname,
+              s.Lastname,
+              s.Dob,
+              s.Code,
+              Diagnosis = s.ClientDiagnostics.Where(w => w.Active).Select(sd => new
               {
-                a.AssessmentId,
-                a.BehaviorAnalysisCode,
-                a.PaNumber,
-                a.TotalUnits,
-                a.StartDate,
-                a.EndDate,
-                a.Status
+                sd.Diagnosis.Code,
+                sd.Diagnosis.Description
               }),
-            Referrals = s.Referrals.Where(w => (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active),
-            Assignments = s.Assignments.Where(w => w.User.Rol.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId) && w.Active).Select(su => su.User),
-          })
-          .FirstOrDefaultAsync();
+              Assessments = s.Assessments.Where(w =>
+                              (w.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId) ||
+                               w.BehaviorAnalysisCodeId == 1 || w.BehaviorAnalysisCodeId == 2) &&
+                              (w.StartDate <= toDate && fromDate <= w.EndDate))
+                    .Select(a => new
+                    {
+                      a.AssessmentId,
+                      a.BehaviorAnalysisCode,
+                      a.PaNumber,
+                      a.TotalUnits,
+                      a.StartDate,
+                      a.EndDate,
+                      a.Status
+                    }),
+              Referrals = s.Referrals.Where(w =>
+                          (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active),
+              Assignments = s.Assignments
+                    .Where(w => w.User.Rol.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId) && w.Active)
+                    .Select(su => su.User),
+            })
+            .FirstOrDefaultAsync();
 
         var sessions = await _dbContext.Sessions
-          .AsNoTracking()
-          .Where(w => w.ClientId.Equals(clientId))
-          .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
-          .Where(w => w.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId))
-          .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
-          .Select(s => new
-          {
-            s.SessionId,
-            SessionStart = s.SessionStart.ToString("u"),
-            SessionEnd = s.SessionEnd.ToString("u"),
-            s.TotalUnits,
-            s.Pos,
-            UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
-            SessionStatus = s.SessionStatus.ToString(),
-            SessionType = s.SessionType.ToString().Replace("_", " "),
-          })
-          .OrderBy(w => w.SessionStart)
-          .ToListAsync();
+            .AsNoTracking()
+            .Where(w => w.ClientId.Equals(clientId))
+            .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
+            .Where(w => w.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId))
+            .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
+            .Select(s => new
+            {
+              s.SessionId,
+              SessionStart = s.SessionStart.ToString("u"),
+              SessionEnd = s.SessionEnd.ToString("u"),
+              s.TotalUnits,
+              s.Pos,
+              UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+              SessionStatus = s.SessionStatus.ToString(),
+              SessionType = s.SessionType.ToString().Replace("_", " "),
+            })
+            .OrderBy(w => w.SessionStart)
+            .ToListAsync();
         return Ok(new
         {
           client,
@@ -113,43 +120,47 @@ namespace AbaBackend.Controllers
         var user = userId == -1 ? await _utils.GetCurrentUser() : await _utils.GetUserById(userId);
 
         var client = await _dbContext.Clients
-          .AsNoTracking()
-          .Where(w => w.ClientId.Equals(clientId))
-          .Select(s => new
-          {
-            MemberId = s.MemberNo,
-            s.Firstname,
-            s.Lastname,
-            s.Dob,
-            s.Code,
-            Assessments = s.Assessments.Where(w => w.BehaviorAnalysisCodeId == user.Rol.BehaviorAnalysisCodeId && (w.StartDate <= toDate && fromDate <= w.EndDate)),
-            Referrals = s.Referrals.Where(w => (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active)
-          }).FirstOrDefaultAsync();
+            .AsNoTracking()
+            .Where(w => w.ClientId.Equals(clientId))
+            .Select(s => new
+            {
+              MemberId = s.MemberNo,
+              s.Firstname,
+              s.Lastname,
+              s.Dob,
+              s.Code,
+              Assessments = s.Assessments.Where(w =>
+                          w.BehaviorAnalysisCodeId == user.Rol.BehaviorAnalysisCodeId &&
+                          (w.StartDate <= toDate && fromDate <= w.EndDate)),
+              Referrals = s.Referrals.Where(w =>
+                          (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active)
+            }).FirstOrDefaultAsync();
 
         var sessions = await _dbContext.Sessions
-          .AsNoTracking()
-          .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
-          .Where(w => w.ClientId == clientId && w.UserId == user.UserId)
-          .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
-          .OrderBy(w => w.SessionStart)
-          .Select(s => new
-          {
-            s.SessionId,
-            SessionStart = s.SessionStart.ToString("u"),
-            SessionEnd = s.SessionEnd.ToString("u"),
-            s.TotalUnits,
-            SessionType = s.SessionType.ToString().Replace("_", " "),
-            SessionTypeCode = s.SessionType,
-            SessionStatus = s.SessionStatus.ToString(),
-            SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-            Pos = s.Pos.ToString(),
-            PosCode = s.Pos,
-            s.SessionNote.Caregiver.CaregiverFullname,
-            CaregiverFullnameSupervision = s.SessionSupervisionNote.Caregiver.CaregiverFullname,
-            s.Sign
-          })
-          .ToListAsync();
+            .AsNoTracking()
+            .Where(w => w.SessionStatus == SessionStatus.Checked || w.SessionStatus == SessionStatus.Reviewed ||
+                        w.SessionStatus == SessionStatus.Billed)
+            .Where(w => w.ClientId == clientId && w.UserId == user.UserId)
+            .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
+            .OrderBy(w => w.SessionStart)
+            .Select(s => new
+            {
+              s.SessionId,
+              SessionStart = s.SessionStart.ToString("u"),
+              SessionEnd = s.SessionEnd.ToString("u"),
+              s.TotalUnits,
+              SessionType = s.SessionType.ToString().Replace("_", " "),
+              SessionTypeCode = s.SessionType,
+              SessionStatus = s.SessionStatus.ToString(),
+              SessionStatusCode = s.SessionStatus,
+              SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
+              Pos = s.Pos.ToString(),
+              PosCode = s.Pos,
+              s.SessionNote.Caregiver.CaregiverFullname,
+              CaregiverFullnameSupervision = s.SessionSupervisionNote.Caregiver.CaregiverFullname,
+              s.Sign
+            })
+            .ToListAsync();
         return Ok(new
         {
           user,
@@ -174,39 +185,41 @@ namespace AbaBackend.Controllers
         var user = await _utils.GetCurrentUser();
 
         var sessions = await _dbContext.Sessions
-          .AsNoTracking()
-          .Where(w => w.ClientId == clientId)
-          .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
-          .OrderBy(w => w.SessionStart)
-          .Select(s => new
-          {
-            s.SessionId,
-            s.UserId,
-            s.ClientId,
-            SessionStart = s.SessionStart.ToString("u"),
-            SessionEnd = s.SessionEnd.ToString("u"),
-            s.TotalUnits,
-            SessionType = s.SessionType.ToString().Replace("_", " "),
-            SessionStatus = s.SessionStatus.ToString(),
-            SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-            Pos = s.Pos.ToString().Replace("_", " "),
-            PosCode = s.Pos,
-            UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
-            Rol = s.User.Rol.RolShortName
-          })
-          .ToListAsync();
+            .AsNoTracking()
+            .Where(w => w.ClientId == clientId)
+            .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
+            .OrderBy(w => w.SessionStart)
+            .Select(s => new
+            {
+              s.SessionId,
+              s.UserId,
+              s.ClientId,
+              SessionStart = s.SessionStart.ToString("u"),
+              SessionEnd = s.SessionEnd.ToString("u"),
+              s.TotalUnits,
+              SessionType = s.SessionType.ToString().Replace("_", " "),
+              SessionStatus = s.SessionStatus.ToString(),
+              SessionStatusCode = s.SessionStatus,
+              SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
+              Pos = s.Pos.ToString().Replace("_", " "),
+              PosCode = s.Pos,
+              UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+              Rol = s.User.Rol.RolShortName
+            })
+            .ToListAsync();
 
         if (user.Rol.RolShortName == "tech") sessions = sessions.Where(s => s.UserId == user.UserId).ToList();
         if (user.Rol.RolShortName == "assistant")
         {
-          var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId).Select(s => s.ClientId).ToListAsync();
+          var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId)
+              .Select(s => s.ClientId).ToListAsync();
           sessions = sessions.Where(s => myClients.Contains(s.ClientId) && s.Rol != "analyst").ToList();
         }
 
         if (user.Rol.RolShortName == "analyst")
         {
-          var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId && w.Active).Select(s => s.ClientId).ToListAsync();
+          var myClients = await _dbContext.Assignments.Where(w => w.UserId == user.UserId && w.Active)
+              .Select(s => s.ClientId).ToListAsync();
           sessions = sessions.Where(s => myClients.Contains(s.ClientId)).ToList();
         }
 
@@ -227,32 +240,32 @@ namespace AbaBackend.Controllers
         var toDate = Convert.ToDateTime(to).Date;
 
         var sessions = await _dbContext.Sessions
-          .AsNoTracking()
-          .Where(w => w.UserId == userId)
-          .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
-          .Where(w => w.SessionStatus == SessionStatus.Billed)
-          .OrderBy(w => w.SessionStart)
-          .Select(s => new
-          {
-            s.SessionId,
-            s.UserId,
-            s.ClientId,
-            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
-            s.Client.Code,
-            SessionStart = s.SessionStart.ToString("u"),
-            SessionEnd = s.SessionEnd.ToString("u"),
-            s.TotalUnits,
-            SessionType = s.SessionType.ToString().Replace("_", " "),
-            SessionStatus = s.SessionStatus.ToString(),
-            SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-            Pos = s.Pos.ToString().Replace("_", " "),
-            PosCode = s.Pos,
-            UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
-            Rol = s.User.Rol.RolShortName
-          })
-          .OrderBy(o => o.SessionStart)
-          .ToListAsync();
+            .AsNoTracking()
+            .Where(w => w.UserId == userId)
+            .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
+            .Where(w => w.SessionStatus == SessionStatus.Billed)
+            .OrderBy(w => w.SessionStart)
+            .Select(s => new
+            {
+              s.SessionId,
+              s.UserId,
+              s.ClientId,
+              ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+              s.Client.Code,
+              SessionStart = s.SessionStart.ToString("u"),
+              SessionEnd = s.SessionEnd.ToString("u"),
+              s.TotalUnits,
+              SessionType = s.SessionType.ToString().Replace("_", " "),
+              SessionStatus = s.SessionStatus.ToString(),
+              SessionStatusCode = s.SessionStatus,
+              SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
+              Pos = s.Pos.ToString().Replace("_", " "),
+              PosCode = s.Pos,
+              UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+              Rol = s.User.Rol.RolShortName
+            })
+            .OrderBy(o => o.SessionStart)
+            .ToListAsync();
 
         return Ok(sessions);
       }
@@ -271,12 +284,12 @@ namespace AbaBackend.Controllers
         if (!user.Rol.CanCreateSession) throw new Exception("You must select a valid user");
 
         var sessions = await _dbContext.Sessions
-          .Include(i => i.Client)
-          .Where(w => w.SessionStart.Date >= start && w.SessionStart.Date <= end)
-          .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
-          .Where(w => w.UserId.Equals(userId))
-          .OrderBy(o => o.SessionStart)
-          .ToListAsync();
+            .Include(i => i.Client)
+            .Where(w => w.SessionStart.Date >= start && w.SessionStart.Date <= end)
+            .Where(w => w.SessionStatus == SessionStatus.Reviewed || w.SessionStatus == SessionStatus.Billed)
+            .Where(w => w.UserId.Equals(userId))
+            .OrderBy(o => o.SessionStart)
+            .ToListAsync();
 
         var rows = new List<Object>();
         var totalHours = 0m;
@@ -301,20 +314,20 @@ namespace AbaBackend.Controllers
           extraDrive = driveHours.extra;
 
           rows.Add(new OkObjectResult(
-            new
-            {
-              sessionId = session.SessionId,
-              date = session.SessionStart.ToString("u"),
-              sessionIn = session.SessionStart.ToString("u"),
-              sessionOut = session.SessionEnd.ToString("u"),
-              client = $"{session.Client.Firstname} {session.Client.Lastname[0]}.",
-              sessionHours,
-              sessionDriveTime,
-              regularHours,
-              regularDrive,
-              extraHours,
-              extraDrive
-            }).Value);
+              new
+              {
+                sessionId = session.SessionId,
+                date = session.SessionStart.ToString("u"),
+                sessionIn = session.SessionStart.ToString("u"),
+                sessionOut = session.SessionEnd.ToString("u"),
+                client = $"{session.Client.Firstname} {session.Client.Lastname[0]}.",
+                sessionHours,
+                sessionDriveTime,
+                regularHours,
+                regularDrive,
+                extraHours,
+                extraDrive
+              }).Value);
         }
 
         return Ok(new
@@ -345,20 +358,25 @@ namespace AbaBackend.Controllers
         var replacements = await _utils.GetClientReplacements(clientId);
         var rowsReplacements = new List<List<Object>>();
 
-        var mainDataBehaviorClientV2 = await _collection.GetCollectionBehaviors(start, end, clientId, problems.Select(s => s.ProblemId).ToList());
-        var mainDataBehaviorCaregiverClientV2 = await _collection.GetCollectionBehaviorsCaregiver(start, end, clientId, problems.Select(s => s.ProblemId).ToList());
+        var mainDataBehaviorClientV2 = await _collection.GetCollectionBehaviors(start, end, clientId,
+            problems.Select(s => s.ProblemId).ToList());
+        var mainDataBehaviorCaregiverClientV2 =
+            await _collection.GetCollectionBehaviorsCaregiver(start, end, clientId,
+                problems.Select(s => s.ProblemId).ToList());
 
-        var mainDataReplacementClientV2 = await _collection.GetCollectionReplacements(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
-        var mainDataReplacementCaregiverClientV2 = await _collection.GetCollectionReplacementsCaregiver(start, end, clientId, replacements.Select(s => s.ReplacementId).ToList());
+        var mainDataReplacementClientV2 = await _collection.GetCollectionReplacements(start, end, clientId,
+            replacements.Select(s => s.ReplacementId).ToList());
+        var mainDataReplacementCaregiverClientV2 = await _collection.GetCollectionReplacementsCaregiver(start,
+            end, clientId, replacements.Select(s => s.ReplacementId).ToList());
 
 
         foreach (var problem in problems)
         {
           decimal weeksWithData = totalWeeks;
           var newRow = new List<Object>
-          {
-            problem.ProblemBehavior.ProblemBehaviorDescription
-          };
+                    {
+                        problem.ProblemBehavior.ProblemBehaviorDescription
+                    };
 
           var monthStart = start;
           var monthEnd = end;
@@ -368,14 +386,15 @@ namespace AbaBackend.Controllers
             var weekStart = monthStart;
             var weekEnd = monthStart.AddDays(6);
             var mainDataV2 = mainDataBehaviorClientV2
-              .Where(w => w.ProblemId == problem.ProblemId)
-              .Where(w => w.SessionStart.Date >= weekStart && w.SessionStart.Date <= weekEnd)
-              .ToList();
+                .Where(w => w.ProblemId == problem.ProblemId)
+                .Where(w => w.SessionStart.Date >= weekStart && w.SessionStart.Date <= weekEnd)
+                .ToList();
             var mainDataCaregiverCollect = mainDataBehaviorCaregiverClientV2
-              .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
-              .Where(w => w.ProblemId == problem.ProblemId)
-              .ToList();
-            var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect, problem.ProblemBehavior.IsPercent);
+                .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
+                .Where(w => w.ProblemId == problem.ProblemId)
+                .ToList();
+            var mainData = _collection.GetClientProblems(mainDataV2, mainDataCaregiverCollect,
+                problem.ProblemBehavior.IsPercent);
 
             if (mainData == null)
             {
@@ -392,11 +411,14 @@ namespace AbaBackend.Controllers
               sum += mainData ?? 0;
               newRow.Add($"{mainData:n0}");
             }
+
             monthStart = monthStart.AddDays(7);
           }
 
           newRow.Add(!problem.ProblemBehavior.IsPercent ? sum.ToString() : "-");
-          newRow.Add(weeksWithData == 0 ? "0" : (sum / weeksWithData).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
+          newRow.Add(weeksWithData == 0
+              ? "0"
+              : (sum / weeksWithData).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
           // newRow.Add((sum / (decimal)totalWeeks).ToString("n0") + (problem.ProblemBehavior.IsPercent ? "%" : ""));
           rowsProblems.Add(newRow);
         }
@@ -419,9 +441,9 @@ namespace AbaBackend.Controllers
         {
           decimal weeksWithData = totalWeeks;
           var newRow = new List<Object>
-          {
-            replacement.Replacement.ReplacementProgramDescription
-          };
+                    {
+                        replacement.Replacement.ReplacementProgramDescription
+                    };
 
           var monthStart = start;
           var monthEnd = end;
@@ -432,13 +454,13 @@ namespace AbaBackend.Controllers
             var weekEnd = monthStart.AddDays(6);
 
             var mainDataV2 = mainDataReplacementClientV2
-              .Where(w => w.ReplacementId == replacement.ReplacementId)
-              .Where(w => w.SessionStart.Date >= weekStart && w.SessionStart.Date <= weekEnd)
-              .ToList();
+                .Where(w => w.ReplacementId == replacement.ReplacementId)
+                .Where(w => w.SessionStart.Date >= weekStart && w.SessionStart.Date <= weekEnd)
+                .ToList();
             var mainDataCaregiverCollect = mainDataReplacementCaregiverClientV2
-              .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
-              .Where(w => w.ReplacementId == replacement.ReplacementId)
-              .ToList();
+                .Where(w => w.CollectDate.Date >= weekStart && w.CollectDate.Date <= weekEnd)
+                .Where(w => w.ReplacementId == replacement.ReplacementId)
+                .ToList();
             var mainData = _collection.GetClientReplacements(mainDataV2, mainDataCaregiverCollect);
 
             sumTotal += mainData ?? 0;
@@ -488,30 +510,30 @@ namespace AbaBackend.Controllers
       try
       {
         var sessions = await _dbContext.Sessions
-          .AsNoTracking()
-          .Where(w => w.SessionStatus == SessionStatus.Reviewed)
-          .OrderByDescending(w => w.SessionStart)
-          .Select(s => new
-          {
-            s.SessionId,
-            s.UserId,
-            s.ClientId,
-            s.Client,
-            ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
-            SessionStart = s.SessionStart.ToString("u"),
-            SessionEnd = s.SessionEnd.ToString("u"),
-            s.TotalUnits,
-            SessionType = s.SessionType.ToString().Replace("_", " "),
-            SessionStatus = s.SessionStatus.ToString(),
-            SessionStatusCode = s.SessionStatus,
-            SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
-            Pos = s.Pos.ToString().Replace("_", " "),
-            PosCode = s.Pos,
-            UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
-            Rol = s.User.Rol.RolShortName,
-            BehaviorAnalisisCode = s.User.Rol.BehaviorAnalysisCode
-          })
-          .ToListAsync();
+            .AsNoTracking()
+            .Where(w => w.SessionStatus == SessionStatus.Reviewed)
+            .OrderByDescending(w => w.SessionStart)
+            .Select(s => new
+            {
+              s.SessionId,
+              s.UserId,
+              s.ClientId,
+              s.Client,
+              ClientFullname = $"{s.Client.Firstname} {s.Client.Lastname}",
+              SessionStart = s.SessionStart.ToString("u"),
+              SessionEnd = s.SessionEnd.ToString("u"),
+              s.TotalUnits,
+              SessionType = s.SessionType.ToString().Replace("_", " "),
+              SessionStatus = s.SessionStatus.ToString(),
+              SessionStatusCode = s.SessionStatus,
+              SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
+              Pos = s.Pos.ToString().Replace("_", " "),
+              PosCode = s.Pos,
+              UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
+              Rol = s.User.Rol.RolShortName,
+              BehaviorAnalisisCode = s.User.Rol.BehaviorAnalysisCode
+            })
+            .ToListAsync();
         return Ok(sessions);
       }
       catch (System.Exception e)
@@ -530,18 +552,18 @@ namespace AbaBackend.Controllers
         var toDate = Convert.ToDateTime(to).Date;
 
         var collections = (await _dbContext.CaregiverDataCollections
-            .Where(w => w.ClientId == clientId)
-            .Where(w => w.CollectDate.Date >= fromDate && w.CollectDate.Date <= toDate)
-            .ToListAsync())
-          .Select(s => new
-          {
-            s.ClientId,
-            s.CaregiverDataCollectionId,
-            CollectionDate = s.CollectDate,
-            Caregiver = caregivers.FirstOrDefault(w => w.CaregiverId == s.CaregiverId)
-          })
-          .OrderByDescending(o => o.CollectionDate)
-          .ToList();
+                .Where(w => w.ClientId == clientId)
+                .Where(w => w.CollectDate.Date >= fromDate && w.CollectDate.Date <= toDate)
+                .ToListAsync())
+            .Select(s => new
+            {
+              s.ClientId,
+              s.CaregiverDataCollectionId,
+              CollectionDate = s.CollectDate,
+              Caregiver = caregivers.FirstOrDefault(w => w.CaregiverId == s.CaregiverId)
+            })
+            .OrderByDescending(o => o.CollectionDate)
+            .ToList();
 
         return Ok(collections);
       }
@@ -589,5 +611,54 @@ namespace AbaBackend.Controllers
         return BadRequest(e.Message);
       }
     }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> AddNewProblemBehaviorChartLine([FromBody] ClientProblemChartLine line)
+    {
+      try
+      {
+        _dbContext.Add(line);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientProblemId}")]
+    public async Task<IActionResult> GetClientProblemChartLines(int clientProblemId)
+    {
+      try
+      {
+        var lines = await _dbContext.ClientProblemChartLines.Where(w => w.ClientProblemId == clientProblemId).OrderBy(o => o.ChartDate).ToListAsync();
+        return Ok(lines);
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+
+    [HttpDelete("[action]/{id}")]
+    public async Task<IActionResult> DeleteClientProblemChartLine(int id)
+    {
+      try
+      {
+        var line = await _dbContext.ClientProblemChartLines
+          .FirstOrDefaultAsync(s => s.ClientProblemChartLineId.Equals(id));
+        if (line == null) throw new Exception("Line not found");
+        _dbContext.Remove(line);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
   }
 }

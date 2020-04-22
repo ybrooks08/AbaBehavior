@@ -6,7 +6,7 @@
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-toolbar :color="(!sessionDetailed ? 'secondary' : sessionDetailed.sessionStatusColor)" dark tabs dense>
             <v-toolbar-title>Session notes for <strong class="yellow--text" v-if="sessionDetailed">{{sessionDetailed.clientFullname}} <span class="white--text">at</span>
-                ({{sessionDetailed.pos}})</strong></v-toolbar-title>
+              ({{sessionDetailed.pos}})</strong></v-toolbar-title>
             <v-spacer></v-spacer>
             <v-chip outline v-if="sessionDetailed" small disabled color="white" text-color="white">
               <v-icon left>fa-info-circle</v-icon>
@@ -198,8 +198,7 @@
                               </v-tooltip>
                             </div>
                             <div v-else-if="!editDisabled">
-                              <v-text-field :disabled="loadEditDriveTime" v-model="sessionDetailed.driveTime" class="pa-0" suffix="hrs" single-line hide-details append-outer-icon="fa-paper-plane"
-                                            @click:append-outer="submitDriveTime" placeholder="Edit drive time" @keypress.enter.native="submitDriveTime"></v-text-field>
+                              <v-text-field :disabled="loadEditDriveTime" v-model="sessionDetailed.driveTime" class="pa-0" suffix="hrs" single-line hide-details append-outer-icon="fa-paper-plane" @click:append-outer="submitDriveTime" placeholder="Edit drive time" @keypress.enter.native="submitDriveTime"></v-text-field>
                             </div>
                           </v-flex>
                           <!-- <v-flex class="body-2 text-xs-right" xs4>Sign:</v-flex> -->
@@ -210,7 +209,7 @@
                               </v-avatar>
                               UNSIGNED
                             </v-chip>
-                            <v-img max-width="300" :contain="true" max-height="100" v-else :src="!sessionDetailed || sessionDetailed.sign.sign" />
+                            <v-img max-width="300" :contain="true" max-height="100" v-else :src="!sessionDetailed || sessionDetailed.sign.sign"/>
                           </v-flex>
                         </v-layout>
                       </v-flex>
@@ -229,8 +228,7 @@
                                 <span>Edit POS</span>
                               </v-tooltip>
                             </div>
-                            <v-select v-if="posEditVisible" :loading="loadingPosEdit" :disabled="loading" hide-details single-line class="pa-0 ma-0" placeholder="Pos" v-model="posToEdit"
-                                      :items="posEnum" prepend-icon="fa-map-marker-alt" @change="changeNewPos">
+                            <v-select v-if="posEditVisible" :loading="loadingPosEdit" :disabled="loading" hide-details single-line class="pa-0 ma-0" placeholder="Pos" v-model="posToEdit" :items="posEnum" prepend-icon="fa-map-marker-alt" @change="changeNewPos">
                               <template slot="selection" slot-scope="data">
                                 <div class="input-group__selections__comma">
                                   {{ data.item.text }} &nbsp; <span class="grey--text text--darken-1">({{data.item.value}})</span>
@@ -269,17 +267,12 @@
                   <v-container fluid grid-list-sm pa-0>
                     <v-layout row wrap>
                       <v-flex xs12>
-                        <v-select v-if="session.sessionType !== 3" box hide-details :disabled="loading || editDisabled" label="Caregiver" v-model="session.sessionNote.caregiverId" :items="caregivers"
-                                  @change="setDirty">
-                        </v-select>
+                        <v-select v-if="session.sessionType !== 3" box hide-details :disabled="loading || editDisabled" label="Caregiver" v-model="session.sessionNote.caregiverId" :items="caregivers" @change="setDirty"></v-select>
                         <v-select v-else box hide-details :disabled="loading || editDisabled" label="Caregiver" v-model="session.sessionSupervisionNote.caregiverId" :items="caregivers"></v-select>
                       </v-flex>
                       <v-flex xs12>
-                        <v-textarea v-if="session.sessionType !== 3" box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionNote.caregiverNote"
-                                    @change="setDirty">
-                        </v-textarea>
-                        <v-textarea v-else box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionSupervisionNote.caregiverNote"
-                                    @change="setDirty"></v-textarea>
+                        <v-textarea v-if="session.sessionType !== 3" box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionNote.caregiverNote" @change="setDirty"></v-textarea>
+                        <v-textarea v-else box hide-details :disabled="loading || editDisabled" label="Caregiver notes" auto-grow v-model="session.sessionSupervisionNote.caregiverNote" @change="setDirty"></v-textarea>
                       </v-flex>
                     </v-layout>
                   </v-container>
@@ -293,16 +286,13 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-select box hide-details :disabled="loading || editDisabled" label="Risk Behavior" v-model="session.sessionNote.riskBehavior" :items="riskBehaviorCodes" @change="setDirty">
-                          </v-select>
+                          <v-select box hide-details :disabled="loading || editDisabled" label="Risk Behavior" v-model="session.sessionNote.riskBehavior" :items="riskBehaviorCodes" @change="setDirty"></v-select>
                         </v-flex>
                         <v-flex xs12 class="pt-3">
-                          <v-switch hide-details color="primary" :disabled="editDisabled" label="Crisis involved" v-model="session.sessionNote.riskBehaviorCrisisInvolved" @change="setDirty">
-                          </v-switch>
+                          <v-switch hide-details color="primary" :disabled="editDisabled" label="Crisis involved" v-model="session.sessionNote.riskBehaviorCrisisInvolved" @change="setDirty"></v-switch>
                         </v-flex>
                         <v-flex xs12>
-                          <v-textarea box hide-details :disabled="loading || !session.sessionNote.riskBehaviorCrisisInvolved || editDisabled" label="Explain" auto-grow
-                                      v-model="session.sessionNote.riskBehaviorExplain" @change="setDirty"></v-textarea>
+                          <v-textarea box hide-details :disabled="loading || !session.sessionNote.riskBehaviorCrisisInvolved || editDisabled" label="Explain" auto-grow v-model="session.sessionNote.riskBehaviorExplain" @change="setDirty"></v-textarea>
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -318,8 +308,7 @@
                           <v-textarea box auto-grow hide-details :disabled="loading || editDisabled" label="Edibles" v-model="session.sessionNote.reinforcersEdibles" @change="setDirty"></v-textarea>
                         </v-flex>
                         <v-flex xs12>
-                          <v-textarea box auto-grow hide-details :disabled="loading || editDisabled" label="Non-edibles" v-model="session.sessionNote.reinforcersNonEdibles" @change="setDirty">
-                          </v-textarea>
+                          <v-textarea box auto-grow hide-details :disabled="loading || editDisabled" label="Non-edibles" v-model="session.sessionNote.reinforcersNonEdibles" @change="setDirty"></v-textarea>
                         </v-flex>
                         <v-flex xs12>
                           <v-textarea box auto-grow hide-details :disabled="loading || editDisabled" label="Others" v-model="session.sessionNote.reinforcersOthers" @change="setDirty"></v-textarea>
@@ -338,13 +327,10 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-select box hide-details :disabled="loading || editDisabled" label="Participation level" v-model="session.sessionNote.participationLevel" :items="participationLevelCodes"
-                                    @change="setDirty">
-                          </v-select>
+                          <v-select box hide-details :disabled="loading || editDisabled" label="Participation level" v-model="session.sessionNote.participationLevel" :items="participationLevelCodes" @change="setDirty"></v-select>
                         </v-flex>
                         <v-flex xs12>
-                          <v-textarea box hide-details :disabled="loading || editDisabled" label="Progress notes" auto-grow v-model="session.sessionNote.progressNotes" rows=15 @change="setDirty">
-                          </v-textarea>
+                          <v-textarea box hide-details :disabled="loading || editDisabled" label="Progress notes" auto-grow v-model="session.sessionNote.progressNotes" rows=15 @change="setDirty"></v-textarea>
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -379,13 +365,10 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-switch hide-details color="primary" label="Direct observation/Data collection/Probing" v-model="session.sessionNote.summaryDirectObservation" @change="setDirty">
-                          </v-switch>
+                          <v-switch hide-details color="primary" label="Direct observation/Data collection/Probing" v-model="session.sessionNote.summaryDirectObservation" @change="setDirty"></v-switch>
                         </v-flex>
                         <v-flex xs12>
-                          <v-switch hide-details color="primary" label="Observation of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.summaryObservationFeedback"
-                                    @change="setDirty">
-                          </v-switch>
+                          <v-switch hide-details color="primary" label="Observation of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.summaryObservationFeedback" @change="setDirty"></v-switch>
                         </v-flex>
                         <v-flex xs12>
                           <v-switch hide-details color="primary" label="Implemented reduction programs" v-model="session.sessionNote.summaryImplementedReduction" @change="setDirty"></v-switch>
@@ -397,9 +380,7 @@
                           <v-switch hide-details color="primary" label="Generalization of treatment" v-model="session.sessionNote.summaryGeneralization" @change="setDirty"></v-switch>
                         </v-flex>
                         <v-flex xs12>
-                          <v-switch hide-details color="primary" label="Communication/Coordination of care with other services professionals" v-model="session.sessionNote.summaryCommunication"
-                                    @change="setDirty">
-                          </v-switch>
+                          <v-switch hide-details color="primary" label="Communication/Coordination of care with other services professionals" v-model="session.sessionNote.summaryCommunication" @change="setDirty"></v-switch>
                         </v-flex>
                         <v-flex xs12>
                           <v-textarea box hide-details :disabled="loading" label="Other" auto-grow v-model="session.sessionNote.summaryOther" @change="setDirty"></v-textarea>
@@ -415,23 +396,19 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-select class="autoheigh" box hide-details :disabled="loading" label="Problem" v-model="problemSelected" :items="problemsUnique" item-text="problemBehaviorDescription"
-                                    item-value="problemId"></v-select>
+                          <v-select class="autoheigh" box hide-details :disabled="loading" label="Problem" v-model="problemSelected" :items="problemsUnique" item-text="problemBehaviorDescription" item-value="problemId"></v-select>
                         </v-flex>
                       </v-layout>
                       <template v-for="problem in session.sessionProblemNotes">
                         <v-layout v-if="problemSelected === problem.problemId" :key="problem.SessionProblemNoteId">
                           <v-flex xs6>
-                            <v-textarea box hide-details :disabled="loading || editDisabled" label="During which activity bx. ocurred" auto-grow v-model="problem.duringWichActivities"
-                                        @change="setDirty"></v-textarea>
+                            <v-textarea box hide-details :disabled="loading || editDisabled" label="During which activity bx. ocurred" auto-grow v-model="problem.duringWichActivities" @change="setDirty"></v-textarea>
                             <br>
                             <span v-html="getIfBehaviorHasData(problemSelected)"></span>
                           </v-flex>
                           <v-flex xs6>
-                            <v-textarea box hide-details :disabled="loading || editDisabled" label="Replacement bx. implemented interventions used" auto-grow
-                                        v-model="problem.replacementInterventionsUsed" @change="setDirty"></v-textarea>
-                            <v-switch :disabled="editDisabled" :key="replacement.sessionProblemNoteReplacementId" v-for="replacement in problem.sessionProblemNoteReplacements" hide-details
-                                      color="primary" :label="replacement.replacementProgram.replacementProgramDescription" v-model="replacement.active" @change="setDirty"></v-switch>
+                            <v-textarea box hide-details :disabled="loading || editDisabled" label="Replacement bx. implemented interventions used" auto-grow v-model="problem.replacementInterventionsUsed" @change="setDirty"></v-textarea>
+                            <v-switch :disabled="editDisabled" :key="replacement.sessionProblemNoteReplacementId" v-for="replacement in problem.sessionProblemNoteReplacements" hide-details color="primary" :label="replacement.replacementProgram.replacementProgramDescription" v-model="replacement.active" @change="setDirty"></v-switch>
                           </v-flex>
                         </v-layout>
                       </template>
@@ -447,8 +424,7 @@
                     <v-container fluid grid-list-sm pa-0>
                       <v-layout row wrap>
                         <v-flex xs12>
-                          <v-switch hide-details color="primary" label="Observation of recipients's interaction with parent/caregiver/others"
-                                    v-model="session.sessionNote.caregiverTrainingObservationFeedback" @change="setDirty"></v-switch>
+                          <v-switch hide-details color="primary" label="Observation of recipients's interaction with parent/caregiver/others" v-model="session.sessionNote.caregiverTrainingObservationFeedback" @change="setDirty"></v-switch>
                         </v-flex>
                         <v-flex xs12>
                           <v-switch hide-details color="primary" label="Parent/Caregiver training" v-model="session.sessionNote.caregiverTrainingParentCaregiverTraining" @change="setDirty"></v-switch>
@@ -498,14 +474,10 @@
                         <v-container fluid grid-list-sm pa-0>
                           <v-layout row wrap>
                             <v-flex xs12>
-                              <v-switch hide-details color="primary" label="Observation and feedback regarding interaction of BCaBA" v-model="session.sessionSupervisionNote.briefObservation"
-                                        @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Observation and feedback regarding interaction of BCaBA" v-model="session.sessionSupervisionNote.briefObservation" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs12>
-                              <v-switch hide-details color="primary" label="Replacement/Acquisition Programs Implementation monitoring" v-model="session.sessionSupervisionNote.briefReplacement"
-                                        @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Replacement/Acquisition Programs Implementation monitoring" v-model="session.sessionSupervisionNote.briefReplacement" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs12>
                               <v-switch hide-details color="primary" label="Generalization of Treatment" v-model="session.sessionSupervisionNote.briefGeneralization" @change="setDirty"></v-switch>
@@ -514,17 +486,14 @@
                               <v-switch hide-details color="primary" label="BCaBA training and oversight" v-model="session.sessionSupervisionNote.briefBCaBaTraining" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs12>
-                              <v-switch hide-details color="primary" label="In-Service Education Training (for session participants)" v-model="session.sessionSupervisionNote.briefInService"
-                                        class="pb-3" @change="setDirty"></v-switch>
-                              <v-text-field hide-details :disabled="loading || !session.sessionSupervisionNote.briefInService" label="Subject" box
-                                            v-model="session.sessionSupervisionNote.briefInServiceSubject" @change="setDirty"></v-text-field>
+                              <v-switch hide-details color="primary" label="In-Service Education Training (for session participants)" v-model="session.sessionSupervisionNote.briefInService" class="pb-3" @change="setDirty"></v-switch>
+                              <v-text-field hide-details :disabled="loading || !session.sessionSupervisionNote.briefInService" label="Subject" box v-model="session.sessionSupervisionNote.briefInServiceSubject" @change="setDirty"></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                               <v-switch hide-details color="primary" label="Others" v-model="session.sessionSupervisionNote.briefOther" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs12>
-                              <v-textarea box hide-details :disabled="loading || !session.sessionSupervisionNote.briefOther" label="Other" auto-grow
-                                          v-model="session.sessionSupervisionNote.briefOtherDescription" @change="setDirty"></v-textarea>
+                              <v-textarea box hide-details :disabled="loading || !session.sessionSupervisionNote.briefOther" label="Other" auto-grow v-model="session.sessionSupervisionNote.briefOtherDescription" @change="setDirty"></v-textarea>
                             </v-flex>
                           </v-layout>
                         </v-container>
@@ -541,77 +510,58 @@
                         <v-container fluid grid-list-sm pa-0>
                           <v-layout row wrap>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Follow up upon recommendations from previous reassessment" v-model="session.sessionSupervisionNote.oversightFollowUpBool"
-                                        @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Follow up upon recommendations from previous reassessment" v-model="session.sessionSupervisionNote.oversightFollowUpBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightFollowUpBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightFollowUp" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightFollowUpBool" label="Eval" v-model="session.sessionSupervisionNote.oversightFollowUp" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Designing, implementing and monitoring program for client" v-model="session.sessionSupervisionNote.oversightDesigningBool"
-                                        @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Designing, implementing and monitoring program for client" v-model="session.sessionSupervisionNote.oversightDesigningBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightDesigningBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightDesigning" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightDesigningBool" label="Eval" v-model="session.sessionSupervisionNote.oversightDesigning" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Contributing with Behavioral Assessment" v-model="session.sessionSupervisionNote.oversightContributingBool"
-                                        @change="setDirty"></v-switch>
+                              <v-switch hide-details color="primary" label="Contributing with Behavioral Assessment" v-model="session.sessionSupervisionNote.oversightContributingBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightContributingBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightContributing" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightContributingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightContributing" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Analyzing data" v-model="session.sessionSupervisionNote.oversightAnalyzingBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightAnalyzingBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightAnalyzing" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightAnalyzingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightAnalyzing" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Goals progress evidenced in client performance" v-model="session.sessionSupervisionNote.oversightGoalsBool"
-                                        @change="setDirty"></v-switch>
+                              <v-switch hide-details color="primary" label="Goals progress evidenced in client performance" v-model="session.sessionSupervisionNote.oversightGoalsBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightGoalsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightGoals"
-                                        :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightGoalsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightGoals" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Making decisions about progress" v-model="session.sessionSupervisionNote.oversightMakingDecisionsBool" @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Making decisions about progress" v-model="session.sessionSupervisionNote.oversightMakingDecisionsBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightMakingDecisionsBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightMakingDecisions" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightMakingDecisionsBool" label="Eval" v-model="session.sessionSupervisionNote.oversightMakingDecisions" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Modeling technical, professional and ethical behavior" v-model="session.sessionSupervisionNote.oversightModelingBool"
-                                        @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Modeling technical, professional and ethical behavior" v-model="session.sessionSupervisionNote.oversightModelingBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightModelingBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightModeling" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightModelingBool" label="Eval" v-model="session.sessionSupervisionNote.oversightModeling" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
-                              <v-switch hide-details color="primary" label="Response to feedback from Lead Analyst" v-model="session.sessionSupervisionNote.oversightResponseBool" @change="setDirty">
-                              </v-switch>
+                              <v-switch hide-details color="primary" label="Response to feedback from Lead Analyst" v-model="session.sessionSupervisionNote.oversightResponseBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightResponseBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightResponse" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightResponseBool" label="Eval" v-model="session.sessionSupervisionNote.oversightResponse" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                             <v-flex xs9>
                               <v-switch hide-details color="primary" label="Overall Evaluation in session" v-model="session.sessionSupervisionNote.oversightOverallBool" @change="setDirty"></v-switch>
                             </v-flex>
                             <v-flex xs3>
-                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightOverallBool" label="Eval"
-                                        v-model="session.sessionSupervisionNote.oversightOverall" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
+                              <v-select box hide-details :disabled="loading || !session.sessionSupervisionNote.oversightOverallBool" label="Eval" v-model="session.sessionSupervisionNote.oversightOverall" :items="oversightSessionSupervisionEnum" @change="setDirty"></v-select>
                             </v-flex>
                           </v-layout>
                         </v-container>
@@ -633,14 +583,11 @@
                             <v-textarea box :disabled="loading" label="Recommendations" auto-grow v-model="session.sessionSupervisionNote.recommendations" @change="setDirty"></v-textarea>
                           </v-layout>
                           <v-layout row wrap>
-                            <v-switch hide-details color="primary" label="Validations: Previous agreement for times and place of next visit?" v-model="session.sessionSupervisionNote.validation"
-                                      @change="setDirty">
-                            </v-switch>
+                            <v-switch hide-details color="primary" label="Validations: Previous agreement for times and place of next visit?" v-model="session.sessionSupervisionNote.validation" @change="setDirty"></v-switch>
                           </v-layout>
                           <v-layout row wrap>
                             <v-flex xs5>
-                              <v-text-field label="Next schedule date" box v-model="session.sessionSupervisionNote.nextScheduledDate" mask="##/##/####" return-masked-value @change="setDirty">
-                              </v-text-field>
+                              <v-text-field label="Next schedule date" box v-model="session.sessionSupervisionNote.nextScheduledDate" mask="##/##/####" return-masked-value @change="setDirty"></v-text-field>
                             </v-flex>
                           </v-layout>
                         </v-container>
@@ -691,7 +638,8 @@
             <v-chip v-if="dirtyIndicator" disabled color="red" text-color="white">
               <v-avatar>
                 <v-icon>fa-exclamation-circle</v-icon>
-              </v-avatar>MODIFIED
+              </v-avatar>
+              MODIFIED
             </v-chip>
             <v-spacer></v-spacer>
             <v-btn :disabled="loading" @click="close" flat>{{(editDisabled ? "CLOSE" : "CANCEL")}}</v-btn>
@@ -712,7 +660,7 @@
             <v-flex xs12>
               <v-card-text>
                 Before continue, make sure you <strong class="blue--text">already saved all unsaved data</strong> and you <strong class="blue--text">reviewed all notes carefully.</strong>
-                <v-divider />
+                <v-divider/>
                 <v-container fluid grid-list-xs pa-0 v-if="sessionDetailed">
                   <v-layout row wrap>
                     <v-flex xs6>
@@ -742,18 +690,18 @@
                     </v-flex>
                   </v-layout>
                 </v-container>
-                <v-divider />
+                <v-divider/>
                 <v-alert v-if="!progressNoteEmpty" :value="true" color="error" icon="warning">
                   Your progress notes are empty. Sorry, you can't check this session until you fill the progress notes field.
                 </v-alert>
                 <v-alert v-if="checkedModalInconsistency" :value="true" color="black" outline>
                   There are inconsistencies between the selected place and the progress notes. Please check your note carefully and if everything is correct you can continue.
-                  <v-divider />
+                  <v-divider/>
                   <small class="text--black" v-html="checkedModalInconsistency"></small>
                 </v-alert>
                 <v-alert v-if="checkedModalProblems.length > 0" :value="true" color="black" outline>
                   There are problems with behaviors missing data.
-                  <v-divider />
+                  <v-divider/>
                   <small v-for="p in checkedModalProblems" :key="p">-Behavior <strong class="red--text">{{p}}</strong> has data collected but missing data.<br></small>
                 </v-alert>
                 Do you want to change the status of this session to {{checkedModalType}}?
@@ -762,7 +710,7 @@
           </v-layout>
 
           <v-card-actions>
-            <v-spacer />
+            <v-spacer/>
             <v-btn flat @click="checkedModal = false">Cancel</v-btn>
             <v-btn color="primary" :disabled="!progressNoteEmpty || checkedModalProblems.length > 0" @click="onClickCheckedModal">SET AS {{checkedModalType}}</v-btn>
           </v-card-actions>
@@ -912,7 +860,6 @@ export default {
   },
 
   beforeRouteLeave(to, from, next) {
-    console.log("hola");
     if (this.dirtyIndicator) {
       this.$confirm("There are unsaved changes, are you sure do you want to cancel all editings?").then(async res => {
         if (res) next();
@@ -1093,7 +1040,7 @@ export default {
       let signPath = this.$router.resolve({
         name: "sign"
       }).href;
-      let fullPath = `${window.location.origin}/${signPath}`;
+      let fullPath = `${ window.location.origin }/${ signPath }`;
       try {
         this.loadingSession = true;
         const response = await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
@@ -1255,7 +1202,7 @@ export default {
       const words = notAllowed.words.map(m => m.toLowerCase());
       if (words.some(s => notes.includes(s))) {
         words.forEach(w => {
-          notes = notes.replace(new RegExp(w.toLowerCase(), "g"), `<strong class="red--text pulse">${w.toLowerCase()}</strong>`);
+          notes = notes.replace(new RegExp(w.toLowerCase(), "g"), `<strong class="red--text pulse">${ w.toLowerCase() }</strong>`);
         });
       }
       return notes;
@@ -1265,13 +1212,12 @@ export default {
       let errors = [];
       this.session.sessionProblemNotes.forEach(s => {
         const p = this.collectBehaviors.find(w => w.problemId == s.problemId);
-        if (!(p.noData || p.total == 0)) {
+        if (p && !(p.noData || p.total == 0)) {
           if (!s.duringWichActivities || !s.replacementInterventionsUsed) {
             errors.push(s.problemBehavior.problemBehaviorDescription);
           }
         }
       });
-
       return errors;
     },
 
@@ -1306,8 +1252,8 @@ export default {
 </script>
 
 <style>
-.v-menu__content {
-  height: auto !important;
-  max-height: 800px !important;
-}
+  .v-menu__content {
+    height: auto !important;
+    max-height: 800px !important;
+  }
 </style>

@@ -129,8 +129,8 @@ namespace AbaBackend.Controllers
           if (!_utils.CanCreateAfterHours(user, session.SessionStart)) throw new Exception("You can not create session bacause exced the hours allowed and you dont have any pass.");
 
           //check if not pass week
-          var week = await _utils.GetUnitsInWeek(session.SessionStart.Date, user.UserId, session.ClientId);
-          if (week.Allowed != null && week.Total + session.TotalUnits > week.Allowed) throw new Exception("You can not create session bacause exced the units per week.");
+          var (Allowed, Total) = await _utils.GetUnitsInWeek(session.SessionStart.Date, user.UserId, session.ClientId);
+          if (Allowed != null && Total + session.TotalUnits > Allowed) throw new Exception("You can not create session bacause exced the units per week.");
 
           //check if there is a time gap between sessions
           //if (!(await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId))) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
@@ -1478,11 +1478,11 @@ namespace AbaBackend.Controllers
       var date = dateStr == null ? DateTime.Today : Convert.ToDateTime(dateStr);
       userName = userName ?? User.Identity.Name;
       var user = await _utils.GetUserByUsername(userName);
-      var units = await _utils.GetUnitsInWeek(date, user.UserId, clientId);
+      var (Allowed, Total) = await _utils.GetUnitsInWeek(date, user.UserId, clientId);
       return Ok(new
       {
-        units.Allowed,
-        units.Total
+        Allowed,
+        Total
       });
     }
   }

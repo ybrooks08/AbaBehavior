@@ -1,6 +1,6 @@
 <template>
   <v-layout row wrap>
-    <v-flex xs12 class="no-print">
+    <v-flex xs12 sm8 md8 class="no-print">
       <v-card>
         <v-toolbar dark class="secondary" fluid dense>
           <v-toolbar-title>Client</v-toolbar-title>
@@ -9,7 +9,7 @@
         <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0" />
         <v-card-text>
           <v-layout row wrap>
-            <v-flex xs12 sm6>
+            <v-flex xs12>
               <v-autocomplete
                 box
                 :disabled="loading"
@@ -35,9 +35,36 @@
                 </template>
               </v-autocomplete>
             </v-flex>
-            <v-flex xs12 sm6>
-              <v-select box :loading="loading" :disabled="loading" :items="notes" v-model="monthlyNoteId" label="Monthly note" prepend-inner-icon="fa-calendar-alt" @change="noteChanged" />
-              <!-- <v-btn @click="noteChanged(monthlyNoteId)">Hola</v-btn> -->
+            <v-flex xs12 class="pa-0 ma-0">
+              <v-card flat class="pa-0 ma-0">
+                <v-data-table :headers="headers" :items="notes" :loading="loading" :rows-per-page-items="[5]">
+                  <template slot="items" slot-scope="props">
+                    <tr>
+                      <td class="text-xs-left">
+                        {{ props.item.text }}
+                      </td>
+                      <td class="text-xs-left">
+                        N/A
+                      </td>
+                      <td class="text-truncate text-xs-right">
+                        <v-tooltip top>
+                          <v-btn slot="activator" icon class="mx-0" @click="noteChanged(props.item.value)">
+                            <v-icon color="grey">fa-eye</v-icon>
+                          </v-btn>
+                          <span>View report</span>
+                        </v-tooltip>
+                        <v-tooltip top>
+                          <v-btn slot="activator" icon class="mx-0" @click="editNote(props.item.text)">
+                            <v-icon color="grey">fa-edit</v-icon>
+                          </v-btn>
+                          <span>Edit monthly</span>
+                        </v-tooltip>
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
+              </v-card>
+              <!--<v-select box :loading="loading" :disabled="loading" :items="notes" v-model="monthlyNoteId" label="Monthly note" prepend-inner-icon="fa-calendar-alt" @change="noteChanged" />-->
             </v-flex>
           </v-layout>
         </v-card-text>
@@ -48,20 +75,20 @@
         <v-toolbar dark class="secondary no-print" fluid dense>
           <v-toolbar-title>Monthly note</v-toolbar-title>
           <v-spacer />
-          <v-menu class="mr-0" bottom left :disabled="loading">
+          <v-menu class="mr-0 no-print" bottom left :disabled="loading">
             <v-btn slot="activator" icon :disabled="loading">
               <v-icon>fa-ellipsis-v</v-icon>
             </v-btn>
             <v-list>
-              <v-list-tile to="/clients/add_edit_chart_note">
+              <v-list-tile class="no-print" to="/clients/add_edit_chart_note">
                 <v-list-tile-action>
                   <v-icon medium>fa-sticky-note</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
-                  <v-list-tile-title>New chart note</v-list-tile-title>
+                  <v-list-tile-title>New global chart note</v-list-tile-title>
                 </v-list-tile-content>
               </v-list-tile>
-              <v-list-tile @click="print">
+              <v-list-tile class="no-print" @click="print">
                 <v-list-tile-action>
                   <v-icon medium>fa-print</v-icon>
                 </v-list-tile-action>
@@ -139,9 +166,9 @@
                   </td>
                   <td v-else class="px-1 text-xs-left">
                     <template v-for="u in clientAnalyst">
-                      <span :key="'user' + u.userId"
-                        >{{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label></span
-                      >
+                      <span :key="'user' + u.userId">
+                        {{ u.firstname }} {{ u.lastname }} <label v-if="u.licenseNo">({{ u.licenseNo }})</label>
+                      </span>
                       <br :key="'br' + u.userId" />
                     </template>
                   </td>
@@ -195,8 +222,8 @@
                           <strong>{{ b.behavior }}</strong>
                         </td>
                         <td class="text-xs-center" style="vertical-align: middle;">
-                          <label>{{ b.baselineFrom || "N/A" | moment("utc", "MM/DD/YYYY") }} - {{ b.baselineTo || "N/A" | moment("utc", "MM/DD/YYYY") }}</label
-                          ><br />
+                          <label>{{ b.baselineFrom || "N/A" | moment("utc", "MM/DD/YYYY") }} - {{ b.baselineTo || "N/A" | moment("utc", "MM/DD/YYYY") }}</label>
+                          <br />
                           <label class="font-weight-black">{{ b.baseline || "-" }}</label>
                         </td>
                         <td class="text-xs-center font-weight-black" style="vertical-align: middle;">
@@ -234,7 +261,7 @@
                       </tr>
                       <tr :key="'chart-beh-' + b.behavior" style="border-top:  2px dotted grey !important;">
                         <td colspan="3">
-                          <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" />
+                          <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" :clientProblemId="b.clientProblemId" />
                         </td>
                       </tr>
                       <tr :key="'chart-beh-sep-' + b.behavior">
@@ -431,7 +458,12 @@ export default {
       // behIds: [],
       // repIds: [],
       progress: [],
-      monthEnd: null
+      monthEnd: null,
+      headers: [
+        { text: "Monthly", align: "left", value: "text", sortable: false },
+        { text: "Status", align: "left", value: "text", sortable: false },
+        { text: "", value: "value", sortable: false }
+      ]
     };
   },
 
@@ -524,6 +556,15 @@ export default {
 
     print() {
       window.print();
+    },
+
+    editNote(month) {
+      const a = new Date(month + ", 1");
+      this.$store.commit("SET_ACTIVE_CLIENT", this.clientId);
+      this.$store.commit("SET_ACTIVE_DATE", a);
+      // this.$router.push("/clients/edit_monthly_note");
+      let routeData = this.$router.resolve("/clients/edit_monthly_note");
+      window.open(routeData.href, "_blank");
     }
   }
 };

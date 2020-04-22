@@ -11,7 +11,14 @@ namespace AbaBackend.Model.Session
 
   public class Label
   {
+    public int Rotation { get; set; } = 90;
     public string Text { get; set; }
+    public Style Style { get; set; }
+  }
+
+  public class Style
+  {
+    public string FontSize { get; set; }
   }
 
   public class PlotLine

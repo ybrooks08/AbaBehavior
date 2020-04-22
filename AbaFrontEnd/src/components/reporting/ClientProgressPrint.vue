@@ -6,20 +6,24 @@
 
     <table style="width: 100%">
       <template v-for="p in behArray">
-        <tr :key="'p'+p" class="no-page-break">
+        <tr :key="'p' + p" class="no-page-break">
           <!-- <v-subheader>{{p.problemBehavior.problemBehaviorDescription}}</v-subheader> -->
           <v-card>
             <client-progress-behavior :dateStart="dateStart" :dateEnd="dateEnd" :behaviorId="p"></client-progress-behavior>
           </v-card>
         </tr>
-        <tr :key="'p1'+p">&nbsp;</tr>
+        <tr :key="'p1' + p">
+          &nbsp;
+        </tr>
       </template>
       <template v-for="p in repArray">
-        <tr :key="'r'+p" class="no-page-break">
+        <tr :key="'r' + p" class="no-page-break">
           <!-- <v-subheader>{{p.replacement.replacementProgramDescription}}</v-subheader> -->
           <client-progress-replacement :dateStart="dateStart" :dateEnd="dateEnd" :replacementId="p"></client-progress-replacement>
         </tr>
-        <tr :key="'p1'+p">&nbsp;</tr>
+        <tr :key="'p1' + p">
+          &nbsp;
+        </tr>
       </template>
     </table>
   </v-layout>
@@ -100,5 +104,4 @@ export default {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

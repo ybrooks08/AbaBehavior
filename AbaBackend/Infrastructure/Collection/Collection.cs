@@ -261,6 +261,7 @@ namespace AbaBackend.Infrastructure.Collection
     {
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
+      var individualPlotLines = new List<PlotLine>();
       var plotBands = new List<PlotBand>();
       var legend = new List<string>();
       var data = new List<int?>();
@@ -332,6 +333,12 @@ namespace AbaBackend.Infrastructure.Collection
         .OrderBy(o => o.ChartNoteDate)
         .ToListAsync();
 
+      var allPlotLines = await _dbContext.ClientProblemChartLines
+        .Where(w => w.ClientProblemId == clientProblem.ClientProblemId)
+        .Where(w => w.ChartDate >= firstDayOfData && w.ChartDate <= end)
+        .OrderBy(w => w.ChartDate)
+        .ToListAsync();
+
       legend.Add("");
       data.Add(null);
       legendDataStartPost++;
@@ -345,6 +352,40 @@ namespace AbaBackend.Infrastructure.Collection
         legend.Add(calWeekEnd.ToString("M/d/yy"));
         var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
         foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + legendDataStartPost });
+
+        var linesWeek = allPlotLines.Where(w => w.ChartDate >= calWeekStartLegend && w.ChartDate <= calWeekEnd).ToList();
+        foreach (var n in linesWeek)
+        {
+          var rotation = 90;
+          switch (n.ChartOrientation.ToLower())
+          {
+            case "vertical":
+              rotation = 90;
+              break;
+            case "horizontal":
+              rotation = 0;
+              break;
+            case "diagonal":
+              rotation = 45;
+              break;
+            default:
+              rotation = 90;
+              break;
+          }
+          plotLines.Add(new PlotLine
+          {
+            Label = new Label
+            {
+              Rotation = rotation,
+              Text = n.ChartLabel,
+              Style = new Style { FontSize = n.ChartLabelFontSize }
+            },
+            Color = n.ChartLineColor,
+            DashStyle = n.ChartLineStyle,
+            Value = i + legendDataStartPost
+          });
+        };
+
         calWeekStartLegend = calWeekStartLegend.AddDays(7);
       }
 
@@ -368,7 +409,7 @@ namespace AbaBackend.Infrastructure.Collection
             crosshair = true
           },
           title = new { text = "" },
-          chart = new { type = "spline", height = 200 },
+          chart = new { type = "spline", height = 300 },
           yAxis = new { title = new { text = "Count" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
           legend = new { enabled = false },
           exporting = new { enabled = true }
@@ -382,6 +423,7 @@ namespace AbaBackend.Infrastructure.Collection
     {
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
+      var individualPlotLines = new List<PlotLine>();
       var plotBands = new List<PlotBand>();
       var legend = new List<string>();
       var data = new List<int?>();
@@ -849,6 +891,7 @@ namespace AbaBackend.Infrastructure.Collection
 
         var newBeh = new MonthlyBehaviorContract
         {
+          ClientProblemId = behavior.ClientProblemId,
           Behavior = behavior.ProblemBehavior.ProblemBehaviorDescription,
           IsPercent = behavior.ProblemBehavior.IsPercent,
           ProblemId = behavior.ProblemId,

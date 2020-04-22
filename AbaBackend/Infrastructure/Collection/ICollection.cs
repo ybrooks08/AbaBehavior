@@ -24,6 +24,7 @@ namespace AbaBackend.Infrastructure.Collection
     public bool IsPercent { get; internal set; }
     public DateTime? BaselineFrom { get; internal set; }
     public DateTime? BaselineTo { get; internal set; }
+    public int ClientProblemId { get; set; }
   }
 
   public class ClientStoBehaviorContract

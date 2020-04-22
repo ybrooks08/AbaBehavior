@@ -82,6 +82,7 @@ namespace AbaBackend.DataModel
     public int? SessionAnalystId { get; set; }
     [ForeignKey("SessionAnalystId")]
     public User SessionAnalyst { get; set; }
+    
 
   }
 }
