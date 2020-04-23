@@ -39,7 +39,7 @@
               <v-divider class="mt-2" />
               <table v-if="lines.length > 0" class="v-datatable v-table theme--light">
                 <tbody>
-                  <tr v-for="l in lines" :key="'line' + l.clientProblemChartLineId">
+                  <tr v-for="l in lines" :key="'lineR' + l.clientReplacementChartLineId">
                     <td>{{ l.chartDate | moment("utc", "MM/DD/YYYY") }}</td>
                     <td>{{ l.chartLabel || "No label" }}</td>
                     <td>
@@ -52,7 +52,7 @@
                       {{ l.chartOrientation }}
                     </td>
                     <td class="text-xs-right">
-                      <v-btn icon @click="deleteLine(l.clientProblemChartLineId)">
+                      <v-btn icon @click="deleteLine(l.clientReplacementChartLineId)">
                         <v-icon color="grey" small>fa-trash</v-icon>
                       </v-btn>
                     </td>
@@ -76,7 +76,7 @@
 import reportingApi from "@/services/api/ReportingServices";
 
 export default {
-  name: "ClientProblemChartLabels",
+  name: "ClientReplacementChartLabels",
 
   props: {
     model: {
@@ -84,7 +84,7 @@ export default {
       required: true,
       default: false
     },
-    clientProblemId: null
+    clientReplacementId: null
   },
 
   data() {
@@ -111,7 +111,7 @@ export default {
   },
 
   watch: {
-    clientProblemId() {
+    clientReplacementId() {
       this.getLines();
     }
   },
@@ -135,7 +135,7 @@ export default {
     allowedDates: val => new Date(val).getDay() === 5,
 
     async getLines() {
-      this.lines = await reportingApi.getClientProblemChartLines(this.clientProblemId);
+      this.lines = await reportingApi.getClientReplacementChartLines(this.clientReplacementId);
     },
 
     async add() {
@@ -148,9 +148,9 @@ export default {
           chartLineStyle: this.chartLineStyle,
           chartLineColor: this.chartLineColor,
           chartLabelFontSize: this.chartLabelFontSize,
-          clientProblemId: this.clientProblemId
+          clientReplacementId: this.clientReplacementId
         };
-        await reportingApi.addNewProblemBehaviorChartLine(line);
+        await reportingApi.addNewReplacementChartLine(line);
         //this.lines.push(line);
         await this.getLines();
         this.reset();
@@ -161,12 +161,12 @@ export default {
       }
     },
 
-    async deleteLine(clientProblemChartLineId) {
+    async deleteLine(clientReplacementChartLineId) {
       this.$confirm("Do you want to delete this plot line?").then(async res => {
         if (res) {
           try {
             this.loading = true;
-            await reportingApi.deleteClientProblemChartLine(clientProblemChartLineId);
+            await reportingApi.deleteClientReplacementChartLine(clientReplacementChartLineId);
             await this.getLines();
             // this.lines.splice(
             //   this.lines.findIndex(item => item.clientProblemChartLineId === clientProblemChartLineId),

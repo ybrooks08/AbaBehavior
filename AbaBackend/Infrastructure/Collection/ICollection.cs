@@ -49,6 +49,7 @@ namespace AbaBackend.Infrastructure.Collection
     public int ReplacementId { get; set; }
     public DateTime? BaselineFrom { get; internal set; }
     public DateTime? BaselineTo { get; internal set; }
+    public int ClientReplacementId { get; internal set; }
   }
 
   public class ClientStoReplacementContract

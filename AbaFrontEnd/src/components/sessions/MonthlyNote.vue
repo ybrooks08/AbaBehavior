@@ -6,7 +6,7 @@
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
 
           <v-toolbar color="secondary" dark tabs dense>
-            <v-toolbar-title>Monthly notes {{note.monthlyNoteDate | moment("utc", "MMMM/YYYY")}}</v-toolbar-title>
+            <v-toolbar-title>Monthly notes {{ note.monthlyNoteDate | moment("utc", "MMMM/YYYY") }}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-tabs slot="extension" dark show-arrows v-model="tabModel">
               <v-tab key="summary">Summary</v-tab>
@@ -105,33 +105,37 @@
                   <v-container fluid grid-list-sm pa-0>
                     <v-layout row wrap>
                       <v-flex xs12>
-                        <v-select box :loading="loading" :disabled="loading" :items="clientAnalysts" v-model="note.monthlyAnalystId" label="Monthly analyst" prepend-inner-icon="fa-user"
-                                  item-value="userId">
-                          <template slot="selection" slot-scope="data">
-                            {{ data.item.firstname }} {{ data.item.lastname }}
-                          </template>
-                          <template slot="item" slot-scope="data">
-                            {{ data.item.firstname }} {{ data.item.lastname }}
-                          </template>
+                        <v-select
+                          box
+                          :loading="loading"
+                          :disabled="loading"
+                          :items="clientAnalysts"
+                          v-model="note.monthlyAnalystId"
+                          label="Monthly analyst"
+                          prepend-inner-icon="fa-user"
+                          item-value="userId"
+                        >
+                          <template slot="selection" slot-scope="data"> {{ data.item.firstname }} {{ data.item.lastname }} </template>
+                          <template slot="item" slot-scope="data"> {{ data.item.firstname }} {{ data.item.lastname }} </template>
                         </v-select>
                       </v-flex>
                       <v-flex xs12>
-                        <v-select box :loading="loading" :disabled="loading" :items="clientAsistants" v-model="note.monthlyAssistantId" label="Monthly assistant" prepend-inner-icon="fa-user"
-                                  item-value="userId">
-                          <template slot="selection" slot-scope="data">
-                            {{ data.item.firstname }} {{ data.item.lastname }}
-                          </template>
-                          <template slot="item" slot-scope="data">
-                            {{ data.item.firstname }} {{ data.item.lastname }}
-                          </template>
+                        <v-select
+                          box
+                          :loading="loading"
+                          :disabled="loading"
+                          :items="clientAsistants"
+                          v-model="note.monthlyAssistantId"
+                          label="Monthly assistant"
+                          prepend-inner-icon="fa-user"
+                          item-value="userId"
+                        >
+                          <template slot="selection" slot-scope="data"> {{ data.item.firstname }} {{ data.item.lastname }} </template>
+                          <template slot="item" slot-scope="data"> {{ data.item.firstname }} {{ data.item.lastname }} </template>
                         </v-select>
                         <v-select box :loading="loading" :disabled="loading" :items="clientRbts" v-model="note.monthlyRbtId" label="Monthly assistant" prepend-inner-icon="fa-user" item-value="userId">
-                          <template slot="selection" slot-scope="data">
-                            {{ data.item.firstname }} {{ data.item.lastname }}
-                          </template>
-                          <template slot="item" slot-scope="data">
-                            {{ data.item.firstname }} {{ data.item.lastname }}
-                          </template>
+                          <template slot="selection" slot-scope="data"> {{ data.item.firstname }} {{ data.item.lastname }} </template>
+                          <template slot="item" slot-scope="data"> {{ data.item.firstname }} {{ data.item.lastname }} </template>
                         </v-select>
                       </v-flex>
                     </v-layout>
@@ -150,7 +154,6 @@
     </v-layout>
   </v-container>
 </template>
-
 
 <script>
 import sessionServicesApi from "@/services/api/SessionServices";
@@ -192,6 +195,12 @@ export default {
     },
     activeDate() {
       return this.$store.getters.activeDate;
+    },
+    user() {
+      return this.$store.getters.user;
+    },
+    isAdmin() {
+      return this.user.rol2 === "admin";
     }
   },
 
@@ -213,6 +222,10 @@ export default {
     },
 
     close() {
+      if (this.isAdmin) {
+        window.close();
+        //this.$router.go(-1);
+      }
       this.$router.push("/clients/sessions_details");
     },
 

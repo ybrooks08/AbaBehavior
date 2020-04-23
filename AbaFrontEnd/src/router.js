@@ -126,7 +126,7 @@ export default new Router({
           path: "/clients/edit_monthly_note",
           name: "MonthlyNote",
           component: () => import(/* webpackChunkName: "MonthlyNote" */ "@/components/sessions/MonthlyNote"),
-          meta: { rol: ["analyst", "assistant"] }
+          meta: { rol: ["analyst", "assistant", "admin"] }
         },
         {
           path: "/clients/new_training",
@@ -144,7 +144,7 @@ export default new Router({
         {
           path: "/competency_checks",
           name: "CompetencyChecks",
-          component: () => import(/* webpackChunkName: "CompetencyChecks" */  "@/components/sessions/CompetencyChecks/CompetencyChecks"),
+          component: () => import(/* webpackChunkName: "CompetencyChecks" */ "@/components/sessions/CompetencyChecks/CompetencyChecks"),
           meta: { rol: ["analyst", "assistant"] }
         },
         {
@@ -273,7 +273,7 @@ export default new Router({
           name: "StaffClient",
           component: () => import(/* webpackChunkName: "StaffClient" */ "@/components/reporting/StaffClient"),
           meta: { rol: ["admin"] }
-        },
+        }
       ]
     },
     { path: "*", redirect: "/" }

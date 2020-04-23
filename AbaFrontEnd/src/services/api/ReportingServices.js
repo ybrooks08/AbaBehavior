@@ -107,5 +107,32 @@ export default {
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
+  },
+
+  addNewReplacementChartLine(line) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .post("api/reporting/AddNewReplacementChartLine", line)
+        .then(() => resolve())
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  getClientReplacementChartLines(clientReplacementId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .get(`api/reporting/GetClientReplacementChartLines/${clientReplacementId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  deleteClientReplacementChartLine(clientReplacementChartLineId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .delete(`api/reporting/DeleteClientReplacementChartLine/${clientReplacementChartLineId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
   }
 };

@@ -1,23 +1,33 @@
 <template>
   <v-container grid-list-xs pa-0>
-    <template v-if="loading">
-      <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Generating chart...</v-alert>
-    </template>
-    <template v-if="!loading && chartOptions.series.length === 0">
-      <v-alert :value="true" type="info" color="grey">No data chart</v-alert>
-    </template>
-    <template v-if="chartOptions.series.length > 0">
-      <v-layout row wrap>
-        <v-flex xs12>
-          <highcharts :options="chartOptions"></highcharts>
-        </v-flex>
-      </v-layout>
-    </template>
+    <v-card flat class="ma-0 pa-0">
+      <v-btn flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:20px;" @click="editClientReplacementLineChart">
+        <v-icon>fa-wrench</v-icon>
+      </v-btn>
+      <v-btn flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:60px;" @click="loadData">
+        <v-icon>fa-sync-alt</v-icon>
+      </v-btn>
+      <template v-if="loading">
+        <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Generating chart...</v-alert>
+      </template>
+      <template v-if="!loading && chartOptions.series.length === 0">
+        <v-alert :value="true" type="info" color="grey">No data chart</v-alert>
+      </template>
+      <template v-if="chartOptions.series.length > 0">
+        <v-layout row wrap>
+          <v-flex xs12>
+            <highcharts :options="chartOptions"></highcharts>
+          </v-flex>
+        </v-layout>
+      </template>
+    </v-card>
+    <client-replacement-chart-labels :model="chartLabelDialog" :clientReplacementId="clientReplacementId" @onClosed="chartLabelsDialogOnClosed" />
   </v-container>
 </template>
 
 <script>
 import sessionServicesApi from "@/services/api/SessionServices";
+import ClientReplacementChartLabels from "@/components/reporting/Components/ClientReplacementChartLabels";
 
 export default {
   props: {
@@ -26,6 +36,10 @@ export default {
       required: true
     },
     problemId: {
+      type: Number,
+      required: true
+    },
+    clientReplacementId: {
       type: Number,
       required: true
     },
@@ -41,12 +55,17 @@ export default {
     }
   },
 
+  components: {
+    ClientReplacementChartLabels
+  },
+
   data() {
     return {
       loading: true,
       chartOptions: {
         series: []
-      }
+      },
+      chartLabelDialog: false
     };
   },
 
@@ -66,6 +85,15 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    editClientReplacementLineChart() {
+      this.chartLabelDialog = true;
+    },
+
+    async chartLabelsDialogOnClosed() {
+      this.chartLabelDialog = false;
+      await this.loadData();
     }
   }
 };

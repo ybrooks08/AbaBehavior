@@ -660,5 +660,53 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpPost("[action]")]
+    public async Task<IActionResult> AddNewReplacementChartLine([FromBody] ClientReplacementChartLine line)
+    {
+      try
+      {
+        _dbContext.Add(line);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{clientReplacementId}")]
+    public async Task<IActionResult> GetClientReplacementChartLines(int clientReplacementId)
+    {
+      try
+      {
+        var lines = await _dbContext.ClientReplacementChartLines.Where(w => w.ClientReplacementId == clientReplacementId).OrderBy(o => o.ChartDate).ToListAsync();
+        return Ok(lines);
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+
+    [HttpDelete("[action]/{id}")]
+    public async Task<IActionResult> DeleteClientReplacementChartLine(int id)
+    {
+      try
+      {
+        var line = await _dbContext.ClientReplacementChartLines
+          .FirstOrDefaultAsync(s => s.ClientReplacementChartLineId.Equals(id));
+        if (line == null) throw new Exception("Line not found");
+        _dbContext.Remove(line);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
   }
 }

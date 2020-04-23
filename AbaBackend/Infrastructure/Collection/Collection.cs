@@ -261,7 +261,6 @@ namespace AbaBackend.Infrastructure.Collection
     {
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
-      var individualPlotLines = new List<PlotLine>();
       var plotBands = new List<PlotBand>();
       var legend = new List<string>();
       var data = new List<int?>();
@@ -423,7 +422,6 @@ namespace AbaBackend.Infrastructure.Collection
     {
       var dataSet = new List<MultiSerieChart>();
       var plotLines = new List<PlotLine>();
-      var individualPlotLines = new List<PlotLine>();
       var plotBands = new List<PlotBand>();
       var legend = new List<string>();
       var data = new List<int?>();
@@ -496,6 +494,12 @@ namespace AbaBackend.Infrastructure.Collection
         .OrderBy(o => o.ChartNoteDate)
         .ToListAsync();
 
+      var allPlotLines = await _dbContext.ClientReplacementChartLines
+.Where(w => w.ClientReplacementId == clientReplacement.ClientReplacementId)
+.Where(w => w.ChartDate >= firstDayOfData && w.ChartDate <= end)
+.OrderBy(w => w.ChartDate)
+.ToListAsync();
+
       legend.Add("");
       data.Add(null);
       legendDataStartPost++;
@@ -509,6 +513,40 @@ namespace AbaBackend.Infrastructure.Collection
         legend.Add(calWeekEnd.ToString("M/d/yy"));
         var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
         foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i + legendDataStartPost });
+
+        var linesWeek = allPlotLines.Where(w => w.ChartDate >= calWeekStartLegend && w.ChartDate <= calWeekEnd).ToList();
+        foreach (var n in linesWeek)
+        {
+          var rotation = 90;
+          switch (n.ChartOrientation.ToLower())
+          {
+            case "vertical":
+              rotation = 90;
+              break;
+            case "horizontal":
+              rotation = 0;
+              break;
+            case "diagonal":
+              rotation = 45;
+              break;
+            default:
+              rotation = 90;
+              break;
+          }
+          plotLines.Add(new PlotLine
+          {
+            Label = new Label
+            {
+              Rotation = rotation,
+              Text = n.ChartLabel,
+              Style = new Style { FontSize = n.ChartLabelFontSize }
+            },
+            Color = n.ChartLineColor,
+            DashStyle = n.ChartLineStyle,
+            Value = i + legendDataStartPost
+          });
+        };
+
         calWeekStartLegend = calWeekStartLegend.AddDays(7);
       }
 
@@ -517,83 +555,6 @@ namespace AbaBackend.Infrastructure.Collection
         Data = data,
         Name = clientReplacement.Replacement.ReplacementProgramDescription,
       });
-
-      // var dataSet = new List<MultiSerieChart>();
-      // var plotLines = new List<PlotLine>();
-      // var plotBands = new List<PlotBand>();
-      // var clientReplacement = (await _utils.GetClientReplacements(clientId)).FirstOrDefault(w => w.ReplacementId == replacementId);
-      // if (clientReplacement == null) return new OkObjectResult(new { chartOptions = new { series = new List<int>() } }).Value;
-
-      // var currentPeriod = await _utils.GetClientWholePeriod(clientId);
-      // var firstWeekStart = clientReplacement?.BaselineFrom ?? currentPeriod.start;
-      // firstWeekStart = firstWeekStart.StartOfWeek(DayOfWeek.Sunday);
-      // DateTime lastWeekEnd = end ?? DateTime.Today;
-      // while (lastWeekEnd.DayOfWeek != DayOfWeek.Saturday) lastWeekEnd = lastWeekEnd.AddDays(1);
-      // var totalWeeks = ((lastWeekEnd - firstWeekStart).Days + 1) / 7;
-
-      // var allCollection = await GetCollectionReplacements(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
-      // var allCaregiverCollection = await GetCollectionReplacementsCaregiver(firstWeekStart, lastWeekEnd, clientId, new List<int> { replacementId });
-
-      // var notes = await _dbContext.ClientChartNotes
-      //   .Where(w => w.ClientId == clientId)
-      //   .Where(w => w.ChartNoteType == ChartNoteType.Both || w.ChartNoteType == ChartNoteType.Replacement)
-      //   .Where(w => w.ChartNoteDate >= firstWeekStart && w.ChartNoteDate <= lastWeekEnd)
-      //   .OrderBy(o => o.ChartNoteDate)
-      //   .ToListAsync();
-
-      // var data = new List<int?>();
-      // var collection = GetClientReplacementsByWeek(replacementId, firstWeekStart, lastWeekEnd, allCollection, allCaregiverCollection);
-
-      // var allData = collection.Select(s => s.Total);
-
-      // var found = false;
-      // foreach (var i in allData)
-      // {
-      //   if (i == 0 && !found) data.Add(null);
-      //   else { data.Add(i); found = true; }
-      // }
-
-      // //data.AddRange(collection.Select(s => s.Total));
-
-
-
-      // dataSet.Add(new MultiSerieChart
-      // {
-      //   Data = data,
-      //   Name = clientReplacement.Replacement.ReplacementProgramDescription,
-      // });
-
-      // var baseLineStart = 0;
-      // var baseLineEnd = 0;
-      // var legend = new List<string>();
-      // var calWeekStartLegend = firstWeekStart;
-      // for (int i = 0; i < totalWeeks; i++)
-      // {
-      //   var calWeekEnd = calWeekStartLegend.AddDays(6);
-      //   legend.Add(calWeekEnd.ToString("M/d/yy"));
-      //   var notesWeek = notes.Where(w => w.ChartNoteDate >= calWeekStartLegend && w.ChartNoteDate <= calWeekEnd).ToList();
-      //   foreach (var n in notesWeek) plotLines.Add(new PlotLine { Label = new Label { Text = n.Title }, Value = i });
-      //   if (clientReplacement.BaselineFrom >= calWeekStartLegend && clientReplacement.BaselineFrom <= calWeekEnd) baseLineStart = i;
-      //   if (clientReplacement.BaselineTo >= calWeekStartLegend && clientReplacement.BaselineTo <= calWeekEnd) baseLineEnd = i;
-      //   calWeekStartLegend = calWeekStartLegend.AddDays(7);
-      // }
-
-      // // if (baseLineStart != 0 || baseLineEnd != 0) 
-      // plotBands.Add(new PlotBand { Label = new Label { Text = "" }, From = baseLineStart, To = baseLineEnd });
-      // // if (baseLineEnd != 0)
-      // {
-      //   plotLines.Add(new PlotLine { Label = new Label { Text = "Baseline" }, Value = baseLineEnd, Color = "Blue", DashStyle = "Solid" });
-      //   baseLineEnd++;
-      //   dataSet.First().Data.Insert(baseLineEnd, null);
-      //   legend.Insert(baseLineEnd, "");
-      // }
-      // var firstValue = collection.Select((s, i) => new { s.Total, i }).ToList().FirstOrDefault(w => w.Total != 0 && w.Total != null)?.i ?? 0;
-      // var start = baseLineEnd == 0 ? firstValue - 1 : baseLineEnd + 1;
-      // plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = start, Color = "Green", DashStyle = "Solid" });
-      // plotLines.ForEach(w =>
-      // {
-      //   if (w.Value >= baseLineEnd + 1 && w.Label.Text != "Treatment") w.Value += 1;
-      // });
 
       var res = new OkObjectResult(new
       {
@@ -609,7 +570,7 @@ namespace AbaBackend.Infrastructure.Collection
             crosshair = true
           },
           title = new { text = "" },
-          chart = new { type = "spline", height = 200 },
+          chart = new { type = "spline", height = 300 },
           yAxis = new { title = new { text = "Trials percent" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
           legend = new { enabled = false },
           exporting = new { enabled = true }
@@ -945,6 +906,7 @@ namespace AbaBackend.Infrastructure.Collection
 
         var newRpl = new MonthlyReplacementContract
         {
+          ClientReplacementId = replacement.ClientReplacementId,
           Replacement = replacement.Replacement.ReplacementProgramDescription,
           ReplacementId = replacement.ReplacementId,
           Baseline = replacement.BaselinePercent,

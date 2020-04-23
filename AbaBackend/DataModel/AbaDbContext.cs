@@ -333,5 +333,6 @@ namespace AbaBackend.DataModel
     public DbSet<SessionCollectReplacementV2> SessionCollectReplacementsV2 { get; set; }
     public DbSet<AuthPass> AuthPasses { get; set; }
     public DbSet<ClientProblemChartLine> ClientProblemChartLines { get; set; }
+    public DbSet<ClientReplacementChartLine> ClientReplacementChartLines { get; set; }
   }
 }

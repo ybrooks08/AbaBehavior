@@ -330,7 +330,7 @@
                       </tr>
                       <tr :key="'chart-rep-' + r.replacement" style="border-top:  2px dotted grey !important;">
                         <td colspan="3">
-                          <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" />
+                          <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" :clientReplacementId="r.clientReplacementId" />
                         </td>
                       </tr>
                       <tr :key="'chart-rep-sep-' + r.replacement">
@@ -531,7 +531,6 @@ export default {
         this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
-        console.log(this.clientProblems);
         this.clientReplacements = monthlyData.replacements;
         let chartMaxDate = this.notes.find(s => s.value === monthlyNoteId).text;
         this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.clientId, chartMaxDate);
