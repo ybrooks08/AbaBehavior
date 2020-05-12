@@ -133,7 +133,7 @@ namespace AbaBackend.Controllers
           if (Allowed != null && Total + session.TotalUnits > Allowed) throw new Exception("You can not create session bacause exced the units per week.");
 
           //check if there is a time gap between sessions
-          //if (!(await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId))) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
+          if (!await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId)) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
 
           //get current client analist
           int? analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).FirstOrDefault()?.UserId ?? null;

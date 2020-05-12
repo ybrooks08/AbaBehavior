@@ -739,6 +739,7 @@ namespace AbaBackend.Infrastructure.Utils
     {
       var minutes = Convert.ToInt32(_configuration[$"Session:TimeGapBetweenSessions"]);
       var allSessionsInDate = await _dbContext.Sessions
+        .Where(w => w.ClientId == clientId)
         .Where(w => w.SessionStart.Date.Equals(sessionStart.Date))
         .ToListAsync();
       var allSessionsClient = allSessionsInDate.Where(w => (sessionStart - w.SessionEnd).TotalMinutes < minutes).ToList();
