@@ -133,10 +133,15 @@ namespace AbaBackend.Controllers
           if (Allowed != null && Total + session.TotalUnits > Allowed) throw new Exception("You can not create session bacause exced the units per week.");
 
           //check if there is a time gap between sessions
-          if (!await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), user.UserId, session.ClientId)) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
+          if (!await _utils.CheckIfTimeGap(session.SessionStart.ToUniversalTime(), session.SessionEnd.ToUniversalTime(), user.UserId, session.ClientId)) throw new Exception("You can not create a session too close the end of other. Please leave a time between sessions.");
 
           //get current client analist
           int? analyst = client.Assignments.Where(w => w.Active && w.User.RolId == 2).FirstOrDefault()?.UserId ?? null;
+
+          //check if session is not more than 2 days from today.
+          var sessionDate = session.SessionStart.Date;
+          var daysSpan = (sessionDate - DateTime.Today).Days;
+          if (daysSpan > 2) throw new Exception("You can not create this session 2 days from today.");
 
           session.SessionStart = session.SessionStart.ToUniversalTime();
           session.SessionEnd = session.SessionEnd.ToUniversalTime();
@@ -917,6 +922,7 @@ namespace AbaBackend.Controllers
         try
         {
           var session = await _dbContext.Sessions.Include(i => i.Client).Include(i => i.User).FirstOrDefaultAsync(w => w.SessionId == sessionId);
+          if (DateTime.UtcNow < session.SessionEnd) throw new Exception("Caregiver can not sign the session before it ends.");
           var sessionNotes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
           var supervisionNotes = await _dbContext.SessionSupervisionNotes.FirstOrDefaultAsync(w => w.SessionId.Equals(sessionId));
           if (session.SessionType != SessionType.Training_BCABA && (sessionNotes == null || sessionNotes.CaregiverId == null)) throw new Exception("You must select a valid caregiver for this session. If you already select a caregiver, please save session before.");

@@ -735,14 +735,19 @@ namespace AbaBackend.Infrastructure.Utils
       return false;
     }
 
-    public async Task<bool> CheckIfTimeGap(DateTime sessionStart, int userId, int clientId)
+    public async Task<bool> CheckIfTimeGap(DateTime sessionStart, DateTime sessionEnd, int userId, int clientId)
     {
       var minutes = Convert.ToInt32(_configuration[$"Session:TimeGapBetweenSessions"]);
       var allSessionsInDate = await _dbContext.Sessions
         .Where(w => w.ClientId == clientId)
         .Where(w => w.SessionStart.Date.Equals(sessionStart.Date))
+        .Select(s => new
+        {
+          MinutesToEnd = (sessionStart - s.SessionEnd).TotalMinutes,
+          MinutesToStart = (sessionEnd - s.SessionStart).TotalMinutes
+        })
         .ToListAsync();
-      var allSessionsClient = allSessionsInDate.Where(w => (sessionStart - w.SessionEnd).TotalMinutes < minutes).ToList();
+      var allSessionsClient = allSessionsInDate.Where(w => w.MinutesToEnd >= 0 && w.MinutesToEnd < minutes).ToList();
       if (allSessionsClient.Any()) return false;
       return true;
     }
