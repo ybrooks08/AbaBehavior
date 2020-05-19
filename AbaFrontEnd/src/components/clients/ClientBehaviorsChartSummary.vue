@@ -57,7 +57,8 @@ export default {
     async loadClientProblems() {
       try {
         this.clientProblems = [];
-        this.clientProblems = await clientApi.getClientProblems(this.clientId);
+        const clientProblems = await clientApi.getClientProblems(this.clientId);
+        this.clientProblems = clientProblems.filter(s => s.active === true);
         // console.log(this.clientProblems);
       } catch (error) {
         this.$toast.error(error);

@@ -66,8 +66,9 @@ export default {
     async loadClientReplacements() {
       try {
         this.clientReplacements = [];
-        this.clientReplacements = await clientApi.getClientReplacements(this.clientId);
-        console.log(this.clientReplacements);
+        const clientReplacements = await clientApi.getClientReplacements(this.clientId);
+        this.clientReplacements = clientReplacements.filter(s => s.active === true);
+        // console.log(this.clientReplacements);
       } catch (error) {
         this.$toast.error(error);
       }
