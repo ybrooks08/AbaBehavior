@@ -4,6 +4,12 @@
       <v-flex xs12>
         <new-calendar :clientId="activeClientId" :selectedDate="activeDate.format('YYYY-MM-DD')" />
       </v-flex>
+      <v-flex xs12 v-if="activeClientId">
+        <client-behaviors-chart-summary :clientId="activeClientId" />
+      </v-flex>
+      <v-flex xs12 v-if="activeClientId">
+        <client-replacements-chart-summary :clientId="activeClientId" />
+      </v-flex>
       <!-- <v-flex xs12>
         <clinical-data-summary :clientId="activeClientId" />
       </v-flex> -->
@@ -55,6 +61,8 @@
 // import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
 // import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
 import NewCalendar from "@/components/sessions/NewCalendar";
+import ClientBehaviorsChartSummary from "@/components/clients/ClientBehaviorsChartSummary";
+import ClientReplacementsChartSummary from "@/components/clients/ClientReplacementsChartSummary";
 // import ClinicalDataSummary from "@/components/clients/ClinicalData/ClinicalDataSummary";
 // import CalendarSessions from "@/components/sessions/CalendarSessions";
 
@@ -62,7 +70,9 @@ export default {
   components: {
     // ClientProgressBehavior,
     // ClientProgressReplacement,
-    NewCalendar
+    NewCalendar,
+    ClientBehaviorsChartSummary,
+    ClientReplacementsChartSummary
     // ClinicalDataSummary
     // CalendarSessions
   },

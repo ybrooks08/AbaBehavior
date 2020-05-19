@@ -1,10 +1,10 @@
 <template>
   <v-container grid-list-xs pa-0>
     <v-card flat class="ma-0 pa-0">
-      <v-btn flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:20px;" @click="editClientProblemLineChart">
+      <v-btn v-if="!loading" flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:20px;" @click="editClientProblemLineChart">
         <v-icon>fa-wrench</v-icon>
       </v-btn>
-      <v-btn flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:60px;" @click="loadData">
+      <v-btn v-if="!loading" flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:60px;" @click="loadData">
         <v-icon>fa-sync-alt</v-icon>
       </v-btn>
       <template v-if="loading">

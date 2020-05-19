@@ -620,19 +620,21 @@ namespace AbaBackend.Controllers
       return Ok(chartData);
     }
 
-    [HttpGet("[action]/{clientId}/{problemId}/{dateEnd}")]
-    public async Task<IActionResult> GetBehaviorMontlyChart(int clientId, int problemId, DateTime dateEnd)
+    [HttpGet("[action]/{clientId}/{problemId}/{dateEnd?}")]
+    public async Task<IActionResult> GetBehaviorMontlyChart(int clientId, int problemId, DateTime? dateEnd = null)
     {
       if (clientId == 0 || problemId == 0) return Ok();
-      var chartData = await _collection.GetClientBehaviorMonthlyChart(clientId, problemId, dateEnd);
+      var endCal = dateEnd ?? DateTime.Today;
+      var chartData = await _collection.GetClientBehaviorMonthlyChart(clientId, problemId, endCal);
       return Ok(chartData);
     }
 
-    [HttpGet("[action]/{clientId}/{replacementId}/{dateEnd}")]
-    public async Task<IActionResult> GetReplacementMontlyChart(int clientId, int replacementId, DateTime dateEnd)
+    [HttpGet("[action]/{clientId}/{replacementId}/{dateEnd?}")]
+    public async Task<IActionResult> GetReplacementMontlyChart(int clientId, int replacementId, DateTime? dateEnd = null)
     {
       if (clientId == 0 || replacementId == 0) return Ok();
-      var chartData = await _collection.GetClientReplacementMonthlyChart(clientId, replacementId, dateEnd);
+      var endCal = dateEnd ?? DateTime.Today;
+      var chartData = await _collection.GetClientReplacementMonthlyChart(clientId, replacementId, endCal);
       return Ok(chartData);
     }
 
