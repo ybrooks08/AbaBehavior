@@ -110,7 +110,7 @@
             </v-flex>
             <v-flex xs6>
               <v-layout row wrap>
-                <v-flex class="body-2 text-xs-right" xs4>Dob:</v-flex>
+                <v-flex class="body-2 text-xs-right" xs4>D.O.B:</v-flex>
                 <v-flex xs8>{{ report.client.dob || new Date() | moment("utc", "MM/DD/YYYY") }}</v-flex>
                 <v-flex class="body-2 text-xs-right" xs4>Patient account:</v-flex>
                 <v-flex xs8>{{ report.client.code }}</v-flex>

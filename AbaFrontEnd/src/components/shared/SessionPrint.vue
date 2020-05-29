@@ -5,8 +5,9 @@
       <v-container fluid grid-list-sm pa-0>
         <v-layout row wrap>
           <v-flex xs6>
-            <span class="headline">{{ sessionPrint.clientName }}</span><br>
-            <span v-if="sessionPrint.clientDob" class="body-1"><strong>Dob:</strong> {{sessionPrint.clientDob | moment("utc","LL")}}</span>
+            <span class="headline">{{ sessionPrint.clientName }}</span
+            ><br />
+            <span v-if="sessionPrint.clientDob" class="body-1"><strong>D.O.B:</strong> {{ sessionPrint.clientDob | moment("utc", "LL") }}</span>
           </v-flex>
           <v-flex xs6 class="text-xs-right">
             <span class="title grey--text text--darken-2">{{ sessionPrint.sessionStart | moment("LL") }}</span>
@@ -55,7 +56,8 @@
               <v-flex class="font-weight-medium text-xs-right" xs4>Session type:</v-flex>
               <v-flex xs8>{{ sessionPrint.sessionType }}</v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Diagnosis:</v-flex>
-              <v-flex xs8 style="display:flex; flex-direction: column;"><span class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code">{{ d.description }} ({{ d.code }})</span>
+              <v-flex xs8 style="display:flex; flex-direction: column;"
+                ><span class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code">{{ d.description }} ({{ d.code }})</span>
               </v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Medicaid ID:</v-flex>
               <v-flex xs8>{{ sessionPrint.memberNo }}</v-flex>
@@ -140,21 +142,21 @@
                     </td>
                     <td class="pl-1">
                       <v-icon small>{{ sessionPrint.supervisionNote.briefObservation ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Observation and feedback regarding interaction of BCaBA<br/>
+                      Observation and feedback regarding interaction of BCaBA<br />
                       <v-icon small>{{ sessionPrint.supervisionNote.briefReplacement ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Replacement/Acquisition Programs Implementation monitoring<br/>
+                      Replacement/Acquisition Programs Implementation monitoring<br />
                       <v-icon small>{{ sessionPrint.supervisionNote.briefGeneralization ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Generalization of Treatment<br/>
+                      Generalization of Treatment<br />
                       <v-icon small>{{ sessionPrint.supervisionNote.briefBCaBaTraining ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      BCaBA training and oversight<br/>
+                      BCaBA training and oversight<br />
                       <v-icon small>{{ sessionPrint.supervisionNote.briefInService ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      In-Service Education Training (for session participants)<br/>
+                      In-Service Education Training (for session participants)<br />
                       <div style="padding-left: 20px;">
                         Subject:
                         {{ sessionPrint.supervisionNote.briefInServiceSubject || "N/A" }}
                       </div>
                       <v-icon small>{{ sessionPrint.supervisionNote.briefOther ? "fa-check-circle" : "far fa-circle" }}</v-icon>
-                      Other<br/>
+                      Other<br />
                       <div style="padding-left: 20px;" v-html="breakLine(sessionPrint.supervisionNote.briefOtherDescription)"></div>
                     </td>
                   </tr>
@@ -296,7 +298,7 @@
                       <v-icon small>{{ sessionPrint.sessionNote.crisisInvolved ? "fa-check-circle" : "far fa-circle" }}</v-icon>
                     </td>
                     <td class="pl-1">
-                      Crisis involved<br/>
+                      Crisis involved<br />
                       <div v-html="breakLine(sessionPrint.sessionNote.crisisInvolvedExplain)"></div>
                     </td>
                   </tr>
@@ -453,7 +455,7 @@
                             <v-divider class="pb-1"></v-divider>
                             <template v-for="r in p.sessionProblemReplacements">
                               <v-icon small :key="p + r">fa-check-circle</v-icon>
-                              {{ r }}<br :key="'br' + p + r"/>
+                              {{ r }}<br :key="'br' + p + r" />
                             </template>
                           </td>
                         </tr>
@@ -512,12 +514,14 @@
               </div>
               <div v-else>
                 <div style="max-height: 50px; height: 50px;" class="mb-2">
-                  <img style="height:100%;" :src="sessionPrint.userSign.sign"/>
+                  <img style="height:100%;" :src="sessionPrint.userSign.sign" />
                 </div>
                 <v-divider></v-divider>
               </div>
               <div>
-                <label>Signed by <strong>{{ sessionPrint.userFullname }}</strong> on {{ sessionPrint.sessionStart | moment("LL") }}</label><br/>
+                <label
+                  >Signed by <strong>{{ sessionPrint.userFullname }}</strong> on {{ sessionPrint.sessionStart | moment("LL") }}</label
+                ><br />
                 <small>{{ sessionPrint.userLicense }}</small>
               </div>
             </v-flex>
@@ -529,7 +533,7 @@
               </div>
               <div v-else>
                 <div style="max-height: 50px; height: 50px;" class="mb-2">
-                  <img style="height:100%" :src="sessionPrint.analystSign.sign"/>
+                  <img style="height:100%" :src="sessionPrint.analystSign.sign" />
                 </div>
                 <v-divider></v-divider>
               </div>
@@ -540,7 +544,7 @@
                   on
                   {{ sessionPrint.sessionStart | moment("add", "1 days", "LL") }}
                 </label>
-                <br/>
+                <br />
                 <small>{{ sessionPrint.analyst.licenseNo }}</small>
               </div>
             </v-flex>
@@ -677,7 +681,7 @@ export default {
       let total = b.total;
       let completed = b.completed != null ? b.completed : 0;
       let percent = total == 0 ? 0 : (completed / total) * 100;
-      return `${ percent.toFixed(0) }%`;
+      return `${percent.toFixed(0)}%`;
     },
 
     getTotalReplacement(c) {
@@ -685,7 +689,7 @@ export default {
       let total = c.total;
       let completed = c.completed;
       let percent = total == 0 ? 0 : (completed / total) * 100;
-      return `${ percent.toFixed(0) }%`;
+      return `${percent.toFixed(0)}%`;
     },
 
     breakLine(s) {

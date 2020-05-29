@@ -116,7 +116,7 @@
                   <td class="px-1 text-xs-left">{{ client.code }}</td>
                 </tr>
                 <tr>
-                  <td class="px-1 text-xs-right">Dob:</td>
+                  <td class="px-1 text-xs-right">D.O.B:</td>
                   <td class="px-1 text-xs-left">{{ client.dob | moment("utc", "LL") }}</td>
                   <td class="px-1 text-xs-right">RecipientId:</td>
                   <td class="px-1 text-xs-left">{{ client.memberNo }}</td>

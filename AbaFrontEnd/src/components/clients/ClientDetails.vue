@@ -113,7 +113,7 @@
                           <v-flex xs8>{{ client.code || "N/A" }}</v-flex>
                           <v-flex class="body-2" xs4>Nickname:</v-flex>
                           <v-flex xs8>{{ client.nickname || "N/A" }}</v-flex>
-                          <v-flex class="body-2" xs4>Dob:</v-flex>
+                          <v-flex class="body-2" xs4>D.O.B:</v-flex>
                           <v-flex xs8>{{ client.dob || new Date() | moment("utc", "MMM Do, YYYY") }}</v-flex>
                           <v-flex class="body-2" xs4>Phone:</v-flex>
                           <v-flex xs8>{{ client.phone | phone }}</v-flex>
