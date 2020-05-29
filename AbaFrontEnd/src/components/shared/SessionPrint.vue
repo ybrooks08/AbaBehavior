@@ -462,13 +462,11 @@
                       </table>
                     </td>
                   </tr>
-                  <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">
-                      DATA COLLECTION
-                    </td>
+                  <tr class="no-page-break grey lighten-3" v-if="!noDataBehaviorCollection || !noDataReplacementCollection">
+                    <td class="font-weight-medium text-xs-right">DATA COLLECTION</td>
                     <td></td>
                   </tr>
-                  <tr class="no-page-break">
+                  <tr class="no-page-break" v-if="!noDataBehaviorCollection">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                       Behaviors:
                     </td>
@@ -485,7 +483,7 @@
                       </table>
                     </td>
                   </tr>
-                  <tr class="no-page-break">
+                  <tr class="no-page-break" v-if="!noDataReplacementCollection">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                       Replacements:
                     </td>
@@ -571,6 +569,14 @@ export default {
     hasLeadSign() {
       if (!this.sessionPrint.analyst) return false;
       return this.sessionPrint.userId !== this.sessionPrint.analyst.userId;
+    },
+    noDataBehaviorCollection() {
+      const noData = this.collection.collectBehaviors.filter(s => s.noData);
+      return noData.length == this.collection.collectBehaviors.length;
+    },
+    noDataReplacementCollection() {
+      const noData = this.collection.collectReplacements.filter(s => s.noData);
+      return noData.length == this.collection.collectReplacements.length;
     }
   },
 
@@ -659,6 +665,7 @@ export default {
         }
         this.collection.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.sessionId);
         this.collection.collectReplacements = await sessionServicesApi.getCollectReplacements(this.sessionId);
+        console.log(this.collection.collectReplacements);
         //this.sessionExtraInfo = await sessionServicesApi.getSessionPrintExtraInfo(this.sessionId);
       } catch (error) {
         this.$toast.error(error.message || error);
