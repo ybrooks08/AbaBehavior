@@ -345,6 +345,7 @@ namespace AbaBackend.Infrastructure.Collection
       plotLines.Add(new PlotLine { Label = new Label { Text = "Treatment" }, Value = legendDataStartPost, Color = "Green", DashStyle = "Solid" });
 
       var calWeekStartLegend = firstDayOfData;
+
       for (int i = 0; i < totalWeeks; i++)
       {
         var calWeekEnd = calWeekStartLegend.AddDays(6);

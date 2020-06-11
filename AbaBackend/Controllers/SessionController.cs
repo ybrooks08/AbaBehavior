@@ -1493,5 +1493,57 @@ namespace AbaBackend.Controllers
         Total
       });
     }
+
+    [HttpGet("[action]/{sessionId}")]
+    public async Task<IActionResult> CheckMatchingPercentaje(int sessionId)
+    {
+      var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+      if (session.SessionType != SessionType.BA_Service) return Ok(0);
+      var notes = await _dbContext.SessionNotes.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+      var note = notes.ProgressNotes;
+
+      var allSessions = await _dbContext.Sessions
+      .Where(w => w.UserId == session.UserId && w.ClientId == session.ClientId && w.SessionType == SessionType.BA_Service && w.SessionId != sessionId)
+      .Select(s => new
+      {
+        s.SessionId,
+        s.SessionNote.ProgressNotes,
+        s.SessionStart.Date,
+        Percentaje = _utils.CalculateSimilarity(note, s.SessionNote.ProgressNotes)
+        // Percentaje = _utils.Compare(note, s.SessionNote.ProgressNotes)
+      })
+      .OrderByDescending(o => o.Percentaje)
+      .ThenByDescending(o => o.Date)
+      .ToListAsync();
+
+      var matchest = allSessions.FirstOrDefault();
+
+      return Ok(matchest);
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> CheckMatchingPercentajeString([FromBody] MatchSessionString matchSessionString)
+    {
+      var note = matchSessionString.ProgressNotes;
+      var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == matchSessionString.SessionId);
+      if (session.SessionType != SessionType.BA_Service) return Ok(0);
+      var allSessions = await _dbContext.Sessions
+      .Where(w => w.UserId == session.UserId && w.ClientId == session.ClientId && w.SessionType == SessionType.BA_Service && w.SessionId != matchSessionString.SessionId)
+      .Select(s => new
+      {
+        s.SessionId,
+        s.SessionNote.ProgressNotes,
+        s.SessionStart.Date,
+        Percentaje = _utils.CalculateSimilarity(note, s.SessionNote.ProgressNotes)
+        // Percentaje = _utils.Compare(note, s.SessionNote.ProgressNotes)
+      })
+      .OrderByDescending(o => o.Percentaje)
+      .ThenByDescending(o => o.Date)
+      .ToListAsync();
+
+      var matchest = allSessions.FirstOrDefault();
+
+      return Ok(matchest);
+    }
   }
 }

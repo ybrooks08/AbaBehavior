@@ -506,5 +506,23 @@ export default {
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
+  },
+
+  checkMatchingPercentaje(id) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .get(`api/session/CheckMatchingPercentaje/${id}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
+  },
+
+  checkMatchingPercentajeString(obj) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .post(`api/session/CheckMatchingPercentajeString`, obj)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
   }
 };

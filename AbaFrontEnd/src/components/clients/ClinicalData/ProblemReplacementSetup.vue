@@ -7,26 +7,26 @@
         <v-card flat class="grey lighten-3">
           <v-card-text class="pa-1">
             <v-list dense subheader>
-              <v-list-tile :disabled="loading" v-for="p in clientProblems" :key="p.clientProblemId" :class="p.active ? '':'red lighten-5'">
+              <v-list-tile :disabled="loading" v-for="p in clientProblems" :key="p.clientProblemId" :class="p.active ? '' : 'red lighten-5'">
                 <v-list-tile-avatar>
                   <v-icon>fa-frown</v-icon>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
                   <v-list-tile-title class="body-2">
-                    {{p.problemBehavior.problemBehaviorDescription}} &nbsp;&nbsp;&nbsp;
-                    <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>
+                    {{ p.problemBehavior.problemBehaviorDescription }} &nbsp;&nbsp;&nbsp;
+                    <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{ p.stOs.length }} STO</v-chip>
                   </v-list-tile-title>
                   <v-list-tile-sub-title>
-                    Baseline: {{p.baselineCount || "N/A"}}{{p.problemBehavior.isPercent ? '%':''}}
-                    <span v-if="p.baselineFrom">From {{p.baselineFrom | moment("utc", "MM/DD/YYYY")}}</span>&nbsp;
-                    <span v-if="p.baselineTo">to {{p.baselineTo | moment("utc", "MM/DD/YYYY")}}</span>
+                    Baseline: {{ p.baselineCount || "N/A" }}{{ p.problemBehavior.isPercent ? "%" : "" }} <span v-if="p.baselineFrom">From {{ p.baselineFrom | moment("utc", "MM/DD/YYYY") }}</span
+                    >&nbsp;
+                    <span v-if="p.baselineTo">to {{ p.baselineTo | moment("utc", "MM/DD/YYYY") }}</span>
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
                 <v-list-tile-action>
                   <v-tooltip top>
                     <template #activator="data">
                       <v-btn icon :disabled="problemFormShow" @click.stop="toggleClientProblem(p)" v-on="data.on">
-                        <v-icon :color="p.active ? 'green':'red'">{{p.active ? 'fa-check-circle':'fa-exclamation-circle'}}</v-icon>
+                        <v-icon :color="p.active ? 'green' : 'red'">{{ p.active ? "fa-check-circle" : "fa-exclamation-circle" }}</v-icon>
                       </v-btn>
                     </template>
                     <span>Enable/Disabled</span>
@@ -70,7 +70,17 @@
               <v-form ref="problemFormRef" autocomplete="off" v-model="problemFormValid">
                 <v-layout row wrap>
                   <v-flex md4>
-                    <v-autocomplete solo hide-details v-model="clientProblem.problemId" :items="problemsMaster" item-value="problemId" item-text="problemBehaviorDescription" placeholder="Select problem" :rules="[required]" required></v-autocomplete>
+                    <v-autocomplete
+                      solo
+                      hide-details
+                      v-model="clientProblem.problemId"
+                      :items="problemsMaster"
+                      item-value="problemId"
+                      item-text="problemBehaviorDescription"
+                      placeholder="Select problem"
+                      :rules="[required]"
+                      required
+                    ></v-autocomplete>
                   </v-flex>
                   <v-flex md2>
                     <v-text-field solo hide-details v-model="clientProblem.baselineCount" placeholder="Base" clearable></v-text-field>
@@ -81,7 +91,7 @@
                   </v-flex>
                   <v-flex md3>
                     <!-- <v-text-field solo hide-details v-model="clientProblem.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/DD/YYYY'" clearable></v-text-field> -->
-                    <v-text-field solo hide-details v-model="clientProblem.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" clearable></v-text-field>
+                    <v-text-field solo hide-details v-model="clientProblem.baselineTo" placeholder="to" return-masked-value required mask="##/##/####" clearable></v-text-field>
                   </v-flex>
                 </v-layout>
                 <div class="text-xs-right">
@@ -98,26 +108,26 @@
         <v-card flat class="grey lighten-3">
           <v-card-text class="pa-1">
             <v-list dense subheader>
-              <v-list-tile :disabled="loading" v-for="p in clientReplacements" :key="p.clientReplacementId" :class="p.active ? '':'red lighten-5'">
+              <v-list-tile :disabled="loading" v-for="p in clientReplacements" :key="p.clientReplacementId" :class="p.active ? '' : 'red lighten-5'">
                 <v-list-tile-avatar>
                   <v-icon>fa-registered</v-icon>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
                   <v-list-tile-title class="body-2">
-                    {{p.replacement.replacementProgramDescription}} &nbsp;&nbsp;&nbsp;
-                    <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{p.stOs.length}} STO</v-chip>
+                    {{ p.replacement.replacementProgramDescription }} &nbsp;&nbsp;&nbsp;
+                    <v-chip style="max-height: 18px;" class="pa-0 ma-0" label small color="blue-grey lighten-4">{{ p.stOs.length }} STO</v-chip>
                   </v-list-tile-title>
                   <v-list-tile-sub-title>
-                    Baseline: {{p.baselinePercent || "N/A"}}%
-                    <span v-if="p.baselineFrom">From {{p.baselineFrom | moment("utc","MM/DD/YYYY")}}</span>&nbsp;
-                    <span v-if="p.baselineTo">to {{p.baselineTo | moment("utc","MM/DD/YYYY")}}</span>
+                    Baseline: {{ p.baselinePercent || "N/A" }}% <span v-if="p.baselineFrom">From {{ p.baselineFrom | moment("utc", "MM/DD/YYYY") }}</span
+                    >&nbsp;
+                    <span v-if="p.baselineTo">to {{ p.baselineTo | moment("utc", "MM/DD/YYYY") }}</span>
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
                 <v-list-tile-action>
                   <v-tooltip top>
                     <template #activator="data">
                       <v-btn icon :disabled="replacementFormShow" @click.stop="toggleClientReplacement(p)" v-on="data.on">
-                        <v-icon :color="p.active ? 'green':'red'">{{p.active ? 'fa-check-circle':'fa-exclamation-circle'}}</v-icon>
+                        <v-icon :color="p.active ? 'green' : 'red'">{{ p.active ? "fa-check-circle" : "fa-exclamation-circle" }}</v-icon>
                       </v-btn>
                     </template>
                     <span>Enable/Disabled</span>
@@ -160,16 +170,50 @@
               <v-form ref="replacementFormRef" autocomplete="off" v-model="replacementFormValid">
                 <v-layout row wrap>
                   <v-flex md4>
-                    <v-autocomplete solo hide-details v-model="clientReplacement.replacementId" :items="replacementsMaster" item-value="replacementId" item-text="replacementProgramDescription" placeholder="Select replacement" :rules="[required]" required></v-autocomplete>
+                    <v-autocomplete
+                      solo
+                      hide-details
+                      v-model="clientReplacement.replacementId"
+                      :items="replacementsMaster"
+                      item-value="replacementId"
+                      item-text="replacementProgramDescription"
+                      placeholder="Select replacement"
+                      :rules="[required]"
+                      required
+                    ></v-autocomplete>
                   </v-flex>
                   <v-flex md2>
                     <v-text-field solo hide-details v-model="clientReplacement.baselinePercent" placeholder="Base" clearable append-icon="fa-percent fa-sm"></v-text-field>
                   </v-flex>
                   <v-flex md3>
-                    <v-text-field solo hide-details v-model="clientReplacement.baselineFrom" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/dd/yyyy'" clearable></v-text-field>
+                    <v-text-field
+                      solo
+                      hide-details
+                      v-model="clientReplacement.baselineFrom"
+                      placeholder="from"
+                      return-masked-value
+                      required
+                      mask="##/##/####"
+                      data-vv-name="periodEnd"
+                      :rules="errors.collect('periodEnd')"
+                      v-validate="'date_format:MM/dd/yyyy'"
+                      clearable
+                    ></v-text-field>
                   </v-flex>
                   <v-flex md3>
-                    <v-text-field solo hide-details v-model="clientReplacement.baselineTo" placeholder="from" return-masked-value required mask="##/##/####" data-vv-name="periodEnd" :rules="errors.collect('periodEnd')" v-validate="'date_format:MM/dd/yyyy'" clearable></v-text-field>
+                    <v-text-field
+                      solo
+                      hide-details
+                      v-model="clientReplacement.baselineTo"
+                      placeholder="to"
+                      return-masked-value
+                      required
+                      mask="##/##/####"
+                      data-vv-name="periodEnd"
+                      :rules="errors.collect('periodEnd')"
+                      v-validate="'date_format:MM/dd/yyyy'"
+                      clearable
+                    ></v-text-field>
                   </v-flex>
                 </v-layout>
                 <div class="text-xs-right">
@@ -182,7 +226,13 @@
         </v-card>
       </v-tab-item>
       <problem-sto-dialog v-if="problemStoDialogData" :clientId="clientId" :open="problemStoDialogShow" :data="problemStoDialogData" @closed="closedProblemStoDialog"></problem-sto-dialog>
-      <replacement-sto-dialog v-if="replacementStoDialogData" :clientId="clientId" :open="replacementStoDialogShow" :data="replacementStoDialogData" @closed="closedReplacementStoDialog"></replacement-sto-dialog>
+      <replacement-sto-dialog
+        v-if="replacementStoDialogData"
+        :clientId="clientId"
+        :open="replacementStoDialogShow"
+        :data="replacementStoDialogData"
+        @closed="closedReplacementStoDialog"
+      ></replacement-sto-dialog>
     </v-tabs>
   </v-card>
 </template>

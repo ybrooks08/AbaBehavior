@@ -429,8 +429,33 @@
                             auto-grow
                             v-model="session.sessionNote.progressNotes"
                             rows="15"
-                            @change="setDirty"
+                            @change="checkMatching"
                           ></v-textarea>
+                        </v-flex>
+                        <v-flex xs12>
+                          Matching percentaje:
+                          <v-chip :class="{ pulse: matchingCantSave }" label small v-if="matching" :color="matchingCantSave ? 'red' : 'green'" text-color="white">
+                            {{ (matching.percentaje * 100).toFixed(2) }}
+                            <!-- <v-icon small right>percentaje</v-icon> -->
+                          </v-chip>
+                          <v-icon small v-if="loadingMatching">fa-cog fa-spin</v-icon>
+                          <!-- <v-btn small flat icon color="green" @click="checkMatchingPercentaje" :disabled="loadingMatching || dirtyIndicator">
+                            <v-icon small>fa-sync-alt</v-icon>
+                          </v-btn> -->
+                        </v-flex>
+                        <v-flex xs12 v-if="matching">
+                          <v-expansion-panel expand-icon="fa-caret-down">
+                            <v-expansion-panel-content class="yellow lighten-4">
+                              <template v-slot:header>
+                                <div>Matching session: ID: {{ matching.sessionId }} Date: {{ matching.date | moment("utc", "MM/DD/YYYY") }}</div>
+                              </template>
+                              <v-card class="yellow lighten-5">
+                                <v-card-text>
+                                  {{ matching.progressNotes }}
+                                </v-card-text>
+                              </v-card>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -955,16 +980,22 @@
             </v-tab-item>
           </v-tabs-items>
           <v-card-actions>
-            <v-chip v-if="dirtyIndicator" disabled color="red" text-color="white">
+            <v-chip v-if="dirtyIndicator" disabled color="orange" text-color="white">
               <v-avatar>
                 <v-icon>fa-exclamation-circle</v-icon>
               </v-avatar>
               MODIFIED
             </v-chip>
+            <v-chip v-if="matchingCantSave" disabled color="red" text-color="white">
+              <v-avatar>
+                <v-icon>fa-exclamation-circle</v-icon>
+              </v-avatar>
+              PROGRESS NOTES
+            </v-chip>
             <v-spacer></v-spacer>
             <v-btn :disabled="loading" @click="close" flat>{{ editDisabled ? "CLOSE" : "CANCEL" }}</v-btn>
-            <v-btn v-if="!editDisabled" :disabled="loading" :loading="loading" color="primary" @click="save(false)">Save</v-btn>
-            <v-btn v-if="!editDisabled" :disabled="loading" :loading="loading" color="success" @click="save">Save and return</v-btn>
+            <v-btn v-if="!editDisabled" :disabled="loading || matchingCantSave || loadingMatching" :loading="loading" color="primary" @click="save(false)">Save</v-btn>
+            <v-btn v-if="!editDisabled" :disabled="loading || matchingCantSave || loadingMatching" :loading="loading" color="success" @click="save">Save and return</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -1117,7 +1148,9 @@ export default {
       checkedModalInconsistency: null,
       collectBehaviors: [],
       checkedModalProblems: [],
-      dirtyIndicator: false
+      dirtyIndicator: false,
+      loadingMatching: false,
+      matching: null
     };
   },
 
@@ -1170,6 +1203,9 @@ export default {
     },
     notAllowed() {
       return this.$store.getters.notAllowed;
+    },
+    matchingCantSave() {
+      return !this.matching || this.matching.percentaje * 100 > 45;
     }
   },
 
@@ -1181,6 +1217,7 @@ export default {
     this.loadParticipationLevelCodes();
     this.loadCaregivers();
     await this.loadSessionData();
+    this.checkMatchingPercentaje();
   },
 
   beforeRouteLeave(to, from, next) {
@@ -1279,6 +1316,24 @@ export default {
     },
 
     async save(exit = true) {
+      if (this.session.sessionNote.riskBehaviorCrisisInvolved && !this.session.sessionNote.riskBehaviorExplain) {
+        this.$toast.error("You need to explain the crisis envolved");
+        return;
+      }
+      if (!this.session.sessionNote.reinforcersResult) {
+        this.$toast.error("You need to fill Reinforcers/Result field");
+        return;
+      }
+      let ediblesCount = 0;
+      if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
+      if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
+      if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
+      if (ediblesCount > 1) {
+        this.$toast.error("You need to fill at least 2 edibles fields");
+        return;
+      }
+      console.log(ediblesCount);
+
       if (this.session.sessionType === 3) {
         let work = 0;
         this.sessionSupervisionWorkWithArray.forEach(c => {
@@ -1305,6 +1360,7 @@ export default {
               this.$toast.success("Session saved successful");
               this.loadSessionData();
               this.dirtyIndicator = false;
+              this.checkMatchingPercentaje();
             } catch (error) {
               this.$toast.error(error.message || error);
             } finally {
@@ -1325,6 +1381,7 @@ export default {
           this.$toast.success("Session saved successful");
           this.loadSessionData();
           this.dirtyIndicator = false;
+          this.checkMatchingPercentaje();
         } catch (error) {
           this.$toast.error(error.message || error);
         } finally {
@@ -1569,6 +1626,37 @@ export default {
 
     setDirty() {
       this.dirtyIndicator = true;
+    },
+
+    async checkMatchingPercentaje() {
+      try {
+        this.matching = null;
+        this.loadingMatching = true;
+        const res = await sessionServicesApi.checkMatchingPercentaje(this.activeSessionId);
+        this.matching = res.percentaje == 0 ? null : res;
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loadingMatching = false;
+      }
+    },
+
+    async checkMatching() {
+      try {
+        this.setDirty();
+        this.matching = null;
+        this.loadingMatching = true;
+        const obj = {
+          sessionId: this.activeSessionId,
+          progressNotes: this.session.sessionNote.progressNotes
+        };
+        const res = await sessionServicesApi.checkMatchingPercentajeString(obj);
+        this.matching = res.percentaje == 0 ? null : res;
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loadingMatching = false;
+      }
     }
   }
 };

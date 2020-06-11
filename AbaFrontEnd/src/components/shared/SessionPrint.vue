@@ -77,7 +77,7 @@
                   <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                     Caregiver notes:
                   </td>
-                  <td class="pl-1" v-html="breakLine(sessionPrint.caregiverNote)"></td>
+                  <td class="pl-1" v-html="breakLine(sessionPrint.caregiverNote || 'None')"></td>
                 </tr>
                 <template v-if="sessionPrint.sessionTypeNum === 2">
                   <tr class="no-page-break">
@@ -312,25 +312,25 @@
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                       Edibles:
                     </td>
-                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersEdibles || 'N/A')"></td>
+                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersEdibles || 'None')"></td>
                   </tr>
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                       Non-edibles:
                     </td>
-                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersNonEdibles || 'N/A')"></td>
+                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersNonEdibles || 'None')"></td>
                   </tr>
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                       Others:
                     </td>
-                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersOthers || 'N/A')"></td>
+                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersOthers || 'None')"></td>
                   </tr>
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                       Result:
                     </td>
-                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersResult || 'N/A')"></td>
+                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersResult || 'None')"></td>
                   </tr>
                   <tr class="no-page-break grey lighten-3">
                     <td class="font-weight-medium text-xs-right">PROGRESS</td>

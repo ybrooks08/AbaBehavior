@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
 using AbaBackend.Infrastructure.Extensions;
@@ -23,6 +24,8 @@ namespace AbaBackend.Infrastructure.Utils
 {
   public class Utils : IUtils
   {
+    readonly string[] _noMatch = { "she", "her", "herself", "he", "him", "his", "himself", "to", "for", "the", "in", "and", "or", "and", "at", "rbt", "analyst", "lead", "bcba", "bcaba", "caregiver", "parents", "teacher", "aba", "mother", "father" };
+
     private readonly AbaDbContext _dbContext;
     private readonly IHttpContextAccessor _httpContext;
     private readonly ILogger _logger;
@@ -770,6 +773,57 @@ namespace AbaBackend.Infrastructure.Utils
         .SumAsync();
 
       return (Allowed: assessment.TotalUnitsWeek, Total: unitsSum);
+    }
+
+    public double Compare(string a, string b)
+    {
+      var aWords = a.Split(' ');
+      var bWords = b.Split(' ');
+      double matches = (double)aWords.Count(x => bWords.Contains(x));
+      return matches / (double)aWords.Count();
+    }
+
+    int LevenshteinDistance(string source, string target)
+    {
+      if (source == target) return 0;
+      if (source.Length == 0) return target.Length;
+      if (target.Length == 0) return source.Length;
+
+      int[] v0 = new int[target.Length + 1];
+      int[] v1 = new int[target.Length + 1];
+
+      for (int i = 0; i < v0.Length; i++)
+        v0[i] = i;
+
+      for (int i = 0; i < source.Length; i++)
+      {
+        v1[0] = i + 1;
+        for (int j = 0; j < target.Length; j++)
+        {
+          var cost = (source[i] == target[j]) ? 0 : 1;
+          v1[j + 1] = Math.Min(v1[j] + 1, Math.Min(v0[j + 1] + 1, v0[j] + cost));
+        }
+        for (int j = 0; j < v0.Length; j++)
+          v0[j] = v1[j];
+      }
+
+      return v1[target.Length];
+    }
+
+    public double CalculateSimilarity(string source, string target)
+    {
+      if ((source == null) || (target == null)) return 0.0;
+      if ((source.Length == 0) || (target.Length == 0)) return 0.0;
+
+      source = source.ToLower();
+      target = target.ToLower();
+      source = Regex.Replace(source, "\\b" + string.Join("\\b|\\b", _noMatch) + "\\b", "");
+      target = Regex.Replace(target, "\\b" + string.Join("\\b|\\b", _noMatch) + "\\b", "");
+
+      if (source == target) return 1.0;
+
+      int stepsToSame = LevenshteinDistance(source, target);
+      return (1.0 - ((double)stepsToSame / (double)Math.Max(source.Length, target.Length)));
     }
   }
 }

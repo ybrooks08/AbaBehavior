@@ -48,6 +48,7 @@ namespace AbaBackend.Infrastructure.Utils
     bool CheckIfuserAllowedDayOfWeek(DayOfWeekBit days, DateTime date);
     Task<bool> CheckIfTimeGap(DateTime sessionStart, DateTime sessionEnd, int userId, int clientId);
     Task<(int? Allowed, int Total)> GetUnitsInWeek(DateTime date, int userId, int clientId);
-
+    double Compare(string a, string b);
+    double CalculateSimilarity(string source, string target);
   }
 }
