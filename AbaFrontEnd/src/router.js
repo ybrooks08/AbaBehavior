@@ -273,6 +273,12 @@ export default new Router({
           name: "StaffClient",
           component: () => import(/* webpackChunkName: "StaffClient" */ "@/components/reporting/StaffClient"),
           meta: { rol: ["admin"] }
+        },
+        {
+          path: "/reporting/matching-report",
+          name: "MatchingReport",
+          component: () => import(/* webpackChunkName: "MatchingReport" */ "@/components/reporting/MatchingReport"),
+          meta: { rol: ["admin"] }
         }
       ]
     },

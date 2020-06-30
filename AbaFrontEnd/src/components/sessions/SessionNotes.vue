@@ -157,7 +157,7 @@
                 <v-tab key="supervisionOversight">Oversight</v-tab>
                 <v-tab key="supervisionExtra">Extra</v-tab>
               </template>
-              <v-tab v-if="isAdmin" key="logs">Logs</v-tab>
+              <!-- <v-tab v-if="isAdmin" key="logs">Logs</v-tab> -->
             </v-tabs>
           </v-toolbar>
           <v-tabs-items v-model="tabModel">
@@ -942,7 +942,7 @@
                 </v-card>
               </v-tab-item>
             </template>
-            <v-tab-item v-if="isAdmin" key="logs">
+            <!-- <v-tab-item v-if="isAdmin" key="logs">
               <v-card flat>
                 <v-card-text class="pa-2">
                   <v-container fluid grid-list-sm pa-0>
@@ -977,7 +977,7 @@
                   </v-container>
                 </v-card-text>
               </v-card>
-            </v-tab-item>
+            </v-tab-item> -->
           </v-tabs-items>
           <v-card-actions>
             <v-chip v-if="dirtyIndicator" disabled color="orange" text-color="white">
@@ -990,12 +990,12 @@
               <v-avatar>
                 <v-icon>fa-exclamation-circle</v-icon>
               </v-avatar>
-              PROGRESS NOTES
+              MATCHING ALERT
             </v-chip>
             <v-spacer></v-spacer>
             <v-btn :disabled="loading" @click="close" flat>{{ editDisabled ? "CLOSE" : "CANCEL" }}</v-btn>
-            <v-btn v-if="!editDisabled" :disabled="loading || matchingCantSave || loadingMatching" :loading="loading" color="primary" @click="save(false)">Save</v-btn>
-            <v-btn v-if="!editDisabled" :disabled="loading || matchingCantSave || loadingMatching" :loading="loading" color="success" @click="save">Save and return</v-btn>
+            <v-btn v-if="!editDisabled" :disabled="loading || loadingMatching" :loading="loading" color="primary" @click="save(false)">Save</v-btn>
+            <v-btn v-if="!editDisabled" :disabled="loading || loadingMatching" :loading="loading" color="success" @click="save">Save and return</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -1205,7 +1205,7 @@ export default {
       return this.$store.getters.notAllowed;
     },
     matchingCantSave() {
-      return !this.matching || this.matching.percentaje * 100 > 45;
+      return !this.matching || this.matching.percentaje * 100 > 65;
     }
   },
 
@@ -1316,23 +1316,24 @@ export default {
     },
 
     async save(exit = true) {
-      if (this.session.sessionNote.riskBehaviorCrisisInvolved && !this.session.sessionNote.riskBehaviorExplain) {
-        this.$toast.error("You need to explain the crisis envolved");
-        return;
+      if (this.session.sessionType === 1) {
+        if (this.session.sessionNote.riskBehaviorCrisisInvolved && !this.session.sessionNote.riskBehaviorExplain) {
+          this.$toast.error("You need to explain the crisis envolved");
+          return;
+        }
+        if (!this.session.sessionNote.reinforcersResult) {
+          this.$toast.error("You need to fill Reinforcers/Result field");
+          return;
+        }
+        let ediblesCount = 0;
+        if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
+        if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
+        if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
+        if (ediblesCount > 1) {
+          this.$toast.error("You need to fill at least 2 edibles fields");
+          return;
+        }
       }
-      if (!this.session.sessionNote.reinforcersResult) {
-        this.$toast.error("You need to fill Reinforcers/Result field");
-        return;
-      }
-      let ediblesCount = 0;
-      if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
-      if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
-      if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
-      if (ediblesCount > 1) {
-        this.$toast.error("You need to fill at least 2 edibles fields");
-        return;
-      }
-      console.log(ediblesCount);
 
       if (this.session.sessionType === 3) {
         let work = 0;
@@ -1460,6 +1461,10 @@ export default {
     },
 
     async markAsReady2Lead() {
+      if (this.matchingCantSave) {
+        this.$toast.error("You cannot set Ready to Analyst because progress notes exceed allowed matching percent.");
+        return;
+      }
       this.$confirm("Are you sure you want to mark this session as Ready to Analyst(Lead)? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(
         async res => {
           if (res) {

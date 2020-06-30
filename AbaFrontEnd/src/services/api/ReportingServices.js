@@ -134,5 +134,14 @@ export default {
         .then(response => resolve(response.data))
         .catch(error => reject(error.response.data || error.message));
     });
+  },
+
+  getSessionsForMatching(from, to, clientId, userId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .get(`api/reporting/GetSessionsForMatching/${from}/${to}/${clientId}/${userId}`)
+        .then(response => resolve(response.data))
+        .catch(error => reject(error.response.data || error.message));
+    });
   }
 };

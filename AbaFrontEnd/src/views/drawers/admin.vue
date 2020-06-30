@@ -147,6 +147,14 @@
           <v-list-tile-title>Print Sessions</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/reporting/matching-report" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-clone</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Matching report</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-subheader>Tools</v-subheader>
       <v-list-tile to="/adjust-client-data-collect">
         <v-list-tile-action>

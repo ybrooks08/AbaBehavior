@@ -33,8 +33,7 @@ namespace AbaBackend.Controllers
     }
 
     [HttpGet("[action]/{from}/{to}/{clientId}/{behaviorAnalysisCodeId}")]
-    public async Task<IActionResult> GetBillingGuide(string from, string to, int clientId,
-        int behaviorAnalysisCodeId)
+    public async Task<IActionResult> GetBillingGuide(string from, string to, int clientId, int behaviorAnalysisCodeId)
     {
       try
       {
@@ -701,6 +700,42 @@ namespace AbaBackend.Controllers
         _dbContext.Remove(line);
         await _dbContext.SaveChangesAsync();
         return Ok();
+      }
+      catch (System.Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpGet("[action]/{from}/{to}/{clientId}/{userId?}")]
+    public async Task<IActionResult> GetSessionsForMatching(string from, string to, int clientId, int userId)
+    {
+      try
+      {
+        var fromDate = Convert.ToDateTime(from).Date;
+        var toDate = Convert.ToDateTime(to).Date;
+
+        var sessions = await _dbContext.Sessions
+            .AsNoTracking()
+            .Where(w => w.SessionType == SessionType.BA_Service)
+            .Where(w => w.ClientId == clientId && w.UserId == userId)
+            .Where(w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate)
+            .OrderBy(w => w.SessionStart)
+            .Select(s => new
+            {
+              s.SessionId,
+              s.UserId,
+              SessionStart = s.SessionStart.ToString("u"),
+              SessionEnd = s.SessionEnd.ToString("u"),
+              s.TotalUnits,
+              SessionStatus = s.SessionStatus.ToString(),
+              SessionStatusCode = s.SessionStatus,
+              SessionStatusColor = ((SessionStatusColors)s.SessionStatus).ToString(),
+              Pos = s.Pos.ToString(),
+              PosCode = s.Pos,
+            })
+            .ToListAsync();
+        return Ok(sessions);
       }
       catch (System.Exception e)
       {
