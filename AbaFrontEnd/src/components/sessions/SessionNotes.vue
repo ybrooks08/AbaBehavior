@@ -986,7 +986,7 @@
               </v-avatar>
               MODIFIED
             </v-chip>
-            <v-chip v-if="matchingCantSave" disabled color="red" text-color="white">
+            <v-chip v-if="matchingCantSave && session.sessionType === 1" disabled color="red" text-color="white">
               <v-avatar>
                 <v-icon>fa-exclamation-circle</v-icon>
               </v-avatar>
@@ -1205,7 +1205,7 @@ export default {
       return this.$store.getters.notAllowed;
     },
     matchingCantSave() {
-      return !this.matching || this.matching.percentaje * 100 > 65;
+      return !this.matching || this.matching.percentaje * 100 > 60;
     }
   },
 
@@ -1258,7 +1258,7 @@ export default {
         }
         this.problemsUnique = this.session.sessionProblemNotes.map(m => m.problemBehavior);
         this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
-        // console.log(this.collectBehaviors);
+        console.log(this.collectBehaviors);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -1325,14 +1325,14 @@ export default {
           this.$toast.error("You need to fill Reinforcers/Result field");
           return;
         }
-        let ediblesCount = 0;
-        if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
-        if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
-        if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
-        if (ediblesCount > 1) {
-          this.$toast.error("You need to fill at least 2 edibles fields");
-          return;
-        }
+        // let ediblesCount = 0;
+        // if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
+        // if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
+        // if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
+        // if (ediblesCount > 1) {
+        //   this.$toast.error("You need to fill at least 2 edibles fields");
+        //   return;
+        // }
       }
 
       if (this.session.sessionType === 3) {
@@ -1607,6 +1607,10 @@ export default {
     },
 
     async onClickCheckedModal() {
+      if (this.dirtyIndicator) {
+        this.$toast.warning("You need to save session first");
+        return;
+      }
       const model = {
         sessionId: this.activeSessionId,
         sessionStatus: this.checkedModalType == "Checked" ? 5 : 7 //checked or reviewed
@@ -1626,7 +1630,8 @@ export default {
     getIfBehaviorHasData(problemId) {
       const collection = this.collectBehaviors.find(s => s.problemId === problemId);
       if (collection.noData || collection.total == 0) return "<label class='blue--text'>* No data collected in this behavior</label>";
-      return "<label class='red--text'>* Data collected in this behavior, both fields are mandatory.</label>";
+      return `<label class='red--text'>* Data collected in this behavior, both fields are mandatory.</label><br><br>
+      <label class="pa-1" style="background-color: green; color: white">Data: ${collection.total} ${collection.behavior.isPercent ? "/" + collection.completed : ""}</label>`;
     },
 
     setDirty() {
