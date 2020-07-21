@@ -9,7 +9,7 @@
           <span v-if="b.replacement.replacementProgramDescription.length <= 30"> {{ b.replacement.replacementProgramDescription }}</span>
           <span v-else>{{ b.replacement.replacementProgramDescription.substr(0, 30) }}...</span>
         </v-tab>
-        <v-tab-item v-for="b in clientReplacements" :key="'replx' + b.clientReplacementId">
+        <v-tab-item v-for="b in clientReplacements" :key="'replx' + b.clientReplacementId" lazy>
           <replacement-monthly-chart :problemId="b.replacementId" :clientId="b.clientId" :clientReplacementId="b.clientReplacementId" />
         </v-tab-item>
       </v-tabs>

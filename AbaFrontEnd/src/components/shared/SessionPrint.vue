@@ -17,10 +17,32 @@
           </v-flex>
           <v-flex xs4>
             <v-layout row wrap>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Code:</v-flex>
+              <v-flex xs8>{{ sessionPrint.clientCode }}</v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Diagnosis:</v-flex>
+              <v-flex xs8 style="display:flex; flex-direction: column;">
+                <span class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code">{{ d.description }} ({{ d.code }})</span>
+              </v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Medicaid ID:</v-flex>
+              <v-flex xs8>{{ sessionPrint.memberNo }}</v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Caregiver:</v-flex>
+              <v-flex xs8>{{ sessionPrint.caregiver }} ({{ sessionPrint.caregiverType }})</v-flex>
+            </v-layout>
+          </v-flex>
+          <v-flex xs8>
+            <v-layout row wrap>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Pos:</v-flex>
+              <v-flex xs8>
+                <span class="text-no-wrap text-truncate">{{ sessionPrint.pos }} ({{ sessionPrint.posNum }})</span>
+              </v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Service code:</v-flex>
+              <v-flex xs8>{{ sessionPrint.service }} BA ({{ sessionPrint.serviceDescription }})</v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Service type:</v-flex>
+              <v-flex xs8>Direct (Face to Face)</v-flex>
+              <!-- <v-flex class="font-weight-medium text-xs-right" xs4>Session type:</v-flex>
+              <v-flex xs8>{{ sessionPrint.sessionType }}</v-flex> -->
               <v-flex class="font-weight-medium text-xs-right" xs4>Provider:</v-flex>
               <v-flex xs8>{{ sessionPrint.userFullname }} ({{ sessionPrint.userRol }})</v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Service:</v-flex>
-              <v-flex xs8>{{ sessionPrint.service }} BA ({{ sessionPrint.serviceDescription }})</v-flex>
               <v-flex class="font-weight-medium text-xs-right" xs4>Time IN:</v-flex>
               <v-flex xs8>
                 <v-icon color="green" small>fa-sign-in-alt</v-icon>
@@ -31,42 +53,40 @@
                 <v-icon color="red" small>fa-sign-out-alt</v-icon>
                 {{ sessionPrint.sessionEnd | moment("LT") }}
               </v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Units:</v-flex>
+              <v-flex class="font-weight-medium text-xs-right" xs4>Rendered Units:</v-flex>
               <v-flex xs8>
                 <v-icon small>fa-star</v-icon>
                 {{ sessionPrint.totalUnits.toLocaleString() }}
                 <v-icon small>fa-clock</v-icon>
                 {{ (sessionPrint.totalUnits / 4).toLocaleString() }}
               </v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Drive time:</v-flex>
+              <!-- <v-flex class="font-weight-medium text-xs-right" xs4>Drive time:</v-flex>
               <v-flex xs8>
                 <v-icon small>fa-car</v-icon>
                 {{ sessionPrint.driveTime.toLocaleString() }}
-              </v-flex>
-            </v-layout>
-          </v-flex>
-          <v-flex xs8>
-            <v-layout row wrap>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Code:</v-flex>
-              <v-flex xs8>{{ sessionPrint.clientCode }}</v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Pos:</v-flex>
-              <v-flex xs8>
-                <span class="text-no-wrap text-truncate">{{ sessionPrint.pos }} ({{ sessionPrint.posNum }})</span>
-              </v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Session type:</v-flex>
-              <v-flex xs8>{{ sessionPrint.sessionType }}</v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Diagnosis:</v-flex>
-              <v-flex xs8 style="display:flex; flex-direction: column;"
-                ><span class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code">{{ d.description }} ({{ d.code }})</span>
-              </v-flex>
-              <v-flex class="font-weight-medium text-xs-right" xs4>Medicaid ID:</v-flex>
-              <v-flex xs8>{{ sessionPrint.memberNo }}</v-flex>
+              </v-flex> -->
             </v-layout>
           </v-flex>
           <v-flex xs12>
             <v-card flat>
               <v-divider></v-divider>
               <table class="table-horizontal" width="100%">
+                <!-- Section -->
+                <tr class="no-page-break grey lighten-3">
+                  <td class="font-weight-medium text-xs-right">SUMMARY</td>
+                  <td>(Include Environmental changes)</td>
+                </tr>
+                <tr class="no-page-break">
+                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                    Summary:
+                  </td>
+                  <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.progressNotes || 'N/A')"></td>
+                </tr>
+                <!-- End Section -->
+                <!-- <tr class="no-page-break grey lighten-3">
+                  <td class="font-weight-medium text-xs-right">CAREGIVER</td>
+                  <td></td>
+                </tr>
                 <tr class="no-page-break">
                   <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
                     Caregiver:
@@ -78,7 +98,7 @@
                     Caregiver notes:
                   </td>
                   <td class="pl-1" v-html="breakLine(sessionPrint.caregiverNote || 'None')"></td>
-                </tr>
+                </tr> -->
                 <template v-if="sessionPrint.sessionTypeNum === 2">
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%">
@@ -290,7 +310,7 @@
                       Risk behavior:
                     </td>
                     <td class="pl-1">
-                      {{ sessionPrint.sessionNote.riskBehavior }}
+                      {{ sessionPrint.sessionNote.riskBehavior == "Undefined" || sessionPrint.sessionNote.riskBehavior == "NA" ? "None" : sessionPrint.sessionNote.riskBehavior }}
                     </td>
                   </tr>
                   <tr class="no-page-break">
@@ -302,6 +322,44 @@
                       <div v-html="breakLine(sessionPrint.sessionNote.crisisInvolvedExplain)"></div>
                     </td>
                   </tr>
+                  <tr class="no-page-break grey lighten-3">
+                    <td colspan="2" class="font-weight-medium pl-5">
+                      CLINICAL TREATMENT IMPLEMENTATION
+                    </td>
+                  </tr>
+                  <tr class="no-page-break">
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                      Objetives:
+                    </td>
+                    <td class="pl-1">
+                      Decrease maladaptive behavior while increasing socially acceptable behavior/functional equivalent behaviors/replacement behavior.
+                    </td>
+                  </tr>
+                  <tr class="no-page-break" v-for="p in sessionPrint.sessionNote.problems" :key="p.problem">
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">{{ p.problem }}:</td>
+                    <td class="pl-1">
+                      <table class="table-print">
+                        <tr>
+                          <th width="50%">During which activity Bx. Occurred (Antecedents):</th>
+                          <th width="50%">
+                            Replacement Programs linked to the Behavior’s Functions:
+                          </th>
+                        </tr>
+                        <tr>
+                          <td width="50%" v-html="breakLine(p.duringWichActivities || 'No observed')"></td>
+                          <td width="50%">
+                            <div v-html="breakLine(p.replacementInterventionsUsed || 'N/A')"></div>
+                            <v-divider class="pb-1"></v-divider>
+                            <template v-for="r in p.sessionProblemReplacements">
+                              <v-icon small :key="p + r">fa-check-circle</v-icon>
+                              {{ r }}<br :key="'br' + p + r" />
+                            </template>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
                   <tr class="no-page-break grey lighten-3">
                     <td class="font-weight-medium text-xs-right">
                       REINFORCERS
@@ -333,22 +391,18 @@
                     <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.reinforcersResult || 'None')"></td>
                   </tr>
                   <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">PROGRESS</td>
+                    <td class="font-weight-medium text-xs-right">
+                      PARTICIPATION LEVEL
+                    </td>
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                      Participation level:
+                      Client's participation level:
                     </td>
                     <td class="pl-1">
-                      {{ sessionPrint.sessionNote.participationLevel }}
+                      {{ sessionPrint.sessionNote.participationLevel == "Undefined" ? "None" : sessionPrint.sessionNote.participationLevel }}
                     </td>
-                  </tr>
-                  <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                      Progress notes:
-                    </td>
-                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.progressNotes || 'N/A')"></td>
                   </tr>
                   <!--<tr class="no-page-break grey lighten-3">-->
                   <!--  <td class="font-weight-medium text-xs-right">FEEDBACK</td>-->
@@ -374,7 +428,7 @@
                   <!--</tr>-->
                   <template v-if="sessionPrint.userRolShort != 'tech'">
                     <tr class="no-page-break grey lighten-3">
-                      <td class="font-weight-medium text-xs-right">SUMMARY</td>
+                      <td class="font-weight-medium text-xs-right">SERVICES PROVIDED</td>
                       <td></td>
                     </tr>
                     <tr class="no-page-break">
@@ -431,44 +485,27 @@
                       </td>
                       <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.summaryOther || 'N/A')"></td>
                     </tr>
+                    <template v-if="sessionPrint.sessionNote.sessionResult !== 'NA'">
+                      <tr class="no-page-break grey lighten-3">
+                        <td class="font-weight-medium text-xs-right">SESSION RESULTS</td>
+                        <td></td>
+                      </tr>
+                      <tr class="no-page-break">
+                        <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                          Session results:
+                        </td>
+                        <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.sessionResult)"></td>
+                      </tr>
+                    </template>
                   </template>
-                  <tr class="no-page-break grey lighten-3">
-                    <td class="font-weight-medium text-xs-right">
-                      PROB/REPLAC
-                    </td>
-                    <td></td>
-                  </tr>
-                  <tr class="no-page-break" v-for="p in sessionPrint.sessionNote.problems" :key="p.problem">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">{{ p.problem }}:</td>
-                    <td class="pl-1">
-                      <table class="table-print">
-                        <tr>
-                          <th width="50%">During which activity ocurred</th>
-                          <th width="50%">
-                            Replacements and intervention used
-                          </th>
-                        </tr>
-                        <tr>
-                          <td width="50%" v-html="breakLine(p.duringWichActivities || 'No observed')"></td>
-                          <td width="50%">
-                            <div v-html="breakLine(p.replacementInterventionsUsed || 'N/A')"></div>
-                            <v-divider class="pb-1"></v-divider>
-                            <template v-for="r in p.sessionProblemReplacements">
-                              <v-icon small :key="p + r">fa-check-circle</v-icon>
-                              {{ r }}<br :key="'br' + p + r" />
-                            </template>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
+
                   <tr class="no-page-break grey lighten-3" v-if="!noDataBehaviorCollection || !noDataReplacementCollection">
                     <td class="font-weight-medium text-xs-right">DATA COLLECTION</td>
                     <td></td>
                   </tr>
                   <tr class="no-page-break" v-if="!noDataBehaviorCollection">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                      Behaviors:
+                      Target Behaviors to Decrease:
                     </td>
                     <td class="pl-1">
                       <table class="table-print">
@@ -485,7 +522,7 @@
                   </tr>
                   <tr class="no-page-break" v-if="!noDataReplacementCollection">
                     <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                      Replacements:
+                      Replacement Programs:
                     </td>
                     <td class="pl-1">
                       <table class="table-print">

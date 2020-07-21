@@ -155,6 +155,7 @@ namespace AbaBackend.Controllers
           if (session.SessionType != SessionType.Training_BCABA)
           {
             var note = new SessionNote { SessionId = session.SessionId };
+            note.SessionResult = session.SessionStart.Date < new DateTime(2020, 7, 21) ? "NA" : null;
             await _dbContext.SessionNotes.AddAsync(note);
             await _dbContext.SaveChangesAsync();
           }
@@ -437,6 +438,7 @@ namespace AbaBackend.Controllers
                 s.SessionNote.SummaryGeneralization,
                 s.SessionNote.SummaryCommunication,
                 s.SessionNote.SummaryOther,
+                s.SessionNote.SessionResult,
                 Problems = s.SessionProblemNotes.Select(w => new
                 {
                   Problem = w.ProblemBehavior.ProblemBehaviorDescription,

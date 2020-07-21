@@ -143,10 +143,11 @@
               <template v-if="session.sessionType === 1">
                 <v-tab key="risk">Risk Behavior</v-tab>
                 <v-tab key="reinforcers">Reinforcers</v-tab>
-                <v-tab key="progress">Progress</v-tab>
+                <v-tab key="progress">SUMMARY</v-tab>
                 <!--                <v-tab key="feedback">Feedback</v-tab>-->
-                <v-tab v-if="user.rol2 !== 'tech'" key="summary">Summary</v-tab>
+                <v-tab v-if="user.rol2 !== 'tech'" key="summary">SERVICES PROVIDED</v-tab>
                 <v-tab key="problems">Prob/Replac</v-tab>
+                <v-tab key="sessionresult" v-if="canEditSessionResult">Session Result</v-tab>
               </template>
               <template v-else-if="session.sessionType === 2">
                 <v-tab key="training">Caregiver training</v-tab>
@@ -306,17 +307,7 @@
                       </v-flex>
                       <v-flex xs12>
                         <v-textarea
-                          v-if="session.sessionType !== 3"
-                          box
-                          hide-details
-                          :disabled="loading || editDisabled"
-                          label="Caregiver notes"
-                          auto-grow
-                          v-model="session.sessionNote.caregiverNote"
-                          @change="setDirty"
-                        ></v-textarea>
-                        <v-textarea
-                          v-else
+                          v-if="session.sessionType === 3"
                           box
                           hide-details
                           :disabled="loading || editDisabled"
@@ -324,7 +315,8 @@
                           auto-grow
                           v-model="session.sessionSupervisionNote.caregiverNote"
                           @change="setDirty"
-                        ></v-textarea>
+                        >
+                        </v-textarea>
                       </v-flex>
                     </v-layout>
                   </v-container>
@@ -408,6 +400,7 @@
                 <v-card flat>
                   <v-card-text class="pa-2">
                     <v-container fluid grid-list-sm pa-0>
+                      <span class="warning--text">Please, in this section, you must include Environmental changes.</span>
                       <v-layout row wrap>
                         <v-flex xs12>
                           <v-select
@@ -559,7 +552,7 @@
                               box
                               hide-details
                               :disabled="loading || editDisabled"
-                              label="During which activity bx. ocurred"
+                              label="Interventions linked to the Behavior-based Functions"
                               auto-grow
                               v-model="problem.duringWichActivities"
                               @change="setDirty"
@@ -572,7 +565,7 @@
                               box
                               hide-details
                               :disabled="loading || editDisabled"
-                              label="Replacement bx. implemented interventions used"
+                              label="Replacement Programs linked to the Behavior’s Functions"
                               auto-grow
                               v-model="problem.replacementInterventionsUsed"
                               @change="setDirty"
@@ -590,6 +583,20 @@
                           </v-flex>
                         </v-layout>
                       </template>
+                    </v-container>
+                  </v-card-text>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item key="sessionresult" v-if="canEditSessionResult">
+                <v-card flat>
+                  <v-card-text class="pa-2">
+                    <span class="subheading warning--text">Effectiveness of interventions and treatment provided and client’s response</span>
+                    <v-container fluid grid-list-sm pa-0>
+                      <v-layout row wrap>
+                        <v-flex xs12>
+                          <v-textarea box auto-grow hide-details :disabled="loading || editDisabled" label="Result" v-model="session.sessionNote.sessionResult" @change="setDirty"></v-textarea>
+                        </v-flex>
+                      </v-layout>
                     </v-container>
                   </v-card-text>
                 </v-card>
@@ -1119,7 +1126,8 @@ export default {
           caregiverTrainingParentCaregiverTraining: false,
           caregiverTrainingCompetencyCheck: false,
           caregiverTrainingOther: null,
-          caregiverTrainingSummary: null
+          caregiverTrainingSummary: null,
+          sessionResult: null
         },
         sessionSupervisionNote: {
           workWith: 0
@@ -1206,6 +1214,9 @@ export default {
     },
     matchingCantSave() {
       return !this.matching || this.matching.percentaje * 100 > 60;
+    },
+    canEditSessionResult() {
+      return this.session.sessionNote.sessionResult !== "NA";
     }
   },
 
@@ -1323,6 +1334,10 @@ export default {
         }
         if (!this.session.sessionNote.reinforcersResult) {
           this.$toast.error("You need to fill Reinforcers/Result field");
+          return;
+        }
+        if (!this.session.sessionNote.sessionResult) {
+          this.$toast.error("You need to fill Session Result field");
           return;
         }
         // let ediblesCount = 0;

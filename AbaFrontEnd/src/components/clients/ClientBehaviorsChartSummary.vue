@@ -10,7 +10,7 @@
           <span v-else>{{ b.problemBehavior.problemBehaviorDescription.substr(0, 20) }}...</span>
           <!-- {{ b.problemBehavior.problemBehaviorDescription.substr(0, 20) }} -->
         </v-tab>
-        <v-tab-item v-for="b in clientProblems" :key="'beh' + b.clientProblemId">
+        <v-tab-item v-for="b in clientProblems" :key="'beh' + b.clientProblemId" lazy>
           <behavior-monthly-chart :problemId="b.problemId" :clientId="b.clientId" :clientProblemId="b.clientProblemId" />
         </v-tab-item>
       </v-tabs>

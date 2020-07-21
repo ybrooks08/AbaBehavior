@@ -78,5 +78,6 @@ namespace AbaBackend.DataModel
 
     public string SummaryOther { get; set; }
     public string RejectNotes { get; set; }
+    public string SessionResult { get; set; }
   }
 }
