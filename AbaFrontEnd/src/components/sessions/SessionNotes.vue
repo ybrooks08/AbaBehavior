@@ -147,7 +147,7 @@
                 <!--                <v-tab key="feedback">Feedback</v-tab>-->
                 <v-tab v-if="user.rol2 !== 'tech'" key="summary">SERVICES PROVIDED</v-tab>
                 <v-tab key="problems">Prob/Replac</v-tab>
-                <v-tab key="sessionresult" v-if="canEditSessionResult">Session Result</v-tab>
+                <v-tab key="sessionresult" v-if="canEditSessionResult">Session Results</v-tab>
               </template>
               <template v-else-if="session.sessionType === 2">
                 <v-tab key="training">Caregiver training</v-tab>
@@ -552,7 +552,7 @@
                               box
                               hide-details
                               :disabled="loading || editDisabled"
-                              label="Interventions linked to the Behavior-based Functions"
+                              label="During which activity Bx. Occurred (Antecedents)"
                               auto-grow
                               v-model="problem.duringWichActivities"
                               @change="setDirty"
@@ -565,11 +565,12 @@
                               box
                               hide-details
                               :disabled="loading || editDisabled"
-                              label="Replacement Programs linked to the Behavior’s Functions"
+                              label="Interventions linked to the Behavior-based Functions"
                               auto-grow
                               v-model="problem.replacementInterventionsUsed"
                               @change="setDirty"
                             ></v-textarea>
+                            <span class="subheading"><br />Replacement Programs linked to the Behavior’s Functions</span>
                             <v-switch
                               :disabled="editDisabled"
                               :key="replacement.sessionProblemNoteReplacementId"

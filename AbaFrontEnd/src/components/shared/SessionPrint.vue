@@ -77,9 +77,7 @@
                   <td>(Include Environmental changes)</td>
                 </tr>
                 <tr class="no-page-break">
-                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                    Summary:
-                  </td>
+                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
                   <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.progressNotes || 'N/A')"></td>
                 </tr>
                 <!-- End Section -->
@@ -306,9 +304,7 @@
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                      Risk behavior:
-                    </td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
                     <td class="pl-1">
                       {{ sessionPrint.sessionNote.riskBehavior == "Undefined" || sessionPrint.sessionNote.riskBehavior == "NA" ? "None" : sessionPrint.sessionNote.riskBehavior }}
                     </td>
@@ -342,7 +338,7 @@
                         <tr>
                           <th width="50%">During which activity Bx. Occurred (Antecedents):</th>
                           <th width="50%">
-                            Replacement Programs linked to the Behavior’s Functions:
+                            Interventions linked to the Behavior-based Functions:
                           </th>
                         </tr>
                         <tr>
@@ -350,6 +346,8 @@
                           <td width="50%">
                             <div v-html="breakLine(p.replacementInterventionsUsed || 'N/A')"></div>
                             <v-divider class="pb-1"></v-divider>
+                            <strong><u>Replacement Programs linked to the Behavior’s Functions</u></strong
+                            ><br />
                             <template v-for="r in p.sessionProblemReplacements">
                               <v-icon small :key="p + r">fa-check-circle</v-icon>
                               {{ r }}<br :key="'br' + p + r" />
@@ -397,13 +395,21 @@
                     <td></td>
                   </tr>
                   <tr class="no-page-break">
-                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                      Client's participation level:
-                    </td>
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
                     <td class="pl-1">
                       {{ sessionPrint.sessionNote.participationLevel == "Undefined" ? "None" : sessionPrint.sessionNote.participationLevel }}
                     </td>
                   </tr>
+                  <template v-if="sessionPrint.sessionNote.sessionResult !== 'NA'">
+                    <tr class="no-page-break grey lighten-3">
+                      <td class="font-weight-medium text-xs-right">SESSION RESULTS</td>
+                      <td></td>
+                    </tr>
+                    <tr class="no-page-break">
+                      <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
+                      <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.sessionResult || 'None')"></td>
+                    </tr>
+                  </template>
                   <!--<tr class="no-page-break grey lighten-3">-->
                   <!--  <td class="font-weight-medium text-xs-right">FEEDBACK</td>-->
                   <!--  <td></td>-->
@@ -485,18 +491,6 @@
                       </td>
                       <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.summaryOther || 'N/A')"></td>
                     </tr>
-                    <template v-if="sessionPrint.sessionNote.sessionResult !== 'NA'">
-                      <tr class="no-page-break grey lighten-3">
-                        <td class="font-weight-medium text-xs-right">SESSION RESULTS</td>
-                        <td></td>
-                      </tr>
-                      <tr class="no-page-break">
-                        <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                          Session results:
-                        </td>
-                        <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.sessionResult)"></td>
-                      </tr>
-                    </template>
                   </template>
 
                   <tr class="no-page-break grey lighten-3" v-if="!noDataBehaviorCollection || !noDataReplacementCollection">
@@ -702,7 +696,7 @@ export default {
         }
         this.collection.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.sessionId);
         this.collection.collectReplacements = await sessionServicesApi.getCollectReplacements(this.sessionId);
-        console.log(this.collection.collectReplacements);
+        console.log(this.sessionPrint);
         //this.sessionExtraInfo = await sessionServicesApi.getSessionPrintExtraInfo(this.sessionId);
       } catch (error) {
         this.$toast.error(error.message || error);
