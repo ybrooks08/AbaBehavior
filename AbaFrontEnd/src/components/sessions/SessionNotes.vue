@@ -307,7 +307,17 @@
                       </v-flex>
                       <v-flex xs12>
                         <v-textarea
-                          v-if="session.sessionType === 3"
+                          v-if="session.sessionType !== 3 && !canEditSessionResult"
+                          box
+                          hide-details
+                          :disabled="loading || editDisabled"
+                          label="Caregiver notes"
+                          auto-grow
+                          v-model="session.sessionNote.caregiverNote"
+                          @change="setDirty"
+                        ></v-textarea>
+                        <v-textarea
+                          v-else-if="session.sessionType === 3"
                           box
                           hide-details
                           :disabled="loading || editDisabled"
@@ -315,8 +325,7 @@
                           auto-grow
                           v-model="session.sessionSupervisionNote.caregiverNote"
                           @change="setDirty"
-                        >
-                        </v-textarea>
+                        ></v-textarea>
                       </v-flex>
                     </v-layout>
                   </v-container>
