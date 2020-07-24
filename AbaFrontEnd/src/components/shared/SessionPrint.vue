@@ -72,29 +72,6 @@
               <v-divider></v-divider>
               <table class="table-horizontal" width="100%">
                 <!-- Section -->
-                <tr class="no-page-break grey lighten-3">
-                  <td class="font-weight-medium text-xs-right">SUMMARY</td>
-                  <td>(Include Environmental changes)</td>
-                </tr>
-                <tr class="no-page-break">
-                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
-                  <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.progressNotes || 'N/A')"></td>
-                </tr>
-                <!-- End Section -->
-                <tr class="no-page-break grey lighten-3" v-if="sessionPrint.sessionNote.sessionResult === 'NA'">
-                  <td class="font-weight-medium text-xs-right">CAREGIVER NOTES</td>
-                  <td></td>
-                </tr>
-                <!-- <tr class="no-page-break">
-                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
-                    Caregiver:
-                  </td>
-                  <td class="pl-1">{{ sessionPrint.caregiver }} ({{ sessionPrint.caregiverType }})</td>
-                </tr> -->
-                <tr class="no-page-break" v-if="sessionPrint.sessionNote.sessionResult === 'NA'">
-                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
-                  <td class="pl-1" v-html="breakLine(sessionPrint.caregiverNote || 'None')"></td>
-                </tr>
                 <template v-if="sessionPrint.sessionTypeNum === 2">
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%">
@@ -138,9 +115,10 @@
                 <template v-if="sessionPrint.sessionTypeNum === 3">
                   <tr class="no-page-break">
                     <td class="font-weight-medium text-xs-right" width="20%">
-                      <v-icon small>{{ sessionPrint.supervisionNote.isDirectSession ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                      <!-- <v-icon small>{{ sessionPrint.supervisionNote.isDirectSession ? "fa-check-circle" : "far fa-circle" }}</v-icon> -->
                     </td>
                     <td class="pl-1">
+                      <v-icon small>{{ sessionPrint.supervisionNote.isDirectSession ? "fa-check-circle" : "far fa-circle" }}</v-icon>
                       Direct session
                     </td>
                   </tr>
@@ -295,6 +273,29 @@
                   </tr>
                 </template>
                 <template v-if="sessionPrint.sessionTypeNum === 1">
+                  <tr class="no-page-break grey lighten-3">
+                    <td class="font-weight-medium text-xs-right">SUMMARY</td>
+                    <td>(Include Environmental changes)</td>
+                  </tr>
+                  <tr class="no-page-break">
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
+                    <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.progressNotes || 'N/A')"></td>
+                  </tr>
+                  <!-- End Section -->
+                  <tr class="no-page-break grey lighten-3" v-if="sessionPrint.sessionNote.sessionResult === 'NA'">
+                    <td class="font-weight-medium text-xs-right">CAREGIVER NOTES</td>
+                    <td></td>
+                  </tr>
+                  <!-- <tr class="no-page-break">
+                  <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                    Caregiver:
+                  </td>
+                  <td class="pl-1">{{ sessionPrint.caregiver }} ({{ sessionPrint.caregiverType }})</td>
+                </tr> -->
+                  <tr class="no-page-break" v-if="sessionPrint.sessionNote.sessionResult === 'NA'">
+                    <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;"></td>
+                    <td class="pl-1" v-html="breakLine(sessionPrint.caregiverNote || 'None')"></td>
+                  </tr>
                   <tr class="no-page-break grey lighten-3">
                     <td class="font-weight-medium text-xs-right">
                       RISK BEHAVIOR

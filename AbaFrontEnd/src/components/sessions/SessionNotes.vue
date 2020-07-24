@@ -431,7 +431,7 @@
                             auto-grow
                             v-model="session.sessionNote.progressNotes"
                             rows="15"
-                            @change="checkMatching"
+                            @change="setDirty"
                           ></v-textarea>
                         </v-flex>
                         <v-flex xs12>
@@ -1336,30 +1336,46 @@ export default {
       this.$router.push("/clients/sessions_details");
     },
 
-    async save(exit = true) {
+    checkAllIsRight() {
+      //await this.checkMatchingPercentaje();
+      if (this.dirtyIndicator) {
+        this.$toast.error("Please, save your session/notes first before continue");
+        return false;
+      }
       if (this.session.sessionType === 1) {
+        if (this.matchingCantSave) {
+          this.$toast.error("You cannot set Ready to Analyst because Summary (Progress Notes) exceed allowed matching percent.");
+          return;
+        }
         if (this.session.sessionNote.riskBehaviorCrisisInvolved && !this.session.sessionNote.riskBehaviorExplain) {
           this.$toast.error("You need to explain the crisis envolved");
-          return;
+          return false;
         }
         if (!this.session.sessionNote.reinforcersResult) {
           this.$toast.error("You need to fill Reinforcers/Result field");
+          return false;
+        }
+        let ediblesCount = 0;
+        if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
+        if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
+        if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
+        if (ediblesCount > 1) {
+          this.$toast.error("Please declare at least two diferente type of reinforced used.");
+          return false;
+        }
+        if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
+          this.$toast.error("Session must have a valid signature");
           return;
         }
         if (!this.session.sessionNote.sessionResult) {
           this.$toast.error("You need to fill Session Result field");
-          return;
+          return false;
         }
-        // let ediblesCount = 0;
-        // if (!this.session.sessionNote.reinforcersEdibles) ediblesCount++;
-        // if (!this.session.sessionNote.reinforcersNonEdibles) ediblesCount++;
-        // if (!this.session.sessionNote.reinforcersOthers) ediblesCount++;
-        // if (ediblesCount > 1) {
-        //   this.$toast.error("You need to fill at least 2 edibles fields");
-        //   return;
-        // }
       }
+      return true;
+    },
 
+    async save(exit = true) {
       if (this.session.sessionType === 3) {
         let work = 0;
         this.sessionSupervisionWorkWithArray.forEach(c => {
@@ -1474,6 +1490,7 @@ export default {
     },
 
     async markAsChecked() {
+      if (!this.checkAllIsRight()) return;
       this.checkedModalType = "Checked";
       if (this.session.sessionType !== 1) {
         this.onClickCheckedModal();
@@ -1486,22 +1503,16 @@ export default {
     },
 
     async markAsReady2Lead() {
-      if (this.matchingCantSave) {
-        this.$toast.error("You cannot set Ready to Analyst because progress notes exceed allowed matching percent.");
-        return;
-      }
+      if (!this.checkAllIsRight()) return;
+
       this.$confirm("Are you sure you want to mark this session as Ready to Analyst(Lead)? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(
         async res => {
           if (res) {
             const model = {
               sessionId: this.activeSessionId,
-              sessionStatus: 8 //checked
+              sessionStatus: 8 //rbtready
             };
             try {
-              if (!this.sessionDetailed.sign || !this.sessionDetailed.sign.sign) {
-                this.$toast.error("You can not check this session without a valid signature");
-                return;
-              }
               await sessionServicesApi.changeSessionStatus(model);
               this.close();
             } catch (error) {
@@ -1632,10 +1643,6 @@ export default {
     },
 
     async onClickCheckedModal() {
-      if (this.dirtyIndicator) {
-        this.$toast.warning("You need to save session first");
-        return;
-      }
       const model = {
         sessionId: this.activeSessionId,
         sessionStatus: this.checkedModalType == "Checked" ? 5 : 7 //checked or reviewed
