@@ -68,6 +68,11 @@ export default {
       type: Boolean,
       default: false,
       required: false
+    },
+    clientId: {
+      type: Number,
+      default: 0,
+      required: false
     }
   },
 
@@ -128,7 +133,7 @@ export default {
       try {
         if (!this.activeClientId) return;
         this.loading = true;
-        let data = await sessionServicesApi.getReplacementsChartData(this.activeClientId, this.replacementId, this.dateStart, this.dateEnd);
+        let data = await sessionServicesApi.getReplacementsChartData(this.clientId === 0 ? this.activeClientId : this.clientId, this.replacementId, this.dateStart, this.dateEnd);
         this.chartOptions = data.chartOptions;
         this.notes = data.notes;
       } catch (error) {
@@ -143,7 +148,7 @@ export default {
     },
 
     async deleteNote(note) {
-      this.$confirm("Do you want to delete this note?").then(async res => {
+      this.$confirm("Do you want to delete this note?").then(async (res) => {
         if (res) {
           try {
             await sessionServicesApi.deleteChartNote(note.clientChartNoteId);
