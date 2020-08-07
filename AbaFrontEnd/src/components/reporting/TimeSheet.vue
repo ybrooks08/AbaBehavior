@@ -39,19 +39,20 @@
             </v-btn>
           </v-toolbar>
           <v-layout row wrap>
-            <v-flex xs2>
-              <img style="object-fit: contain;" src="images/logo.jpg" width="100">
+            <v-flex xs2 pl-3>
+              <img style="object-fit: contain;" src="images/logo.jpg" width="80" />
             </v-flex>
             <v-flex xs10>
-              <h3 class="pt-3">EMPLOYEE TIME SHEET</h3>
-              <h4 class="pr-3 right">EMPLOYEE: {{userData.firstname.toUpperCase()}} {{userData.lastname.toUpperCase()}}</h4><br>
-              <h5 class="pr-3 right">{{userData.rol.rolName}}</h5>
+              <h4 class="pt-3">EMPLOYEE TIME SHEET</h4>
+              <h5 class="pr-3 right">EMPLOYEE: {{ userData.firstname.toUpperCase() }} {{ userData.lastname.toUpperCase() }}</h5>
+              <br />
+              <h5 class="pr-3 right">{{ userData.rol.rolName }}</h5>
               <v-divider></v-divider>
-              <span>
+              <h5 class="h5">
                 FROM:
-                <strong>{{dateRange.start | moment("MM/DD/YYYY")}}</strong> TO:
-                <strong>{{dateRange.end | moment("MM/DD/YYYY")}}</strong>
-              </span>
+                <strong>{{ dateRange.start | moment("MM/DD/YYYY") }}</strong> TO:
+                <strong>{{ dateRange.end | moment("MM/DD/YYYY") }}</strong>
+              </h5>
             </v-flex>
           </v-layout>
           <v-card-text class="print-full-width">
@@ -73,49 +74,51 @@
                 <tr v-for="r in report" :key="('session'+r.sessionId)">
                   <td class="px-1">
                     <v-icon class="no-print" small>fa-calendar</v-icon>
-                    {{r.date | moment('MM/DD/YYYY')}}
+                    {{ r.date | moment("MM/DD/YYYY") }}
                   </td>
                   <td class="px-1">
                     <v-icon class="no-print" small>fa-clock</v-icon>
-                    {{r.sessionIn | moment('LT')}}
+                    {{ r.sessionIn | moment("LT") }}
                   </td>
                   <td class="px-1">
                     <v-icon class="no-print" small>fa-clock</v-icon>
-                    {{r.sessionOut | moment('LT')}}
+                    {{ r.sessionOut | moment("LT") }}
                   </td>
-                  <td class="px-1 text-xs-left">{{r.client}}</td>
-                  <td class="px-1 text-xs-right">{{r.sessionHours}}/{{r.sessionDriveTime}}</td>
-                  <td class="px-1 text-xs-right">{{r.regularHours}}</td>
-                  <td class="px-1 text-xs-right">{{r.regularDrive}}</td>
-                  <td class="px-1 text-xs-right">{{r.extraHours}}</td>
-                  <td class="px-1 text-xs-right">{{r.extraDrive}}</td>
+                  <td class="px-1 text-xs-left">{{ r.client }}</td>
+                  <td class="px-1 text-xs-right">{{ r.sessionHours }}/{{ r.sessionDriveTime }}</td>
+                  <td class="px-1 text-xs-right">{{ r.regularHours }}</td>
+                  <td class="px-1 text-xs-right">{{ r.regularDrive }}</td>
+                  <td class="px-1 text-xs-right">{{ r.extraHours }}</td>
+                  <td class="px-1 text-xs-right">{{ r.extraDrive }}</td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr class="font-weight-medium">
                   <td class="px-1 text-xs-left" colspan="5">Totals</td>
-                  <td class="px-1 text-xs-right">{{totalRegular}}</td>
-                  <td class="px-1 text-xs-right">{{totalRegularDrive}}</td>
-                  <td class="px-1 text-xs-right">{{totalExtraHours}}</td>
-                  <td class="px-1 text-xs-right">{{totalExtraDrive}}</td>
+                  <td class="px-1 text-xs-right">{{ totalRegular }}</td>
+                  <td class="px-1 text-xs-right">{{ totalRegularDrive.toFixed(2) }}</td>
+                  <td class="px-1 text-xs-right">{{ totalExtraHours }}</td>
+                  <td class="px-1 text-xs-right">{{ totalExtraDrive }}</td>
                 </tr>
                 <tr class="font-weight-medium">
                   <td class="px-1 text-xs-left" colspan="5">Pay rate</td>
-                  <td class="px-1 text-xs-right">${{userData.payRate.toFixed(2)}}</td>
-                  <td class="px-1 text-xs-right">${{userData.driveTimePayRate.toFixed(2)}}</td>
-                  <td class="px-1 text-xs-right">${{payExtraRate}}</td>
-                  <td class="px-1 text-xs-right">${{payDriveTimeExtraRate}}</td>
+                  <td class="px-1 text-xs-right">${{ userData.payRate ? userData.payRate.toFixed(2) : 0 }}</td>
+                  <td class="px-1 text-xs-right">${{ userData.driveTimePayRate ? userData.driveTimePayRate.toFixed(2) : 0 }}</td>
+                  <td class="px-1 text-xs-right">${{ payExtraRate }}</td>
+                  <td class="px-1 text-xs-right">${{ payDriveTimeExtraRate }}</td>
                 </tr>
                 <tr class="font-weight-medium">
                   <td class="px-1 text-xs-left" colspan="5">Subtotal</td>
-                  <td class="px-1 text-xs-right">${{(totalRegular * userData.payRate).toFixed(2)}}</td>
-                  <td class="px-1 text-xs-right">${{(totalRegularDrive * userData.driveTimePayRate).toFixed(2)}}</td>
-                  <td class="px-1 text-xs-right">${{(totalExtraHours * payExtraRate).toFixed(2)}}</td>
-                  <td class="px-1 text-xs-right">${{(totalExtraDrive * payDriveTimeExtraRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-right">${{ (totalRegular * userData.payRate).toFixed(2) }}</td>
+                  <td class="px-1 text-xs-right">${{ (totalRegularDrive * userData.driveTimePayRate).toFixed(2) }}</td>
+                  <td class="px-1 text-xs-right">${{ (totalExtraHours * payExtraRate).toFixed(2) }}</td>
+                  <td class="px-1 text-xs-right">${{ (totalExtraDrive * payDriveTimeExtraRate).toFixed(2) }}</td>
                 </tr>
                 <tr class="font-weight-black black white--text">
                   <td class="px-1 text-xs-left" colspan="5">TOTAL</td>
-                  <td class="px-1 text-xs-center" colspan="4">${{(totalRegular * userData.payRate + totalRegularDrive * userData.driveTimePayRate + totalExtraHours * payExtraRate + totalExtraDrive * payDriveTimeExtraRate).toFixed(2)}}</td>
+                  <td class="px-1 text-xs-center" colspan="4">
+                    ${{ (totalRegular * userData.payRate + totalRegularDrive * userData.driveTimePayRate + totalExtraHours * payExtraRate + totalExtraDrive * payDriveTimeExtraRate).toFixed(2) }}
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -126,18 +129,17 @@
                 <div v-if="!userData.userSign">
                   <div style="min-height: 100px;" class="mb-2"></div>
                   <v-divider></v-divider>
-                  {{userData.firstname}} {{userData.lastname}}
+                  {{ userData.firstname }} {{ userData.lastname }}
                 </div>
                 <div v-else>
                   <div style="height: 100px;" class="mb-2">
-                    <img style="height:100%" :src="userData.userSign.sign">
+                    <img style="height: 100%;" :src="userData.userSign.sign" />
                   </div>
                   <v-divider></v-divider>
-                  {{userData.firstname}} {{userData.lastname}}
+                  {{ userData.firstname }} {{ userData.lastname }}
                 </div>
               </v-flex>
             </v-layout>
-
           </v-card-text>
         </v-card>
       </v-flex>
@@ -202,7 +204,7 @@ export default {
         this.userData = {};
         const report = await reportingApi.getTimeSheet(this.dateRange.start, this.dateRange.end, this.userId);
         const rows = report.rows;
-        rows.forEach(e => {
+        rows.forEach((e) => {
           e.date = this.$moment(e.date).local();
           e.sessionIn = this.$moment(e.sessionIn).local();
           e.sessionOut = this.$moment(e.sessionOut).local();
@@ -223,4 +225,3 @@ export default {
   }
 };
 </script>
-
