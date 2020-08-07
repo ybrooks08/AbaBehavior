@@ -243,7 +243,10 @@
                           <v-chip small label color="indigo" text-color="white">{{ item.specialty }}</v-chip>
                         </td>
                         <td class="text-xs-left px-1 hidden-xs-only">
-                          <strong class="body-2">Expires: {{ item.dateExpires | moment("utc", "MMM Do, YYYY") }}</strong>
+                          <strong class="body-2">From: {{ item.dateReferral | moment("utc", "MM/DD/YYYY") }}</strong>
+                        </td>
+                        <td class="text-xs-left px-1 hidden-xs-only">
+                          <strong class="body-2">Expires: {{ item.dateExpires | moment("utc", "MM/DD/YYYY") }}</strong>
                           <br />
                           <span>{{ item.dateExpires | moment("utc", "from", "now") }}</span>
                         </td>
@@ -277,10 +280,7 @@
                         v-for="item in assessments"
                         :key="item.assessmentId"
                         :class="{
-                          'red lighten-5 grey--text': !$moment()
-                            .utc()
-                            .startOf('day')
-                            .isBetween($moment(item.startDate).utc(), $moment(item.endDate).utc(), null, '[]')
+                          'red lighten-5 grey--text': !$moment().utc().startOf('day').isBetween($moment(item.startDate).utc(), $moment(item.endDate).utc(), null, '[]')
                         }"
                       >
                         <td class="text-xs-left px-1 hidden-xs-only" style="width: 60px;">
@@ -468,7 +468,7 @@ export default {
       loadingBasicInfo: false,
       loadingExtra: false,
       loadingCaregiverForm: false,
-      required: value => !!value || "This field is required.",
+      required: (value) => !!value || "This field is required.",
       addEditCaregiverMenu: false,
       client: {},
       activeTab: 0,
@@ -566,12 +566,12 @@ export default {
     },
 
     async deleteCaregiver(caregiver) {
-      this.$confirm("Do you want to delete selected caregiver?").then(async res => {
+      this.$confirm("Do you want to delete selected caregiver?").then(async (res) => {
         if (res) {
           this.loadingExtra = true;
           try {
             await clientApi.deleteCaregiver(caregiver);
-            this.client.caregivers = this.client.caregivers.filter(s => s.caregiverId !== caregiver.caregiverId);
+            this.client.caregivers = this.client.caregivers.filter((s) => s.caregiverId !== caregiver.caregiverId);
           } catch (error) {
             this.$toast.error(error);
           } finally {
@@ -596,17 +596,17 @@ export default {
             email: this.caregiverForm.email,
             caregiverTypeId: this.caregiverForm.caregiverTypeId,
             caregiverType: {
-              description: this.caregiversTypes.find(f => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description
+              description: this.caregiversTypes.find((f) => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description
             }
           });
         } else {
-          let caregiver = this.client.caregivers.find(f => f.caregiverId == id);
+          let caregiver = this.client.caregivers.find((f) => f.caregiverId == id);
           caregiver.caregiverFullname = this.caregiverForm.caregiverFullname;
           caregiver.phone = this.caregiverForm.phone;
           caregiver.email = this.caregiverForm.email;
           caregiver.caregiverTypeId = this.caregiverForm.caregiverTypeId;
           caregiver.caregiverType = {
-            description: this.caregiversTypes.find(f => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description
+            description: this.caregiversTypes.find((f) => f.caregiverTypeId === this.caregiverForm.caregiverTypeId).description
           };
         }
         this.close();
@@ -628,19 +628,15 @@ export default {
     editReferral(referral) {
       this.referralData = {
         ...referral,
-        dateReferral: this.$moment(referral.dateReferral)
-          .utc()
-          .format("MM/DD/YYYY"),
-        dateExpires: this.$moment(referral.dateExpires)
-          .utc()
-          .format("MM/DD/YYYY")
+        dateReferral: this.$moment(referral.dateReferral).utc().format("MM/DD/YYYY"),
+        dateExpires: this.$moment(referral.dateExpires).utc().format("MM/DD/YYYY")
       };
       this.referralDialog = true;
     },
 
     onSubmitReferral(referral) {
       this.referralDialog = false;
-      let referralItem = this.client.referrals.find(f => f.referralId === referral.referralId);
+      let referralItem = this.client.referrals.find((f) => f.referralId === referral.referralId);
       if (!referralItem) {
         this.client.referrals.push(referral);
       } else {
@@ -649,12 +645,12 @@ export default {
     },
 
     deleteReferral(referral) {
-      this.$confirm("Do you want to delete selected referral?").then(async res => {
+      this.$confirm("Do you want to delete selected referral?").then(async (res) => {
         if (res) {
           this.loadingBasicInfo = true;
           try {
             await clientApi.deleteReferral(referral);
-            this.client.referrals = this.client.referrals.filter(r => r.referralId != referral.referralId);
+            this.client.referrals = this.client.referrals.filter((r) => r.referralId != referral.referralId);
           } catch (error) {
             this.$toast.error(error);
           } finally {
@@ -689,12 +685,8 @@ export default {
       this.$refs.assessmentDiag.data.clientId = a.clientId;
       this.$refs.assessmentDiag.data.behaviorAnalysisCodeId = a.behaviorAnalysisCodeId;
       this.$refs.assessmentDiag.data.totalUnitsWeek = a.totalUnitsWeek;
-      this.$refs.assessmentDiag.data.startDate = this.$moment(a.startDate)
-        .utc()
-        .format("MM/DD/YYYY");
-      this.$refs.assessmentDiag.data.endDate = this.$moment(a.endDate)
-        .utc()
-        .format("MM/DD/YYYY");
+      this.$refs.assessmentDiag.data.startDate = this.$moment(a.startDate).utc().format("MM/DD/YYYY");
+      this.$refs.assessmentDiag.data.endDate = this.$moment(a.endDate).utc().format("MM/DD/YYYY");
       this.assessmentDialog = true;
       console.log(a);
     },
@@ -709,7 +701,7 @@ export default {
     },
 
     deleteAssessment(assessment) {
-      this.$confirm("Do you want to delete selected authorization?").then(async res => {
+      this.$confirm("Do you want to delete selected authorization?").then(async (res) => {
         if (res) {
           this.loadingBasicInfo = true;
           try {
@@ -730,7 +722,7 @@ export default {
     },
 
     deleteAssignment(assignment) {
-      this.$confirm("Do you want to delete selected assignment?").then(async res => {
+      this.$confirm("Do you want to delete selected assignment?").then(async (res) => {
         if (res) {
           this.loadingBasicInfo = true;
           try {
@@ -776,7 +768,7 @@ export default {
     },
 
     addDiagnosis() {
-      this.$prompt(null, { title: "Add new diagnosis", label: "Diagnosis code" }).then(async text => {
+      this.$prompt(null, { title: "Add new diagnosis", label: "Diagnosis code" }).then(async (text) => {
         if (text) {
           let model = {
             clientId: this.id,
@@ -796,12 +788,12 @@ export default {
     },
 
     deleteDiagnosis(clientDiagnosis) {
-      this.$confirm("Do you want to delete selected diagnosis?").then(async res => {
+      this.$confirm("Do you want to delete selected diagnosis?").then(async (res) => {
         if (res) {
           this.loadingBasicInfo = true;
           try {
             await clientApi.deleteClientDiagnosis(clientDiagnosis);
-            this.client.clientDiagnostics = this.client.clientDiagnostics.filter(c => c.clientDiagnosisId !== clientDiagnosis.clientDiagnosisId);
+            this.client.clientDiagnostics = this.client.clientDiagnostics.filter((c) => c.clientDiagnosisId !== clientDiagnosis.clientDiagnosisId);
           } catch (error) {
             this.$toast.error(error);
           } finally {

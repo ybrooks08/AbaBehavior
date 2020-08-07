@@ -132,7 +132,9 @@ namespace AbaBackend.Controllers
                           w.BehaviorAnalysisCodeId == user.Rol.BehaviorAnalysisCodeId &&
                           (w.StartDate <= toDate && fromDate <= w.EndDate)),
               Referrals = s.Referrals.Where(w =>
-                          (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active)
+                          toDate >= w.DateReferral && w.DateExpires >= fromDate).OrderByDescending(o => o.DateExpires).ToList()
+              // Referrals = s.Referrals.Where(w =>
+              //             (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active)
             }).FirstOrDefaultAsync();
 
         var sessions = await _dbContext.Sessions

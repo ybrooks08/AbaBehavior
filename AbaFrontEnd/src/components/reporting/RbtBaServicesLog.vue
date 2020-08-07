@@ -16,15 +16,27 @@
                 <select-user v-model="userId" @change="changedUser()"></select-user>
               </v-flex>
               <v-flex xs12 sm6>
-                <v-select box hid :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]"
-                          required>
+                <v-select
+                  box
+                  hid
+                  :disabled="loading"
+                  :items="clients"
+                  v-model="clientId"
+                  label="Client"
+                  prepend-icon="fa-user"
+                  item-text="clientName"
+                  item-value="clientId"
+                  :rules="[required]"
+                  required
+                >
                   <template slot="item" slot-scope="{ item }">
                     <v-list-tile-avatar>
                       <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
                     </v-list-tile-avatar>
                     <v-list-tile-content>
                       <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }"
+                        >{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
                       </v-list-tile-sub-title>
                     </v-list-tile-content>
                   </template>
@@ -114,14 +126,16 @@
               </tr>
               <tr>
                 <td>
-                  <small>License number:</small>
+                  <small>License number & NPI:</small>
                   <br />
-                  <span>{{ report.user.licenseNo }}</span>
+                  <span>{{ report.user.licenseNo }}</span
+                  >&nbsp;|&nbsp;
+                  <span>{{ report.user.npi }}</span>
                 </td>
                 <td>
-                  <small>Npi:</small>
+                  <small>Medicaid:</small>
                   <br />
-                  <span>{{ report.user.npi }}</span>
+                  <span>{{ report.client.memberId }}</span>
                 </td>
               </tr>
             </table>
@@ -206,17 +220,11 @@ export default {
   data() {
     return {
       loading: false,
-      required: value => !!value || "This field is required.",
+      required: (value) => !!value || "This field is required.",
       validForm: false,
       datePickerModel: {
-        start: this.$moment()
-          .subtract(1, "month")
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm"),
-        end: this.$moment()
-          .subtract(1, "month")
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm")
+        start: this.$moment().subtract(1, "month").startOf("month").format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment().subtract(1, "month").endOf("month").format("YYYY-MM-DDTHH:mm")
       },
       userId: null,
       clients: [],
@@ -238,7 +246,7 @@ export default {
       return this.user.rol2 === "admin" || this.user.rol2 === "billing" || this.user.rol2 === "management";
     },
     totalUnits() {
-      return this.report.sessions.length > 0 ? this.report.sessions.map(a => a.totalUnits).reduce((a, b) => a + b) : 0;
+      return this.report.sessions.length > 0 ? this.report.sessions.map((a) => a.totalUnits).reduce((a, b) => a + b) : 0;
     }
   },
 
@@ -271,7 +279,7 @@ export default {
         this.sessions = [];
         this.report = null;
         this.report = await reportingApi.getServiceLog(this.datePickerModel.start, this.datePickerModel.end, this.clientId, this.isAdminOrBillingOrManagement ? this.userId : -1);
-        this.report.sessions.forEach(e => {
+        this.report.sessions.forEach((e) => {
           e.sessionStart = this.$moment(e.sessionStart).local();
           e.sessionEnd = this.$moment(e.sessionEnd).local();
           this.sessions.push(e);
