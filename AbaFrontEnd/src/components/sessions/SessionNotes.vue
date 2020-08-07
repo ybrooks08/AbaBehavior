@@ -208,10 +208,13 @@
                                 suffix="hrs"
                                 single-line
                                 hide-details
+                                clearable
                                 append-outer-icon="fa-paper-plane"
                                 @click:append-outer="submitDriveTime"
                                 placeholder="Edit drive time"
                                 @keypress.enter.native="submitDriveTime"
+                                @blur="submitDriveTime"
+                                ref="driveTimeInput"
                               ></v-text-field>
                             </div>
                           </v-flex>
@@ -1243,7 +1246,7 @@ export default {
 
   beforeRouteLeave(to, from, next) {
     if (this.dirtyIndicator) {
-      this.$confirm("There are unsaved changes, are you sure do you want to cancel all editings?").then(async res => {
+      this.$confirm("There are unsaved changes, are you sure do you want to cancel all editings?").then(async (res) => {
         if (res) next();
         else next(false);
       });
@@ -1261,23 +1264,20 @@ export default {
         sessionDetailed.sessionEnd = s2;
         this.sessionDetailed = sessionDetailed;
         this.sessionLogs = [];
-        sessionDetailed.sessionLogs.forEach(s => {
+        sessionDetailed.sessionLogs.forEach((s) => {
           s.entry = this.$moment(s.entry).local();
           this.sessionLogs.push(s);
         });
         this.session = await sessionServicesApi.getSession(this.activeSessionId);
         if (this.session.sessionType === 3) {
-          this.sessionSupervisionWorkWithCodes.forEach(c => {
+          this.sessionSupervisionWorkWithCodes.forEach((c) => {
             const a = (c.value & this.session.sessionSupervisionNote.workWith) != 0;
             this.sessionSupervisionWorkWithArray.push(a ? c.value : 0);
           });
           this.session.sessionSupervisionNote.nextScheduledDate =
-            !this.session.sessionSupervisionNote.nextScheduledDate ||
-            this.$moment(this.session.sessionSupervisionNote.nextScheduledDate)
-              .utc()
-              .format("MM/DD/YYYY");
+            !this.session.sessionSupervisionNote.nextScheduledDate || this.$moment(this.session.sessionSupervisionNote.nextScheduledDate).utc().format("MM/DD/YYYY");
         }
-        this.problemsUnique = this.session.sessionProblemNotes.map(m => m.problemBehavior);
+        this.problemsUnique = this.session.sessionProblemNotes.map((m) => m.problemBehavior);
         this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
         console.log(this.collectBehaviors);
       } catch (error) {
@@ -1378,7 +1378,7 @@ export default {
     async save(exit = true) {
       if (this.session.sessionType === 3) {
         let work = 0;
-        this.sessionSupervisionWorkWithArray.forEach(c => {
+        this.sessionSupervisionWorkWithArray.forEach((c) => {
           work |= c;
         });
         this.session.sessionSupervisionNote.workWith = work;
@@ -1386,7 +1386,7 @@ export default {
 
       let hours = this.$moment.duration(this.$moment().diff(this.session.sessionStart)).asHours();
       if (hours > 48) {
-        this.$confirm("This session was created more than 48 hours ago. If you edit it, you going to use a pass. Are you sure you want to edit this session?").then(async res => {
+        this.$confirm("This session was created more than 48 hours ago. If you edit it, you going to use a pass. Are you sure you want to edit this session?").then(async (res) => {
           if (!res) {
             return;
           } else {
@@ -1433,7 +1433,7 @@ export default {
     },
 
     async deleteSession() {
-      this.$confirm("Do you want to delete this Session?").then(async res => {
+      this.$confirm("Do you want to delete this Session?").then(async (res) => {
         if (res) {
           try {
             if (!this.activeSessionId) return;
@@ -1447,7 +1447,7 @@ export default {
     },
 
     rejectSession() {
-      this.$prompt(null, { title: "Reject note", label: "Reason", textArea: true }).then(async desc => {
+      this.$prompt(null, { title: "Reject note", label: "Reason", textArea: true }).then(async (desc) => {
         if (desc) {
           if (!this.activeSessionId) return;
           await sessionServicesApi.rejectSession({
@@ -1506,7 +1506,7 @@ export default {
       if (!this.checkAllIsRight()) return;
 
       this.$confirm("Are you sure you want to mark this session as Ready to Analyst(Lead)? <br><br><small class='red--text'>*Remember to save the changes first if you have not done so.</small>").then(
-        async res => {
+        async (res) => {
           if (res) {
             const model = {
               sessionId: this.activeSessionId,
@@ -1550,7 +1550,7 @@ export default {
     },
 
     async reopenSession() {
-      this.$confirm("Are you sure you want to reopen this session?").then(async res => {
+      this.$confirm("Are you sure you want to reopen this session?").then(async (res) => {
         if (res) {
           const model = {
             sessionId: this.activeSessionId,
@@ -1591,13 +1591,16 @@ export default {
     editDriveTime() {
       //this.posToEdit = this.sessionDetailed.posCode;
       this.driveTimeEditVisible = true;
+      this.$nextTick(() => {
+        this.$refs.driveTimeInput.focus();
+      });
     },
 
     async submitDriveTime() {
       this.loadEditDriveTime = true;
       const model = {
         id: this.activeSessionId,
-        value: this.sessionDetailed.driveTime
+        value: this.sessionDetailed.driveTime || 0
       };
       try {
         await sessionServicesApi.editSessionDriveTime(model);
@@ -1618,11 +1621,11 @@ export default {
       if (!this.progressNoteEmpty) return;
       const pos = this.sessionDetailed.pos;
       let notes = this.session.sessionNote.progressNotes.toLowerCase();
-      const notAllowed = this.notAllowed.find(s => s.place.toLowerCase() === pos.toLowerCase());
+      const notAllowed = this.notAllowed.find((s) => s.place.toLowerCase() === pos.toLowerCase());
       if (!notAllowed) return;
-      const words = notAllowed.words.map(m => m.toLowerCase());
-      if (words.some(s => notes.includes(s))) {
-        words.forEach(w => {
+      const words = notAllowed.words.map((m) => m.toLowerCase());
+      if (words.some((s) => notes.includes(s))) {
+        words.forEach((w) => {
           notes = notes.replace(new RegExp(w.toLowerCase(), "g"), `<strong class="red--text pulse">${w.toLowerCase()}</strong>`);
         });
       }
@@ -1631,8 +1634,8 @@ export default {
 
     async checkModelProblems() {
       let errors = [];
-      this.session.sessionProblemNotes.forEach(s => {
-        const p = this.collectBehaviors.find(w => w.problemId == s.problemId);
+      this.session.sessionProblemNotes.forEach((s) => {
+        const p = this.collectBehaviors.find((w) => w.problemId == s.problemId);
         if (p && !(p.noData || p.total == 0)) {
           if (!s.duringWichActivities || !s.replacementInterventionsUsed) {
             errors.push(s.problemBehavior.problemBehaviorDescription);
@@ -1660,7 +1663,7 @@ export default {
     },
 
     getIfBehaviorHasData(problemId) {
-      const collection = this.collectBehaviors.find(s => s.problemId === problemId);
+      const collection = this.collectBehaviors.find((s) => s.problemId === problemId);
       if (collection.noData || collection.total == 0) return "<label class='blue--text'>* No data collected in this behavior</label>";
       return `<label class='red--text'>* Data collected in this behavior, both fields are mandatory.</label><br><br>
       <label class="pa-1" style="background-color: green; color: white">Data: ${collection.total} ${collection.behavior.isPercent ? "/" + collection.completed : ""}</label>`;
