@@ -40,9 +40,9 @@ namespace AbaBackend.DataModel
         .HasIndex(x => x.Code)
         .IsUnique();
 
-      modelBuilder.Entity<ClientDiagnosis>()
-        .HasIndex(x => new { x.ClientId, x.DiagnosisId })
-        .IsUnique();
+      // modelBuilder.Entity<ClientDiagnosis>()
+      //   .HasIndex(x => new { x.ClientId, x.DiagnosisId })
+      //   .IsUnique();
 
       modelBuilder.Entity<DocumentUser>()
         .HasIndex(x => new { x.UserId, x.DocumentId })

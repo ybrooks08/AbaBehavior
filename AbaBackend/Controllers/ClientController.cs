@@ -558,11 +558,14 @@ namespace AbaBackend.Controllers
       try
       {
         var refer = await _dbContext.Diagnostics.FirstOrDefaultAsync(w => w.Code.ToLower().Equals(model.Code.ToLower()));
-        if (refer == null) throw new Exception("Diagnosis not found");
+        if (refer == null) throw new Exception("Diagnosis code not found");
         var diag = new ClientDiagnosis
         {
           ClientId = model.ClientId,
-          DiagnosisId = refer.DiagnosisId
+          DiagnosisId = refer.DiagnosisId,
+          StartDate = model.StartDate,
+          EndDate = model.EndDate,
+          AddedDate = DateTime.Now
         };
         await _dbContext.AddAsync(diag);
         await _dbContext.SaveChangesAsync();

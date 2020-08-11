@@ -33,7 +33,7 @@
                     <v-flex xs9>{{ sessionPrint.clientCode }}</v-flex>
                     <v-flex class="font-weight-medium text-xs-right" xs3>Diagnosis:</v-flex>
                     <v-flex xs9 style="display: flex; flex-direction: column;">
-                      <small class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.code"> ({{ d.code }}) {{ d.description }}</small>
+                      <small class="no-wrap" v-for="d in sessionPrint.clientDiagnosis" :key="d.item1"> ({{ d.item1 }}) {{ d.item2 }}</small>
                     </v-flex>
                     <v-flex class="font-weight-medium text-xs-right" xs3>Medicaid ID:</v-flex>
                     <v-flex xs9>{{ sessionPrint.memberNo }}</v-flex>
@@ -702,6 +702,7 @@ export default {
         sessionPrint.sessionStart = d1;
         sessionPrint.sessionEnd = d2;
         this.sessionPrint = sessionPrint;
+        console.log(this.sessionPrint);
         if (this.sessionPrint.sessionTypeNum === 3) {
           this.sessionSupervisionWorkWithCodes.forEach((c) => {
             const a = (c.value & this.sessionPrint.supervisionNote.workWith) !== 0;
@@ -711,7 +712,6 @@ export default {
         }
         this.collection.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.sessionId);
         this.collection.collectReplacements = await sessionServicesApi.getCollectReplacements(this.sessionId);
-        console.log(this.sessionPrint);
         //this.sessionExtraInfo = await sessionServicesApi.getSessionPrintExtraInfo(this.sessionId);
       } catch (error) {
         this.$toast.error(error.message || error);

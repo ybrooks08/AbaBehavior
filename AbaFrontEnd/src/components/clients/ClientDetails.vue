@@ -400,6 +400,16 @@
                           <br />
                           <span>{{ item.diagnosis.code }}</span>
                         </td>
+                        <td class="text-xs-left px-1">
+                          From:
+                          <label v-if="!item.startDate">N/A</label>
+                          <label v-else>{{ item.startDate | moment("utc", "MM/DD/YYYY") }}</label>
+                          <br />
+                          To:
+                          <label v-if="!item.endDate">N/A</label>
+                          <label v-else>{{ item.endDate | moment("utc", "MM/DD/YYYY") }}</label>
+                        </td>
+
                         <td class="text-xs-right px-1">
                           <v-switch hide-details color="primary" v-model="item.active" @change="changeDiagnosisActive(item)"></v-switch>
                         </td>
@@ -429,6 +439,7 @@
     <add-edit-referral-dialog :model="referralDialog" :data="referralData" @cancel="referralDialog = false" @onSubmit="onSubmitReferral" />
     <add-assignment-dialog :model="assignmentDialog" :clientId="id" @cancel="assignmentDialog = false" @onSubmit="onSubmitAssignment" />
     <add-assessment-dialog ref="assessmentDiag" :model="assessmentDialog" :clientId="id" @cancel="assessmentDialog = false" @onSubmit="onSubmitAssessment" />
+    <add-diagnosis-dialog :model="diagnosisDialog" @cancel="diagnosisDialog = false" @onSubmit="addNewDiagnosisSubmit" :loading="loadingBasicInfo" />
   </v-container>
 </template>
 
@@ -437,6 +448,7 @@ import clientApi from "@/services/api/ClientServices";
 import addEditReferralDialog from "@/components/clients/AddEditReferral";
 import addAssignmentDialog from "@/components/clients/AddAssignment";
 import addAssessmentDialog from "@/components/clients/AddAssessment";
+import AddDiagnosisDialog from "@/components/clients/AddDiagnosisDialog";
 import ClinicalData from "@/components/clients/ClinicalData/ClinicalData";
 
 export default {
@@ -451,6 +463,7 @@ export default {
     addEditReferralDialog,
     addAssignmentDialog,
     addAssessmentDialog,
+    AddDiagnosisDialog,
     ClinicalData
   },
 
@@ -494,7 +507,8 @@ export default {
       assignmentDialog: false,
       assignments: [],
       assessmentDialog: false,
-      assessments: []
+      assessments: [],
+      diagnosisDialog: false
     };
   },
 
@@ -523,7 +537,6 @@ export default {
       this.loadingBasicInfo = true;
       try {
         this.assessments = await clientApi.getAssessments(this.id);
-        console.log(this.assessments);
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -768,23 +781,38 @@ export default {
     },
 
     addDiagnosis() {
-      this.$prompt(null, { title: "Add new diagnosis", label: "Diagnosis code" }).then(async (text) => {
-        if (text) {
-          let model = {
-            clientId: this.id,
-            code: text
-          };
-          try {
-            this.loadingBasicInfo = true;
-            let diag = await clientApi.addClientDiagnosis(model);
-            this.client.clientDiagnostics.push(diag.data);
-          } catch (error) {
-            this.$toast.error(error);
-          } finally {
-            this.loadingBasicInfo = false;
-          }
-        }
-      });
+      this.diagnosisDialog = true;
+      //      this.$prompt(null, { title: "Add new diagnosis", label: "Diagnosis code" }).then(async (text) => {
+      //        if (text) {
+      //          let model = {
+      //            clientId: this.id,
+      //            code: text
+      //          };
+      //          try {
+      //            this.loadingBasicInfo = true;
+      //            let diag = await clientApi.addClientDiagnosis(model);
+      //            this.client.clientDiagnostics.push(diag.data);
+      //          } catch (error) {
+      //            this.$toast.error(error);
+      //          } finally {
+      //            this.loadingBasicInfo = false;
+      //          }
+      //        }
+      //      });
+    },
+
+    async addNewDiagnosisSubmit(model) {
+      model.clientId = this.id;
+      this.loadingBasicInfo = true;
+      try {
+        let diagnosis = await clientApi.addClientDiagnosis(model);
+        this.client.clientDiagnostics.push(diagnosis.data);
+        this.diagnosisDialog = false;
+      } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loadingBasicInfo = false;
+      }
     },
 
     deleteDiagnosis(clientDiagnosis) {

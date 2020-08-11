@@ -825,5 +825,20 @@ namespace AbaBackend.Infrastructure.Utils
       int stepsToSame = LevenshteinDistance(source, target);
       return (1.0 - ((double)stepsToSame / (double)Math.Max(source.Length, target.Length)));
     }
+
+    public async Task<List<(string Code, string Description)>> GetClientDiagnosisBySession(int sessionId)
+    {
+      var session = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == sessionId);
+      var sessionDate = session.SessionStart.Date;
+
+      var allDiagnosis = await _dbContext.ClientDiagnostics.Where(w => w.ClientId == session.ClientId).Include(i => i.Diagnosis).ToListAsync();
+      var selected = allDiagnosis.Where(w => (sessionDate >= w.StartDate && sessionDate <= w.EndDate) || (sessionDate >= w.StartDate && w.EndDate == null) || (w.StartDate == null && w.EndDate == null && w.Active))
+      .GroupBy(g => new { g.Diagnosis.Code, g.Diagnosis.Description })
+      .Select(s => (s.Key.Code, s.Key.Description)).ToList();
+
+      return selected;
+    }
+
+
   }
 }

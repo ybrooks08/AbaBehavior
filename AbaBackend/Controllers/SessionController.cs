@@ -334,6 +334,8 @@ namespace AbaBackend.Controllers
           .Select(s => s.User).Include(i => i.UserSign)
           .FirstOrDefaultAsync();
 
+        var clientDiagnosis = await _utils.GetClientDiagnosisBySession(sessionId);
+
         var session = await _dbContext
           .Sessions
           .AsNoTracking()
@@ -345,7 +347,7 @@ namespace AbaBackend.Controllers
             ClientName = $"{s.Client.Firstname} {s.Client.Lastname}",
             ClientDob = s.Client.Dob,
             s.Client.MemberNo,
-            ClientDiagnosis = s.Client.ClientDiagnostics.Where(w => w.Active).Select(s1 => new { s1.Diagnosis.Code, s1.Diagnosis.Description }),
+            ClientDiagnosis = clientDiagnosis,// s.Client.ClientDiagnostics.Where(w => w.Active).Select(s1 => new { s1.Diagnosis.Code, s1.Diagnosis.Description }),
             SessionStart = s.SessionStart.ToString("u"),
             SessionEnd = s.SessionEnd.ToString("u"),
             UserFullname = $"{s.User.Firstname} {s.User.Lastname}",

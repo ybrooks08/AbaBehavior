@@ -176,7 +176,7 @@
               </table>
             </v-flex>
             <v-flex xs12>
-              <table style="width: 100%">
+              <table style="width: 100%;">
                 <tr class="no-page-break" v-if="note.monthlySummary">
                   <h1 class="subheading font-weight-medium">Monthly summary</h1>
                   <p v-html="breakLine(note.monthlySummary)" />
@@ -211,7 +211,7 @@
                     <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Loading data...</v-alert>
                   </template>
                   <template v-for="b in clientProblems">
-                    <table class="table-print no-page-break" style="border-right:none;border-left:none;border-bottom:none;border-top:none;" :key="'header-b' + b.behavior">
+                    <table class="table-print no-page-break" style="border-right: none; border-left: none; border-bottom: none; border-top: none;" :key="'header-b' + b.behavior">
                       <tr class="grey darken-2 white--text">
                         <th class="text-xs-left">Behavior</th>
                         <th style="width: 150px;">Baseline</th>
@@ -232,17 +232,17 @@
                       </tr>
                       <tr class="no-page-break" :key="'bsto' + b.behavior">
                         <td colspan="4" class="pl-4 pa-0 pb-2">
-                          <table class="table-print" style="border: none !important">
+                          <table class="table-print" style="border: none !important;">
                             <template v-if="b.stos.length > 0">
                               <tr v-for="s in b.stos" :key="'b' + s.index + b.behavior" :class="{ 'yellow lighten-3': s.status.toLowerCase() === 'inprogress' }">
-                                <td class="text-xs-center" style="width: 30px; border: none !important">
+                                <td class="text-xs-center" style="width: 30px; border: none !important;">
                                   <v-avatar size="16" color="grey lighten-2">
                                     {{ s.index }}
                                   </v-avatar>
                                 </td>
-                                <td v-if="!b.isPercent" style="width: 450px; border: none !important">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
-                                <td v-else style="width: 450px; border: none !important">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
-                                <td style="border: none !important">
+                                <td v-if="!b.isPercent" style="width: 450px; border: none !important;">Reduce to {{ s.quantity }} total weekly frequencies for {{ s.weeks }} consecutive weeks</td>
+                                <td v-else style="width: 450px; border: none !important;">Reduce to {{ s.quantity }}% weekly average for {{ s.weeks }} consecutive weeks</td>
+                                <td style="border: none !important;">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'"
                                     >Status:
                                     <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'"
@@ -259,13 +259,13 @@
                           </table>
                         </td>
                       </tr>
-                      <tr :key="'chart-beh-' + b.behavior" style="border-top:  2px dotted grey !important;">
+                      <tr :key="'chart-beh-' + b.behavior" style="border-top: 2px dotted grey !important;">
                         <td colspan="3">
                           <behavior-monthly-chart :problemId="b.problemId" :clientId="clientId" :dateEnd="monthEnd" :clientProblemId="b.clientProblemId" />
                         </td>
                       </tr>
                       <tr :key="'chart-beh-sep-' + b.behavior">
-                        <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
+                        <td colspan="3" style="border-right: none; border-left: none !important; border-bottom: none; border-top: none;">&nbsp;</td>
                       </tr>
                     </table>
                   </template>
@@ -277,7 +277,7 @@
                     <v-alert :value="true" type="info" icon="fa-cog fa-spin" color="teal">Loading data...</v-alert>
                   </template>
                   <template v-for="r in clientReplacements">
-                    <table class="table-print no-page-break" style="border-right:none;border-left:none;border-bottom:none;border-top:none" :key="'header-r' + r.replacement">
+                    <table class="table-print no-page-break" style="border-right: none; border-left: none; border-bottom: none; border-top: none;" :key="'header-r' + r.replacement">
                       <tr class="grey darken-2 white--text">
                         <th class="text-xs-left">Replacement</th>
                         <th style="width: 150px;">Baseline</th>
@@ -298,20 +298,20 @@
                       </tr>
                       <tr class="no-page-break" :key="'rsto' + r.replacement">
                         <td colspan="4" class="pl-4 pa-0">
-                          <table class="table-print" style="border: none !important">
+                          <table class="table-print" style="border: none !important;">
                             <template v-if="r.stos.length > 0">
                               <tr v-for="s in r.stos" :key="'r' + s.index + r.replacement" :class="{ 'yellow lighten-3': s.status.toLowerCase() == 'inprogress' }">
-                                <td class="text-xs-center" style="width: 30px; border: none !important">
+                                <td class="text-xs-center" style="width: 30px; border: none !important;">
                                   <v-avatar size="16" color="grey lighten-2">
                                     {{ s.index }}
                                   </v-avatar>
                                 </td>
-                                <td style="width: 450px; border: none !important">
+                                <td style="width: 450px; border: none !important;">
                                   Increase to {{ s.percent }}% of trials for {{ s.weeks }} consecutive weeks
                                   <label v-if="s.levelAssistance">with {{ s.levelAssistance }}</label>
                                   <label v-if="s.timeMinutes">in {{ s.timeMinutes }} mins</label>
                                 </td>
-                                <td style="border: none !important">
+                                <td style="border: none !important;">
                                   <span v-if="s.status.toLowerCase() !== 'unknow'"
                                     >Status:
                                     <strong :class="s.status.toLowerCase() === 'unknow' ? 'red--text' : s.status.toLowerCase() === 'mastered' ? 'green--text' : 'orange--text'">{{
@@ -328,13 +328,13 @@
                           </table>
                         </td>
                       </tr>
-                      <tr :key="'chart-rep-' + r.replacement" style="border-top:  2px dotted grey !important;">
+                      <tr :key="'chart-rep-' + r.replacement" style="border-top: 2px dotted grey !important;">
                         <td colspan="3">
                           <replacement-monthly-chart :problemId="r.replacementId" :clientId="clientId" :dateEnd="monthEnd" :clientReplacementId="r.clientReplacementId" />
                         </td>
                       </tr>
                       <tr :key="'chart-rep-sep-' + r.replacement">
-                        <td colspan="3" style="border-right:none;border-left:none !important;border-bottom:none;border-top:none">&nbsp;</td>
+                        <td colspan="3" style="border-right: none; border-left: none !important; border-bottom: none; border-top: none;">&nbsp;</td>
                       </tr>
                     </table>
                   </template>
@@ -520,19 +520,15 @@ export default {
         const data = await userApi.getClientMonthlyNote(monthlyNoteId);
         this.note = data.note;
         const monthStart = this.$moment({ year: this.note.year, month: this.note.month - 1, day: 1 });
-        this.monthEnd = monthStart
-          .clone()
-          .add("1", "months")
-          .subtract("1", "days")
-          .format("YYYY-MM-DD");
+        this.monthEnd = monthStart.clone().add("1", "months").subtract("1", "days").format("YYYY-MM-DD");
         this.client = data.client;
-        this.clientRbt = this.client.assignments.filter(f => f.rolId === 4);
-        this.clientAnalyst = this.client.assignments.filter(f => f.rolId === 2);
-        this.clientAsistant = this.client.assignments.filter(f => f.rolId === 3);
+        this.clientRbt = this.client.assignments.filter((f) => f.rolId === 4);
+        this.clientAnalyst = this.client.assignments.filter((f) => f.rolId === 2);
+        this.clientAsistant = this.client.assignments.filter((f) => f.rolId === 3);
         const monthlyData = await userApi.getClientMonthlyData(monthlyNoteId);
         this.clientProblems = monthlyData.behaviors;
         this.clientReplacements = monthlyData.replacements;
-        let chartMaxDate = this.notes.find(s => s.value === monthlyNoteId).text;
+        let chartMaxDate = this.notes.find((s) => s.value === monthlyNoteId).text;
         this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.clientId, chartMaxDate);
       } catch (error) {
         this.$toast.error(error);

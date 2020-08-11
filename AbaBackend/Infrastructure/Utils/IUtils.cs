@@ -50,5 +50,6 @@ namespace AbaBackend.Infrastructure.Utils
     Task<(int? Allowed, int Total)> GetUnitsInWeek(DateTime date, int userId, int clientId);
     double Compare(string a, string b);
     double CalculateSimilarity(string source, string target);
+    Task<List<(string Code, string Description)>> GetClientDiagnosisBySession(int sessionId);
   }
 }

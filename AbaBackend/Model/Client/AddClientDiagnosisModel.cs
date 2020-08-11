@@ -1,3 +1,5 @@
+using System;
+
 namespace AbaBackend.Model.Client
 {
   public class AddClientDiagnosisModel
@@ -5,5 +7,7 @@ namespace AbaBackend.Model.Client
     public int ClientId { get; set; }
 
     public string Code { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
   }
 }
