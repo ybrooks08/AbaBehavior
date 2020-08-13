@@ -13,14 +13,26 @@
                 <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel" />
               </v-flex>
               <v-flex md12>
-                <v-autocomplete box hid :disabled="loading" :items="users" v-model="userId" label="User" prepend-icon="fa-user" item-text="fullname" item-value="userId" :rules="[required]" required>
+                <v-autocomplete
+                  box
+                  hide-details
+                  :disabled="loading"
+                  :items="users"
+                  v-model="userId"
+                  label="User"
+                  prepend-icon="fa-user"
+                  item-text="fullname"
+                  item-value="userId"
+                  :rules="[required]"
+                  required
+                >
                   <template slot="item" slot-scope="{ item }">
                     <v-list-tile-avatar>
                       <v-icon>fa-user</v-icon>
                     </v-list-tile-avatar>
                     <v-list-tile-content>
-                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.fullname}}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{item.rolname}}</v-list-tile-sub-title>
+                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.fullname }}</v-list-tile-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.rolname }}</v-list-tile-sub-title>
                     </v-list-tile-content>
                   </template>
                 </v-autocomplete>
@@ -59,28 +71,28 @@
             <tbody>
               <tr v-for="r in sessions" :key="('session'+r.sessionId)">
                 <td class="px-1 text-truncate">
-                  <strong>{{r.clientFullname}}</strong>
-                  <br>
-                  {{r.code}}
+                  <strong>{{ r.clientFullname }}</strong>
+                  <br />
+                  {{ r.code }}
                 </td>
-                <td class="px-1">{{r.sessionStart | moment('MM/DD/YYYY')}}</td>
+                <td class="px-1">{{ r.sessionStart | moment("MM/DD/YYYY") }}</td>
                 <td class="hidden-sm-and-down px-1 text-truncate">
                   <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                  {{r.sessionStart | moment('LT')}}
-                  <br>
+                  {{ r.sessionStart | moment("LT") }}
+                  <br />
                   <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                  {{r.sessionEnd | moment('LT')}}
+                  {{ r.sessionEnd | moment("LT") }}
                 </td>
-                <td class="hidden-sm-and-down px-1">{{r.sessionType}}</td>
-                <td class="hidden-sm-and-down px-1">{{r.pos}}</td>
+                <td class="hidden-sm-and-down px-1">{{ r.sessionType }}</td>
+                <td class="hidden-sm-and-down px-1">{{ r.pos }}</td>
                 <td class="px-1">
                   <strong>
                     <v-icon small>fa-star</v-icon>
-                    {{r.totalUnits.toLocaleString()}}
+                    {{ r.totalUnits.toLocaleString() }}
                   </strong>
-                  <br>
+                  <br />
                   <v-icon small>fa-clock</v-icon>
-                  {{(r.totalUnits / 4).toLocaleString()}}
+                  {{ (r.totalUnits / 4).toLocaleString() }}
                 </td>
               </tr>
             </tbody>
@@ -90,11 +102,11 @@
                 <td class="px-1">
                   <strong>
                     <v-icon small>fa-star</v-icon>
-                    {{totalUnits.toLocaleString()}}
+                    {{ totalUnits.toLocaleString() }}
                   </strong>
-                  <br>
+                  <br />
                   <v-icon small>fa-clock</v-icon>
-                  {{(totalUnits / 4).toLocaleString()}}
+                  {{ (totalUnits / 4).toLocaleString() }}
                 </td>
               </tr>
             </tfoot>
@@ -114,17 +126,11 @@ export default {
   data() {
     return {
       loading: false,
-      required: value => !!value || "This field is required.",
+      required: (value) => !!value || "This field is required.",
       validForm: false,
       datePickerModel: {
-        start: this.$moment()
-          .subtract(1, "month")
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm"),
-        end: this.$moment()
-          .subtract(1, "month")
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm")
+        start: this.$moment().subtract(1, "month").startOf("month").format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment().subtract(1, "month").endOf("month").format("YYYY-MM-DDTHH:mm")
       },
       users: [],
       sessions: [],
@@ -134,7 +140,7 @@ export default {
 
   computed: {
     totalUnits() {
-      return this.sessions.map(a => a.totalUnits).reduce((a, b) => a + b);
+      return this.sessions.map((a) => a.totalUnits).reduce((a, b) => a + b);
     }
   },
 
@@ -171,7 +177,7 @@ export default {
           return;
         }
 
-        sessions.forEach(e => {
+        sessions.forEach((e) => {
           e.sessionStart = this.$moment(e.sessionStart).local();
           e.sessionEnd = this.$moment(e.sessionEnd).local();
           this.sessions.push(e);

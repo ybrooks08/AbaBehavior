@@ -302,6 +302,7 @@ namespace AbaBackend.Controllers
             s.BehaviorAnalysisCode.Hcpcs,
             s.Sign,
             s.DriveTime,
+            s.SessionAnalystId,
             SessionLogs = s.SessionLogs.Select(l => new
             {
               l.Entry,
@@ -1548,6 +1549,23 @@ namespace AbaBackend.Controllers
       var matchest = allSessions.FirstOrDefault();
 
       return Ok(matchest);
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> ChangeSessionAnalyst([FromBody] ChangeAnalystModel model)
+    {
+      try
+      {
+        var s = await _dbContext.Sessions.FirstOrDefaultAsync(w => w.SessionId == model.SessionId);
+        s.SessionAnalystId = model.AnalystId;
+        await _dbContext.SaveChangesAsync();
+        await _utils.NewEntryLog(model.SessionId, "Analyst changed", "Session analyst was changed", "fa-user");
+        return Ok();
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
     }
   }
 }

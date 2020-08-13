@@ -302,6 +302,33 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpGet("[action]/{clientId}")]
+    public async Task<IActionResult> GetAnalistFromClient(int clientId)
+    {
+      try
+      {
+        var analists = await _dbContext.Assignments.Where(w => w.ClientId == clientId && w.User.RolId == 2)
+        .Select(u => new
+        {
+          u.User.UserId,
+          u.User.Username,
+          u.User.RolId,
+          rolname = u.User.Rol.RolName.ToString(),
+          u.User.Firstname,
+          u.User.Lastname,
+          fullname = $"{u.User.Firstname} {u.User.Lastname} ({u.User.Rol.RolName})",
+          u.User.Active,
+          u.User.Created,
+          u.User.Email
+        }).ToListAsync();
+        return Ok(analists);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.Message);
+      }
+    }
+
     [HttpPost("change-user-document-status")]
     public async Task<IActionResult> ChangeUserDocumentStatus([FromBody] ChangeStatus newStatus)
     {

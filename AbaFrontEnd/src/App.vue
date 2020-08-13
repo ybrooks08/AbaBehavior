@@ -6,6 +6,8 @@
 </template>
 
 <script>
+// let isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 export default {
   mounted() {
     this.$insProgress.finish();
@@ -14,6 +16,10 @@ export default {
     this.$insProgress.start();
 
     this.$router.beforeEach((to, from, next) => {
+      // if (isSafari) {
+      //   alert("This application does not run correctly in Safari Browser. Please use an alternative browser like Chrome, Edge or Firefox.");
+      //   return;
+      // }
       this.$insProgress.start();
       next();
     });

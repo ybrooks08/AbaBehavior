@@ -331,6 +331,30 @@
                           @change="setDirty"
                         ></v-textarea>
                       </v-flex>
+                      <v-flex xs12>
+                        <v-autocomplete
+                          box
+                          hide-details
+                          :disabled="loading || loadingAnalyst"
+                          :items="analysts"
+                          v-model="currentAnalyst"
+                          label="Session analist"
+                          item-text="fullname"
+                          item-value="userId"
+                          @change="sessionAnalystChange"
+                          :loading="loadingAnalyst"
+                        >
+                          <template slot="item" slot-scope="{ item }">
+                            <v-list-tile-avatar>
+                              <v-icon>fa-user</v-icon>
+                            </v-list-tile-avatar>
+                            <v-list-tile-content>
+                              <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.fullname }}</v-list-tile-title>
+                              <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.rolname }}</v-list-tile-sub-title>
+                            </v-list-tile-content>
+                          </template>
+                        </v-autocomplete>
+                      </v-flex>
                     </v-layout>
                   </v-container>
                 </v-card-text>
@@ -1098,6 +1122,7 @@
 
 <script>
 import clientApi from "@/services/api/ClientServices";
+import userApi from "@/services/api/UserServices";
 import masterTableApi from "@/services/api/MasterTablesServices";
 import sessionServicesApi from "@/services/api/SessionServices";
 import editTime from "@/components/sessions/EditTime";
@@ -1172,7 +1197,10 @@ export default {
       checkedModalProblems: [],
       dirtyIndicator: false,
       loadingMatching: false,
-      matching: null
+      matching: null,
+      currentAnalyst: null,
+      analysts: [],
+      loadingAnalyst: false
     };
   },
 
@@ -1241,6 +1269,7 @@ export default {
     this.loadSessionSupervisionWorkWithCodes();
     this.loadParticipationLevelCodes();
     this.loadCaregivers();
+    this.loadAnalysts();
     await this.loadSessionData();
     this.checkMatchingPercentaje();
   },
@@ -1269,6 +1298,7 @@ export default {
           s.entry = this.$moment(s.entry).local();
           this.sessionLogs.push(s);
         });
+        this.currentAnalyst = sessionDetailed.sessionAnalystId;
         this.session = await sessionServicesApi.getSession(this.activeSessionId);
         if (this.session.sessionType === 3) {
           this.sessionSupervisionWorkWithCodes.forEach((c) => {
@@ -1280,7 +1310,6 @@ export default {
         }
         this.problemsUnique = this.session.sessionProblemNotes.map((m) => m.problemBehavior);
         this.collectBehaviors = await sessionServicesApi.getCollectBehaviors(this.activeSessionId);
-        console.log(this.collectBehaviors);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -1296,6 +1325,17 @@ export default {
         this.$toast.error(error.message || error);
       } finally {
         this.loadingCaregivers = false;
+      }
+    },
+
+    async loadAnalysts() {
+      try {
+        this.loadAnalysts = true;
+        this.analysts = await userApi.getAnalistFromClient(this.activeClientId);
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loadAnalysts = false;
       }
     },
 
@@ -1702,6 +1742,22 @@ export default {
         this.$toast.error(error.message || error);
       } finally {
         this.loadingMatching = false;
+      }
+    },
+
+    async sessionAnalystChange(newAnalistId) {
+      try {
+        this.loadingAnalyst = true;
+        const model = {
+          sessionId: this.activeSessionId,
+          analystId: newAnalistId
+        };
+        await sessionServicesApi.changeSessionAnalyst(model);
+        this.$toast.success("Analyst changed successful, no need to save session.");
+      } catch (error) {
+        this.$toast.error(error.message || error);
+      } finally {
+        this.loadingAnalyst = false;
       }
     }
   }
