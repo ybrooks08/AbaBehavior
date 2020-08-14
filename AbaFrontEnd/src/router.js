@@ -4,7 +4,7 @@ import Router from "vue-router";
 const originalPush = Router.prototype.push;
 Router.prototype.push = function push(location, onResolve, onReject) {
   if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject);
-  return originalPush.call(this, location).catch(err => err);
+  return originalPush.call(this, location).catch((err) => err);
 };
 
 Vue.use(Router);
@@ -278,6 +278,12 @@ export default new Router({
           path: "/reporting/matching-report",
           name: "MatchingReport",
           component: () => import(/* webpackChunkName: "MatchingReport" */ "@/components/reporting/MatchingReport"),
+          meta: { rol: ["admin"] }
+        },
+        {
+          path: "/reporting/adjust-session-analyst",
+          name: "AdjustSessionAnalyst",
+          component: () => import(/* webpackChunkName: "AdjustSessionAnalyst" */ "@/components/reporting/AdjustSessionAnalyst"),
           meta: { rol: ["admin"] }
         }
       ]

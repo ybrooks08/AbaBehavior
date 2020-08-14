@@ -156,6 +156,14 @@
         </v-list-tile-content>
       </v-list-tile>
       <v-subheader>Tools</v-subheader>
+      <v-list-tile to="/reporting/adjust-session-analyst">
+        <v-list-tile-action>
+          <v-icon>fa-people-arrows</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Adjust sessions analysts</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-list-tile to="/adjust-client-data-collect">
         <v-list-tile-action>
           <v-icon>fa-sliders-h</v-icon>

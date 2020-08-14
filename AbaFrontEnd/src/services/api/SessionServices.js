@@ -533,5 +533,14 @@ export default {
         .then((response) => resolve(response.data))
         .catch((error) => reject(error.response.data || error.message));
     });
+  },
+
+  adjustSessionAnalyst(model) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .post(`api/session/AdjustSessionAnalyst`, model)
+        .then((response) => resolve(response.data))
+        .catch((error) => reject(error.response.data || error.message));
+    });
   }
 };

@@ -140,7 +140,7 @@
 
             <v-tabs slot="extension" :color="!sessionDetailed ? 'secondary' : sessionDetailed.sessionStatusColor" dark show-arrows v-model="tabModel">
               <v-tab key="details">Details</v-tab>
-              <v-tab key="caregiver">Caregiver</v-tab>
+              <v-tab key="caregiver">Careg & Staff</v-tab>
               <template v-if="session.sessionType === 1">
                 <v-tab key="risk">Risk Behavior</v-tab>
                 <v-tab key="reinforcers">Reinforcers</v-tab>
@@ -1518,16 +1518,20 @@ export default {
     },
 
     async deleteSign() {
-      try {
-        this.loadingSession = true;
-        await sessionServicesApi.deleteSign(this.activeSessionId);
-        this.loadSessionData();
-        this.$toast.success("Sign deleted successful");
-      } catch (error) {
-        this.$toast.error(error.message || error);
-      } finally {
-        this.loadingSession = false;
-      }
+      this.$confirm("Are you sure you want to delete the signature?").then(async (res) => {
+        if (res) {
+          try {
+            this.loadingSession = true;
+            await sessionServicesApi.deleteSign(this.activeSessionId);
+            this.loadSessionData();
+            this.$toast.success("Sign deleted successful");
+          } catch (error) {
+            this.$toast.error(error.message || error);
+          } finally {
+            this.loadingSession = false;
+          }
+        }
+      });
     },
 
     async markAsChecked() {

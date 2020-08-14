@@ -1567,5 +1567,25 @@ namespace AbaBackend.Controllers
         return BadRequest(e.InnerException?.Message ?? e.Message);
       }
     }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> AdjustSessionAnalyst([FromBody] AdjustSessionAnalystModel model)
+    {
+      try
+      {
+        var sessions = await _dbContext.Sessions
+        .Where(w => w.ClientId == model.ClientId)
+        .Where(w => w.SessionStart.Date >= model.From && w.SessionStart.Date <= model.To)
+        .ToListAsync();
+
+        sessions.ForEach(f => f.SessionAnalystId = model.AnalystId);
+        await _dbContext.SaveChangesAsync();
+        return Ok(sessions.Count);
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
   }
 }
