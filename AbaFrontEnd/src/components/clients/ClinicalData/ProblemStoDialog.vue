@@ -113,7 +113,7 @@
               </div>
             </v-flex>
             <v-flex xs12 md7 pa-1>
-              <client-progress-behavior :behaviorId="data.problemId.toString()" hideNotes :clientId="data.clientId"></client-progress-behavior>
+              <client-progress-behavior :problemId="data.problemId" :clientId="data.clientId"></client-progress-behavior>
             </v-flex>
           </v-layout>
         </v-card-text>
@@ -135,7 +135,7 @@
 <script>
 import clientApi from "@/services/api/ClientServices";
 import forceStoDialog from "@/components/clients/ClinicalData/ForceStoDialog";
-import ClientProgressBehavior from "@/components/sessions/ProgressBehavior";
+import ClientProgressBehavior from "@/components/shared/charts/BehaviorMonthlyChart";
 
 export default {
   components: {

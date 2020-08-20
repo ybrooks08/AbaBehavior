@@ -414,6 +414,11 @@
                           <v-switch hide-details color="primary" v-model="item.active" @change="changeDiagnosisActive(item)"></v-switch>
                         </td>
                         <td class="text-xs-right px-1">
+                          <v-btn icon @click="changeMainDiagnosis(item)" class="ma-0">
+                            <v-icon :color="item.isMain ? 'blue' : 'grey'">{{ item.isMain ? "fas fa-check-circle" : "far fa-check-circle" }}</v-icon>
+                          </v-btn>
+                        </td>
+                        <td class="text-xs-right px-1">
                           <v-btn icon @click="deleteDiagnosis(item)" class="ma-0">
                             <v-icon color="grey">fa-trash</v-icon>
                           </v-btn>
@@ -524,6 +529,7 @@ export default {
       this.loadingExtra = true;
       try {
         this.client = await clientApi.getClient(this.id);
+        console.log(this.client);
         this.caregiversTypes = await clientApi.getCaregiversTypes();
       } catch (error) {
         this.$toast.error(error);
@@ -809,6 +815,23 @@ export default {
         this.client.clientDiagnostics.push(diagnosis.data);
         this.diagnosisDialog = false;
       } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loadingBasicInfo = false;
+      }
+    },
+
+    async changeMainDiagnosis(model) {
+      model.clientId = this.id;
+      this.loadingBasicInfo = true;
+      try {
+        await clientApi.changeMainDiagnosis(model);
+        this.client.clientDiagnostics.forEach((w) => {
+          w.isMain = false;
+        });
+        this.client.clientDiagnostics.find((w) => w.clientDiagnosisId == model.clientDiagnosisId).isMain = true;
+      } catch (error) {
+        console.log(error);
         this.$toast.error(error);
       } finally {
         this.loadingBasicInfo = false;

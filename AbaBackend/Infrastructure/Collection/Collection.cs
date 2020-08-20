@@ -410,7 +410,7 @@ namespace AbaBackend.Infrastructure.Collection
           },
           title = new { text = "" },
           chart = new { type = "spline", height = 300 },
-          yAxis = new { title = new { text = "Count" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
+          yAxis = new { title = new { text = clientProblem.ProblemBehavior.IsPercent ? "Trials percent" : "Count" }, min = 0, max = dataSet.First().Data.Max() < 100 ? 100 : dataSet.First().Data.Max(), tickInterval = 10 },
           legend = new { enabled = false },
           exporting = new { enabled = true }
         },

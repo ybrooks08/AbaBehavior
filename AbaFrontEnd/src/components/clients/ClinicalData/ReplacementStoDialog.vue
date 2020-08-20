@@ -136,7 +136,7 @@
               </div>
             </v-flex>
             <v-flex xs12 md7 pa-1>
-              <client-progress-replacement :replacementId="data.replacementId.toString()" hideNotes :clientId="data.clientId"></client-progress-replacement>
+              <client-progress-replacement :problemId="data.replacementId" :clientId="data.clientId"></client-progress-replacement>
             </v-flex>
           </v-layout>
         </v-card-text>
@@ -157,7 +157,7 @@
 <script>
 import clientApi from "@/services/api/ClientServices";
 import forceStoDialog from "@/components/clients/ClinicalData/ForceStoDialog";
-import ClientProgressReplacement from "@/components/sessions/ProgressReplacement";
+import ClientProgressReplacement from "@/components/shared/charts/ReplacementMonthlyChart";
 
 export default {
   components: {

@@ -25,15 +25,43 @@
           </v-toolbar>
           <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-card-text class="pa-1">
+            <v-layout v-if="isAdmin" row wrap class="pa-2">
+              <v-flex xs12 sm6>
+                <v-autocomplete
+                  box
+                  :disabled="loading"
+                  :loading="loading"
+                  :items="clients"
+                  v-model="clientId"
+                  label="Client"
+                  prepend-inner-icon="fa-user"
+                  item-text="clientName"
+                  item-value="clientId"
+                  @change="loadCompetencyChecks"
+                >
+                  <template slot="item" slot-scope="{ item }">
+                    <v-list-tile-avatar>
+                      <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
+                    </v-list-tile-avatar>
+                    <v-list-tile-content>
+                      <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }"
+                        >{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}
+                      </v-list-tile-sub-title>
+                    </v-list-tile-content>
+                  </template>
+                </v-autocomplete>
+              </v-flex>
+            </v-layout>
             <v-data-table :headers="headers" :search="search" :items="comps" :loading="loading" :pagination.sync="pagination" :rows-per-page-items="[10]">
               <template slot="items" slot-scope="props">
                 <tr>
-                  <td class="text-xs-left px-1 hidden-xs-only">{{props.item.date | moment('utc', 'MM/DD/YYYY')}}</td>
-                  <td class="text-xs-left px-1">{{props.item.date | moment('utc', 'MMM/YYYY')}}</td>
-                  <td class="text-xs-left px-1 hidden-xs-only">{{props.item.competencyCheckType}}</td>
-                  <td class="text-xs-left px-1">{{props.item.subject}}</td>
-                  <td class="text-xs-right px-1 hidden-sm-and-down">{{props.item.totalDuration}} hours</td>
-                  <td class="text-xs-right px-1">{{props.item.totalScore.toLocaleString('en', {style: 'percent'})}}</td>
+                  <td class="text-xs-left px-1 hidden-xs-only">{{ props.item.date | moment("utc", "MM/DD/YYYY") }}</td>
+                  <td class="text-xs-left px-1">{{ props.item.date | moment("utc", "MMM/YYYY") }}</td>
+                  <td class="text-xs-left px-1 hidden-xs-only">{{ props.item.competencyCheckType }}</td>
+                  <td class="text-xs-left px-1">{{ props.item.subject }}</td>
+                  <td class="text-xs-right px-1 hidden-sm-and-down">{{ props.item.totalDuration }} hours</td>
+                  <td class="text-xs-right px-1">{{ props.item.totalScore.toLocaleString("en", { style: "percent" }) }}</td>
                   <td class="text-xs-right px-0 text-truncate">
                     <v-btn icon class="ma-0" @click="editCompetencyCheck(props.item.competencyCheckId)">
                       <v-icon color="grey">fa-edit</v-icon>
@@ -60,7 +88,7 @@
           <v-progress-linear style="position: absolute;" v-show="loadingCharts" :indeterminate="true" class="ma-0"></v-progress-linear>
           <v-card-text class="pa-2 grey lighten-3">
             <v-layout row wrap>
-              <v-flex v-for="c in progress" :key="'flex-'+c.chartOptions.title.text" xs12 sm6>
+              <v-flex v-for="c in progress" :key="'flex-' + c.chartOptions.title.text" xs12 sm6>
                 <v-card>
                   <v-card-text>
                     <competency-check-progress :key="c.chartOptions.title.text" :options="c.chartOptions"></competency-check-progress>
@@ -76,13 +104,14 @@
 </template>
 
 <script>
-import sessionServicesApi from '@/services/api/SessionServices';
-import fileSaver from 'file-saver';
-import competencyCheckProgress from '@/components/sessions/CompetencyChecks/CompetencyCheckProgress';
+import sessionServicesApi from "@/services/api/SessionServices";
+import fileSaver from "file-saver";
+import competencyCheckProgress from "@/components/sessions/CompetencyChecks/CompetencyCheckProgress";
+import userApi from "@/services/api/UserServices";
 
 export default {
   components: {
-    competencyCheckProgress,
+    competencyCheckProgress
   },
 
   data() {
@@ -91,20 +120,22 @@ export default {
       loadingCharts: false,
       comps: [],
       progress: [],
-      search: '',
+      search: "",
       headers: [
-        { text: 'Date', align: 'left', value: 'date', class: 'px-1 hidden-xs-only' },
-        { text: 'Month', align: 'left', value: 'month', class: 'px-1' },
-        { text: 'Type', align: 'left', value: 'competencyCheckType', class: 'px-1 hidden-xs-only' },
-        { text: 'Subject', align: 'left', value: 'subject', class: 'px-1' },
-        { text: 'Duration', align: 'center', value: 'totalDuration', class: 'px-1  hidden-sm-and-down' },
-        { text: 'Score', align: 'center', value: 'totalScore', class: 'px-1' },
-        { text: 'Actions', align: 'right', value: 'active2', class: 'px-1', sortable: false },
+        { text: "Date", align: "left", value: "date", class: "px-1 hidden-xs-only" },
+        { text: "Month", align: "left", value: "month", class: "px-1" },
+        { text: "Type", align: "left", value: "competencyCheckType", class: "px-1 hidden-xs-only" },
+        { text: "Subject", align: "left", value: "subject", class: "px-1" },
+        { text: "Duration", align: "center", value: "totalDuration", class: "px-1  hidden-sm-and-down" },
+        { text: "Score", align: "center", value: "totalScore", class: "px-1" },
+        { text: "Actions", align: "right", value: "active2", class: "px-1", sortable: false }
       ],
       pagination: {
-        sortBy: 'date',
-        descending: true,
+        sortBy: "date",
+        descending: true
       },
+      clients: [],
+      clientId: null
     };
   },
 
@@ -112,18 +143,40 @@ export default {
     activeClientId() {
       return this.$store.getters.activeClientId;
     },
+    user() {
+      return this.$store.getters.user;
+    },
+    isAdmin() {
+      return this.user.rol2 === "admin";
+    }
   },
 
   mounted() {
+    if (this.isAdmin) {
+      this.loadUserClients();
+    }
     this.loadCompetencyChecks();
-    this.loadProgress();
   },
 
   methods: {
+    async loadUserClients() {
+      this.clients = [];
+      this.loading = true;
+      try {
+        this.clients = await userApi.loadUserClients();
+        //this.clientId = this.clients[0].clientId;
+      } catch (error) {
+        this.$toast.error(error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async loadCompetencyChecks() {
       try {
         this.loading = true;
-        this.comps = await sessionServicesApi.getCompetencyChecks(this.activeClientId);
+        this.comps = await sessionServicesApi.getCompetencyChecks(this.isAdmin ? this.clientId : this.activeClientId);
+        await this.loadProgress();
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -136,18 +189,17 @@ export default {
     },
 
     async deleteCompetencyCheck(id) {
-      this.$confirm('Do you want to delete this competency check?')
-        .then(async res => {
-          if (res) {
-            try {
-              await sessionServicesApi.deleteCompetencyCheck(id);
-              await this.loadCompetencyChecks();
-              await this.loadProgress();
-            } catch (error) {
-              this.$toast.error(error.message || error);
-            }
+      this.$confirm("Do you want to delete this competency check?").then(async (res) => {
+        if (res) {
+          try {
+            await sessionServicesApi.deleteCompetencyCheck(id);
+            await this.loadCompetencyChecks();
+            await this.loadProgress();
+          } catch (error) {
+            this.$toast.error(error.message || error);
           }
-        });
+        }
+      });
     },
 
     async exportCompetencyCheck(item) {
@@ -162,14 +214,13 @@ export default {
     async loadProgress() {
       try {
         this.loadingCharts = true;
-        this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.activeClientId);
+        this.progress = await sessionServicesApi.loadCompetencyCheckProgress(this.isAdmin ? this.clientId : this.activeClientId);
       } catch (error) {
         this.$toast.error(error);
       } finally {
         this.loadingCharts = false;
       }
-    },
-  },
-
+    }
+  }
 };
 </script>

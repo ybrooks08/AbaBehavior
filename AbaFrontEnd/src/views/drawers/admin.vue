@@ -115,6 +115,14 @@
           <v-list-tile-title>Time sheet</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/competency_checks" active-class="blue lighten-4">
+        <v-list-tile-action>
+          <v-icon>fa-calendar-check</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Competency checks</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-list-tile to="/reporting/monthly-notes" active-class="blue lighten-4">
         <v-list-tile-action>
           <v-icon>fa-calendar-alt</v-icon>

@@ -145,14 +145,14 @@ export default new Router({
           path: "/competency_checks",
           name: "CompetencyChecks",
           component: () => import(/* webpackChunkName: "CompetencyChecks" */ "@/components/sessions/CompetencyChecks/CompetencyChecks"),
-          meta: { rol: ["analyst", "assistant"] }
+          meta: { rol: ["analyst", "assistant", "admin"] }
         },
         {
           path: "/competency_checks/new_edit/:id?",
           name: "AddEditCompetencyCheck",
           component: () => import(/* webpackChunkName: "AddEditCompetencyCheck" */ "@/components/sessions/CompetencyChecks/AddEditCompetencyCheck"),
           props: true,
-          meta: { rol: ["analyst", "assistant"] }
+          meta: { rol: ["analyst", "assistant", "admin"] }
         },
         {
           path: "/reporting/billing_guide",

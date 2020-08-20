@@ -565,7 +565,8 @@ namespace AbaBackend.Controllers
           DiagnosisId = refer.DiagnosisId,
           StartDate = model.StartDate,
           EndDate = model.EndDate,
-          AddedDate = DateTime.Now
+          AddedDate = DateTime.Now,
+          IsMain = false
         };
         await _dbContext.AddAsync(diag);
         await _dbContext.SaveChangesAsync();
@@ -575,7 +576,31 @@ namespace AbaBackend.Controllers
       }
       catch (DbUpdateException)
       {
-        return BadRequest("Error adding diagnosis, posible cause: Diagnosis already exist in this client.");
+        return BadRequest("Error adding diagnosis.");
+      }
+      catch (Exception e)
+      {
+        return BadRequest(e.InnerException?.Message ?? e.Message);
+      }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> ChangeMainDiagnosis([FromBody] AddClientDiagnosisModel model)
+    {
+      try
+      {
+        var allClientDiagnosis = await _dbContext.ClientDiagnostics.Where(w => w.ClientId == model.ClientId).ToListAsync();
+        allClientDiagnosis.ForEach(f => f.IsMain = false);
+        var active = allClientDiagnosis.FirstOrDefault(w => w.ClientDiagnosisId == model.ClientDiagnosisId);
+        active.IsMain = true;
+        await _dbContext.SaveChangesAsync();
+        await _utils.NewSystemLog(SystemLogType.Info, Module.Client, model.ClientId, "Diagnostic edited", $"A client diagnostic was was changed to main");
+
+        return Ok();
+      }
+      catch (DbUpdateException)
+      {
+        return BadRequest("Error updating diagnosis");
       }
       catch (Exception e)
       {

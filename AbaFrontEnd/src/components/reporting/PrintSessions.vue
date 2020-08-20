@@ -13,14 +13,28 @@
                 <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel" />
               </v-flex>
               <v-flex md12>
-                <v-autocomplete box hide-details :disabled="loading" :items="clients" v-model="clientId" label="Client" prepend-icon="fa-user" item-text="clientName" item-value="clientId" :rules="[required]" required>
+                <v-autocomplete
+                  box
+                  hide-details
+                  :disabled="loading"
+                  :items="clients"
+                  v-model="clientId"
+                  label="Client"
+                  prepend-icon="fa-user"
+                  item-text="clientName"
+                  item-value="clientId"
+                  :rules="[required]"
+                  required
+                >
                   <template slot="item" slot-scope="{ item }">
                     <v-list-tile-avatar>
                       <img :style="!item.active ? 'opacity: 0.5' : ''" :src="`images/${item.gender ? item.gender.toLowerCase() : 'nogender'}.png`" />
                     </v-list-tile-avatar>
                     <v-list-tile-content>
                       <v-list-tile-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.clientName }}</v-list-tile-title>
-                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }">{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}</v-list-tile-sub-title>
+                      <v-list-tile-sub-title :class="{ 'grey--text text--lighten-1': !item.active }"
+                        >{{ item.dob | moment("utc", "MM/DD/YYYY") }} | Code: {{ item.clientCode || "N/A" }}</v-list-tile-sub-title
+                      >
                     </v-list-tile-content>
                   </template>
                 </v-autocomplete>
@@ -58,17 +72,11 @@ export default {
   data() {
     return {
       loading: false,
-      required: value => !!value || "This field is required.",
+      required: (value) => !!value || "This field is required.",
       validForm: false,
       datePickerModel: {
-        start: this.$moment()
-          .subtract(1, "month")
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm"),
-        end: this.$moment()
-          .subtract(1, "month")
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm")
+        start: this.$moment().subtract(1, "month").startOf("month").format("YYYY-MM-DDTHH:mm"),
+        end: this.$moment().subtract(1, "month").endOf("month").format("YYYY-MM-DDTHH:mm")
       },
       clients: [],
       clientId: null,
@@ -87,13 +95,14 @@ export default {
     },
     sessionsId() {
       console.log(this.userSelected);
-      let ids = this.userSelected === "All" ? this.sessions.map(s => s.sessionId) : this.sessions.filter(f => f.userFullname === this.userSelected).map(s => s.sessionId);
+      let ids = this.userSelected === "All" ? this.sessions.map((s) => s.sessionId) : this.sessions.filter((f) => f.userFullname === this.userSelected).map((s) => s.sessionId);
       return ids;
     }
   },
 
   mounted() {
     this.$store.commit("SET_ACTIVE_CLIENT", null);
+    this.$store.commit("SET_ACTIVE_SESSION", null);
     this.loadUserClients();
   },
 
@@ -125,7 +134,7 @@ export default {
           this.$toast.info("No data");
           return;
         }
-        this.users = [...new Set(this.sessions.map(s => s.userFullname))];
+        this.users = [...new Set(this.sessions.map((s) => s.userFullname))];
         this.users.unshift("All");
         this.userSelected = "All";
         // sessions.forEach(e => {

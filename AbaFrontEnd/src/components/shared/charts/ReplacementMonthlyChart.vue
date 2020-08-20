@@ -1,10 +1,23 @@
 <template>
   <v-container grid-list-xs pa-0>
     <v-card flat class="ma-0 pa-0">
-      <v-btn v-if="!loading" flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:20px;" @click="editClientReplacementLineChart">
+      <v-btn
+        v-if="!loading && clientReplacementId != -1"
+        flat
+        icon
+        color="grey"
+        class="no-print"
+        fab
+        small
+        absolute
+        top
+        left
+        style="margin-left: -20px; margin-top: 20px;"
+        @click="editClientReplacementLineChart"
+      >
         <v-icon>fa-wrench</v-icon>
       </v-btn>
-      <v-btn v-if="!loading" flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top:60px;" @click="loadData">
+      <v-btn v-if="!loading" flat icon color="grey" class="no-print" fab small absolute top left style="margin-left: -20px; margin-top: 60px;" @click="loadData">
         <v-icon>fa-sync-alt</v-icon>
       </v-btn>
       <template v-if="loading">
@@ -40,8 +53,9 @@ export default {
       required: true
     },
     clientReplacementId: {
+      default: -1,
       type: Number,
-      required: true
+      required: false
     },
     dateEnd: {
       type: String,

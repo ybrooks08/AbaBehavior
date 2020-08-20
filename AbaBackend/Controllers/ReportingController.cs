@@ -50,7 +50,7 @@ namespace AbaBackend.Controllers
               s.Lastname,
               s.Dob,
               s.Code,
-              Diagnosis = s.ClientDiagnostics.Where(w => w.Active).Select(sd => new
+              Diagnosis = s.ClientDiagnostics.Where(w => w.IsMain).Select(sd => new
               {
                 sd.Diagnosis.Code,
                 sd.Diagnosis.Description
@@ -70,7 +70,9 @@ namespace AbaBackend.Controllers
                       a.Status
                     }),
               Referrals = s.Referrals.Where(w =>
-                          (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active),
+                    toDate >= w.DateReferral && w.DateExpires >= fromDate).OrderByDescending(o => o.DateExpires).ToList(),
+              // Referrals = s.Referrals.Where(w =>
+              //             (w.DateReferral <= toDate && fromDate <= w.DateExpires) && w.Active),
               Assignments = s.Assignments
                     .Where(w => w.User.Rol.BehaviorAnalysisCodeId.Equals(behaviorAnalysisCodeId) && w.Active)
                     .Select(su => su.User),
