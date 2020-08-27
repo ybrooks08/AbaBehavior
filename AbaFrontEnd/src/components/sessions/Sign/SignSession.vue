@@ -3,7 +3,7 @@
     <v-container grid-list-sm>
       <v-layout row wrap>
         <v-flex xs12>
-          <v-card v-if="!sessionDetailed || !sessionDetailed.sign.sign">
+          <v-card v-if="!signed">
             <v-toolbar dark class="secondary" fluid dense>
               <v-toolbar-title>Caregiver sign session</v-toolbar-title>
             </v-toolbar>
@@ -14,36 +14,36 @@
                   <v-flex xs6>
                     <v-layout row wrap>
                       <v-flex class="body-2 text-xs-right" xs4>Date:</v-flex>
-                      <v-flex xs8>{{sessionDetailed.sessionStart | moment('ddd')}}, {{sessionDetailed.sessionStart | moment('ll')}}</v-flex>
+                      <v-flex xs8>{{ sessionDetailed.sessionStart | moment("ddd") }}, {{ sessionDetailed.sessionStart | moment("ll") }}</v-flex>
                       <v-flex class="body-2 text-xs-right" xs4>Time IN:</v-flex>
                       <v-flex xs8>
                         <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                        {{sessionDetailed.sessionStart | moment('LT')}}
+                        {{ sessionDetailed.sessionStart | moment("LT") }}
                       </v-flex>
                       <v-flex class="body-2 text-xs-right" xs4>Time OUT:</v-flex>
                       <v-flex xs8>
                         <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                        {{sessionDetailed.sessionEnd | moment('LT')}}
+                        {{ sessionDetailed.sessionEnd | moment("LT") }}
                       </v-flex>
                       <v-flex class="body-2 text-xs-right" xs4>Units:</v-flex>
                       <v-flex xs8>
                         <v-icon small>fa-star</v-icon>
-                        {{sessionDetailed.totalUnits.toLocaleString()}}
+                        {{ sessionDetailed.totalUnits.toLocaleString() }}
                         <v-icon small>fa-clock</v-icon>
-                        {{(sessionDetailed.totalUnits / 4).toLocaleString()}}
+                        {{ (sessionDetailed.totalUnits / 4).toLocaleString() }}
                       </v-flex>
                     </v-layout>
                   </v-flex>
                   <v-flex xs6>
                     <v-layout row wrap>
                       <v-flex class="body-2 text-xs-right" xs4>Client:</v-flex>
-                      <v-flex xs8>{{sessionDetailed.clientFullname}} ({{sessionDetailed.clientCode}})</v-flex>
+                      <v-flex xs8>{{ sessionDetailed.clientFullname }} ({{ sessionDetailed.clientCode }})</v-flex>
                       <v-flex class="body-2 text-xs-right" xs4>Pos:</v-flex>
-                      <v-flex xs8>{{sessionDetailed.pos}}</v-flex>
+                      <v-flex xs8>{{ sessionDetailed.pos }}</v-flex>
                       <v-flex class="body-2 text-xs-right" xs4>Session type:</v-flex>
-                      <v-flex xs8>{{sessionDetailed.sessionType}}</v-flex>
+                      <v-flex xs8>{{ sessionDetailed.sessionType }}</v-flex>
                       <v-flex class="body-2 text-xs-right" xs4>Service:</v-flex>
-                      <v-flex xs8>{{sessionDetailed.hcpcs}} ({{sessionDetailed.description}})</v-flex>
+                      <v-flex xs8>{{ sessionDetailed.hcpcs }} ({{ sessionDetailed.description }})</v-flex>
                     </v-layout>
                   </v-flex>
                 </v-layout>
@@ -64,7 +64,7 @@
           </v-card>
           <v-card v-else>
             <v-alert type="info" :value="true">
-              Session is already signed. Thanks.
+              Session is already signed. Thanks.sss
             </v-alert>
           </v-card>
         </v-flex>
@@ -88,7 +88,8 @@ export default {
       loading: false,
       sessionDetailed: null,
       signaturePad: null,
-      signatureData: null
+      signatureData: null,
+      signed: false
     };
   },
 
@@ -129,6 +130,7 @@ export default {
         this.loading = true;
         await sessionServicesApi.saveSessionSign(sign);
         this.sessionDetailed.sign.sign = sign.sign;
+        this.signed = true;
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -145,7 +147,7 @@ export default {
     resizeCanvas() {
       this.$refs.canvas.width = this.$refs.canvas.parentElement.clientWidth - 10;
       let canvas = this.$refs.canvas;
-      window.onresize = function() {
+      window.onresize = function () {
         canvas.width = canvas.parentElement.clientWidth - 10;
       };
     }

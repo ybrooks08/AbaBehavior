@@ -1523,7 +1523,7 @@ namespace AbaBackend.Controllers
 
       var matchest = allSessions.FirstOrDefault();
 
-      return Ok(matchest);
+      return Ok(matchest ?? (new { SessionId = 0, ProgressNotes = "", Date = DateTime.Now, Percentaje = 1d }));
     }
 
     [HttpPost("[action]")]

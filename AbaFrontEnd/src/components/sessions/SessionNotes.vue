@@ -116,7 +116,7 @@
                   </v-list-tile>
                 </template>
                 <v-divider></v-divider>
-                <v-list-tile v-if="!editDisabled && (!sessionDetailed || !sessionDetailed.sign) && !isBilled" @click="send2Email">
+                <v-list-tile @click="send2Email">
                   <v-list-tile-action>
                     <v-icon medium>fa-signature</v-icon>
                   </v-list-tile-action>
@@ -124,7 +124,7 @@
                     <v-list-tile-title>Send sign form to caregiver</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile v-else-if="!isBilled && !isReviewed && isAdmin" @click="deleteSign">
+                <v-list-tile @click="deleteSign">
                   <v-list-tile-action>
                     <span class="fa-stack">
                       <v-icon medium color="red lighten-3">fa-signature fa-stack-2x</v-icon>
