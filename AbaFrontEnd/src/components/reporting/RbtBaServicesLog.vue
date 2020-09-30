@@ -84,7 +84,7 @@
             <table class="table-print">
               <tr>
                 <td>
-                  <small>BA/RBT Name:</small>
+                  <small>Provider Name:</small>
                   <br />
                   <span>{{ report.user.firstname }} {{ report.user.lastname }}</span>
                 </td>
@@ -94,7 +94,7 @@
                   <span>{{ report.client.firstname }} {{ report.client.lastname }}</span>
                 </td>
                 <td>
-                  <small>Physician(s) name:</small>
+                  <small>Physician(s) Name:</small>
                   <br />
                   <template v-for="r in report.client.referrals">
                     <span :key="r.npi">{{ r.referralFullname }} | NPI: {{ r.npi }}</span>
@@ -104,7 +104,7 @@
               </tr>
               <tr>
                 <td>
-                  <small>Provider number:</small>
+                  <small>Provider Number:</small>
                   <br />
                   <span>{{ report.user.mpi }}</span>
                 </td>
@@ -126,11 +126,11 @@
               </tr>
               <tr>
                 <td>
-                  <small>License number & NPI:</small>
+                  <small>License Number & NPI:</small>
                   <br />
                   <span>{{ report.user.licenseNo }}</span
                   >&nbsp;|&nbsp;
-                  <span>{{ report.user.npi }}</span>
+                  <span>NPI: {{ report.user.npi }}</span>
                 </td>
                 <td>
                   <small>Medicaid:</small>

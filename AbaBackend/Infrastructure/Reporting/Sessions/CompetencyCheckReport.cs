@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AbaBackend.DataModel;
 using AbaBackend.Infrastructure.Utils;
@@ -35,9 +36,9 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
       var compCheck = await _dbContext.CompetencyChecks
                             .Include(i => i.Client)
                             .Include(i => i.CompetencyCheckClientParams).ThenInclude(i => i.CompetencyCheckParam)
-                            .Include(i => i.User)
+                            .Include(i => i.User).ThenInclude(i => i.UserSign)
                             .Include(i => i.Caregiver)
-                            .Include(i => i.EvaluationBy)
+                            .Include(i => i.EvaluationBy).ThenInclude(i => i.UserSign)
                             .FirstOrDefaultAsync(a => a.CompetencyCheckId.Equals(competencyCheckId));
 
       FixedCells();
@@ -132,10 +133,32 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
       {
         ReportingTools.MergeCells(_wsMain, rowSign, 1, rowSign, 3);
         rowSign++;
-        _wsMain.Row(rowSign).Height = 50;
+        _wsMain.Row(rowSign).Height = 60;
         ReportingTools.PutDataInSheet(_wsMain, rowSign, 1, "Date", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
         ReportingTools.PutDataInSheet(_wsMain, rowSign, 2, $"{compCheck.CompetencyCheckType} signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
         ReportingTools.PutDataInSheet(_wsMain, rowSign, 3, "Lead Analyst Signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
+
+        var analystSign = compCheck.EvaluationBy.UserSign.Sign;
+
+        var caregiverSign = _dbContext.Sessions.Where(w => w.ClientId == compCheck.ClientId)
+          .Where(s => s.Sign.Sign != null)
+          .OrderByDescending(o => o.SessionStart)
+          .Select(s => s.Sign.Sign)
+          .FirstOrDefault();
+        var userSign = compCheck.User?.UserSign?.Sign;
+
+        var sign = compCheck.CompetencyCheckType == CompetencyCheckType.Caregiver ? caregiverSign : userSign;
+
+        var imgSignAnalyst = LoadImage(analystSign);
+        var picture = _wsMain.Drawings.AddPicture("AnalystSign", imgSignAnalyst);
+        picture.SetSize(150, 50);
+        picture.SetPosition(rowSign - 1, 10, 2, 50);
+
+        var imgSignSecondary = LoadImage(sign);
+        var picture2 = _wsMain.Drawings.AddPicture("SecondarySign", imgSignSecondary);
+        picture2.SetSize(150, 50);
+        picture2.SetPosition(rowSign - 1, 10, 1, 50);
+
 
         return rowSign;
       }
@@ -143,6 +166,21 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
       void FinalizeReport(int rowFinalize)
       {
         ReportingTools.DrawBorders(_wsMain, 1, 1, rowFinalize, 3);
+      }
+
+      Image LoadImage(string st)
+      {
+        var base64Data = Regex.Match(st, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+
+        byte[] bytes = Convert.FromBase64String(base64Data);
+
+        Image image;
+        using (MemoryStream ms = new MemoryStream(bytes))
+        {
+          image = Image.FromStream(ms);
+        }
+
+        return image;
       }
 
     }

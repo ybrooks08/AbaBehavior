@@ -3,7 +3,12 @@
     <v-container grid-list-sm>
       <v-layout row wrap>
         <v-flex xs12>
-          <v-card v-if="!signed">
+          <v-card v-if="error">
+            <v-alert :value="true" type="error">
+              {{ error }}
+            </v-alert>
+          </v-card>
+          <v-card v-else-if="!signed">
             <v-toolbar dark class="secondary" fluid dense>
               <v-toolbar-title>Caregiver sign session</v-toolbar-title>
             </v-toolbar>
@@ -64,7 +69,7 @@
           </v-card>
           <v-card v-else>
             <v-alert type="info" :value="true">
-              Session is already signed. Thanks.sss
+              Session is already signed. Thanks.
             </v-alert>
           </v-card>
         </v-flex>
@@ -89,7 +94,8 @@ export default {
       sessionDetailed: null,
       signaturePad: null,
       signatureData: null,
-      signed: false
+      signed: false,
+      error: null
     };
   },
 
@@ -104,6 +110,14 @@ export default {
       try {
         this.loading = true;
         const sessionDetailed = await sessionServicesApi.getSessionDetailedForSign(this.id);
+        if (sessionDetailed.error === 1) {
+          this.error = sessionDetailed.message;
+          return;
+        }
+        if (sessionDetailed.sign.sign) {
+          this.signed = true;
+          return;
+        }
         let s1 = this.$moment(sessionDetailed.sessionStart).local();
         let s2 = this.$moment(sessionDetailed.sessionEnd).local();
         sessionDetailed.sessionStart = s1;
@@ -121,6 +135,11 @@ export default {
     },
 
     async save() {
+      const isEmpty = this.signaturePad.isEmpty();
+      if (isEmpty) {
+        alert("Sorry, sign can't be empty.");
+        return;
+      }
       trimCanvas(this.$refs.canvas);
       let sign = {
         sign: this.signaturePad.toDataURL(),

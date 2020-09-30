@@ -116,15 +116,15 @@
                   </v-list-tile>
                 </template>
                 <v-divider></v-divider>
-                <v-list-tile @click="send2Email">
+                <v-list-tile @click="send2Email" v-if="!sessionSign.sign">
                   <v-list-tile-action>
                     <v-icon medium>fa-signature</v-icon>
                   </v-list-tile-action>
                   <v-list-tile-content>
-                    <v-list-tile-title>Send sign form to caregiver</v-list-tile-title>
+                    <v-list-tile-title>Send sign form to caregiver <small class="red--text" v-if="emailAlreadySent">(Already sent)</small></v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
-                <v-list-tile @click="deleteSign">
+                <v-list-tile v-else @click="deleteSign">
                   <v-list-tile-action>
                     <span class="fa-stack">
                       <v-icon medium color="red lighten-3">fa-signature fa-stack-2x</v-icon>
@@ -220,14 +220,14 @@
                             </div>
                           </v-flex>
                           <!-- <v-flex class="body-2 text-xs-right" xs4>Sign:</v-flex> -->
-                          <v-flex xs8 :offset-xs4="!sessionDetailed || !sessionDetailed.sign || !sessionDetailed.sign.sign">
-                            <v-chip v-if="!sessionDetailed || !sessionDetailed.sign || !sessionDetailed.sign.sign" label disabled color="orange" text-color="white">
+                          <v-flex xs8 :offset-xs4="!sessionSign.sign">
+                            <v-chip v-if="!sessionSign.sign" label disabled color="orange" text-color="white">
                               <v-avatar>
                                 <v-icon>fa-signature</v-icon>
                               </v-avatar>
                               UNSIGNED
                             </v-chip>
-                            <v-img max-width="300" :contain="true" max-height="100" v-else :src="!sessionDetailed || sessionDetailed.sign.sign" />
+                            <v-img max-width="300" :contain="true" max-height="100" v-else :src="sessionSign.sign" />
                           </v-flex>
                         </v-layout>
                       </v-flex>
@@ -1200,7 +1200,12 @@ export default {
       matching: null,
       currentAnalyst: null,
       analysts: [],
-      loadingAnalyst: false
+      loadingAnalyst: false,
+      sessionSign: {
+        sign: null,
+        signDate: null,
+        sessionSignId: null
+      }
     };
   },
 
@@ -1259,12 +1264,16 @@ export default {
     },
     canEditSessionResult() {
       return this.session.sessionNote.sessionResult !== "NA";
+    },
+    emailAlreadySent() {
+      return this.sessionSign.sessionSignId !== 0;
     }
   },
 
   async mounted() {
     if (!this.activeSessionId) this.close();
     this.posEnum = await masterTableApi.getPosCodes();
+    this.loadSessionSign();
     this.loadRiskBehaviorCodes();
     this.loadSessionSupervisionWorkWithCodes();
     this.loadParticipationLevelCodes();
@@ -1507,7 +1516,9 @@ export default {
       let fullPath = `${window.location.origin}/${signPath}`;
       try {
         this.loadingSession = true;
-        const response = await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
+        const data = await sessionServicesApi.sendUrlSign({ url: fullPath }, this.activeSessionId);
+        const response = data.response;
+        this.sessionSign = data.sign;
         this.loadSessionData();
         this.$toast.success("Email sent with code: " + response.statusCode);
       } catch (error) {
@@ -1524,6 +1535,7 @@ export default {
             this.loadingSession = true;
             await sessionServicesApi.deleteSign(this.activeSessionId);
             this.loadSessionData();
+            this.loadSessionSign();
             this.$toast.success("Sign deleted successful");
           } catch (error) {
             this.$toast.error(error.message || error);
@@ -1742,6 +1754,7 @@ export default {
         };
         const res = await sessionServicesApi.checkMatchingPercentajeString(obj);
         this.matching = res.percentaje == 0 ? null : res;
+        console.log(this.matching);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -1762,6 +1775,15 @@ export default {
         this.$toast.error(error.message || error);
       } finally {
         this.loadingAnalyst = false;
+      }
+    },
+
+    async loadSessionSign() {
+      try {
+        this.sessionSign = await sessionServicesApi.loadSessionSign(this.activeSessionId);
+        console.log(this.sessionSign);
+      } catch (error) {
+        this.$toast.error(error.message || error);
       }
     }
   }

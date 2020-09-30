@@ -941,11 +941,12 @@ namespace AbaBackend.Controllers
           var token = sign?.Auth ?? Guid.NewGuid();
           if (sign == null)
           {
-            await _dbContext.AddAsync(new SessionSign
+            sign = new SessionSign
             {
               Auth = token,
               SessionId = sessionId
-            });
+            };
+            await _dbContext.AddAsync(sign);
             await _dbContext.SaveChangesAsync();
           }
 
@@ -961,7 +962,7 @@ namespace AbaBackend.Controllers
           var email = await _utils.CreateEmail(to, subject, body, MessageType.General);
           var response = await _utils.SendEmailsAsync(email);
           transaction.Commit();
-          return Ok(response);
+          return Ok(new { response, sign });
         }
         catch (System.Exception e)
         {
@@ -1262,6 +1263,7 @@ namespace AbaBackend.Controllers
       try
       {
         var sign = await _dbContext.SessionSigns.FirstOrDefaultAsync(w => w.Auth == token);
+        if (sign == null) return Ok(new { error = 1, message = "Security token not found, this may happend due to another email sent before causing erasing this token. Please check your last email or contact a system administrator." });
         var session = await _dbContext
           .Sessions
           .AsNoTracking()
@@ -1523,7 +1525,7 @@ namespace AbaBackend.Controllers
 
       var matchest = allSessions.FirstOrDefault();
 
-      return Ok(matchest ?? (new { SessionId = 0, ProgressNotes = "", Date = DateTime.Now, Percentaje = 1d }));
+      return Ok(matchest == null || matchest.Percentaje == 0 ? (new { SessionId = 0, ProgressNotes = "", Date = DateTime.Now, Percentaje = 0.1d }) : matchest);
     }
 
     [HttpPost("[action]")]
@@ -1586,6 +1588,13 @@ namespace AbaBackend.Controllers
       {
         return BadRequest(e.InnerException?.Message ?? e.Message);
       }
+    }
+
+    [HttpGet("[action]/{sessionId}")]
+    public async Task<IActionResult> GetSessionSign(int sessionId)
+    {
+      var sign = await _dbContext.SessionSigns.Where(w => w.SessionId == sessionId).FirstOrDefaultAsync();
+      return Ok(sign ?? new SessionSign());
     }
   }
 }

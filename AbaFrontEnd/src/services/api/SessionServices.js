@@ -542,5 +542,14 @@ export default {
         .then((response) => resolve(response.data))
         .catch((error) => reject(error.response.data || error.message));
     });
+  },
+
+  loadSessionSign(id) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .get(`api/session/GetSessionSign/${id}`)
+        .then((response) => resolve(response.data))
+        .catch((error) => reject(error.response.data || error.message));
+    });
   }
 };
