@@ -23,9 +23,11 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
     private AbaDbContext _dbContext { get; }
     private ExcelPackage _excelPackage;
     private ExcelWorksheet _wsMain;
+    private readonly IUtils _utils;
 
-    public CompetencyCheckReport(AbaDbContext dbContext)
+    public CompetencyCheckReport(AbaDbContext dbContext, IUtils utils)
     {
+      _utils = utils;
       _dbContext = dbContext;
     }
 
@@ -40,6 +42,8 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
                             .Include(i => i.Caregiver)
                             .Include(i => i.EvaluationBy).ThenInclude(i => i.UserSign)
                             .FirstOrDefaultAsync(a => a.CompetencyCheckId.Equals(competencyCheckId));
+
+      var dx = await _utils.GetClientDiagnosisByDate(compCheck.Date, compCheck.ClientId);
 
       FixedCells();
       var row = ParametersCells();
@@ -72,8 +76,26 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         _wsMain.Cells[1, 1].Style.Font.Bold = true;
 
         ReportingTools.MergeCells(_wsMain, 2, 1, 2, 2);
-        ReportingTools.PutDataInSheet(_wsMain, 2, 1, $"Client: {compCheck.Client.Firstname} {compCheck.Client.Lastname}", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center);
-        ReportingTools.PutDataInSheet(_wsMain, 2, 3, $"Total duration (this month): {compCheck.TotalDuration} hrs", ExcelHorizontalAlignment.Right, ExcelVerticalAlignment.Center);
+        _wsMain.Row(2).Height = 65;
+        var clientCell = _wsMain.Cells[2, 1];
+        clientCell.Style.WrapText = true;
+        clientCell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+        clientCell.RichText.Add($"Client: {compCheck.Client.Firstname} {compCheck.Client.Lastname}\r\n");
+        clientCell.RichText.Add($"Dob: {compCheck.Client.Dob.ToShortDateString()}\r\n");
+        clientCell.RichText.Add($"Medicaid: {compCheck.Client.MemberNo}\r\n");
+        clientCell.RichText.Add($"Code: {compCheck.Client.Code}\r\n");
+
+        var clientCell2 = _wsMain.Cells[2, 3];
+        clientCell2.Style.WrapText = true;
+        clientCell2.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+        clientCell2.RichText.Add($"Total duration (this month): {compCheck.TotalDuration} hrs\r\n");
+        foreach (var d in dx)
+        {
+          clientCell2.RichText.Add($"{d.Code}-{d.Description}\r\n");
+        }
+
+        // ReportingTools.PutDataInSheet(_wsMain, 2, 1, $"Client: {compCheck.Client.Firstname} {compCheck.Client.Lastname}", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center);
+        // ReportingTools.PutDataInSheet(_wsMain, 2, 3, $"Total duration (this month): {compCheck.TotalDuration} hrs", ExcelHorizontalAlignment.Right, ExcelVerticalAlignment.Center);
 
         ReportingTools.PutDataInSheet(_wsMain, 3, 1, $"Date", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center, Color.Gray, Color.White);
         ReportingTools.PutDataInSheet(_wsMain, 3, 2, $"Competency to ({compCheck.CompetencyCheckType} name)", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center, Color.Gray, Color.White);
@@ -134,9 +156,13 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         ReportingTools.MergeCells(_wsMain, rowSign, 1, rowSign, 3);
         rowSign++;
         _wsMain.Row(rowSign).Height = 60;
-        ReportingTools.PutDataInSheet(_wsMain, rowSign, 1, "Date", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
-        ReportingTools.PutDataInSheet(_wsMain, rowSign, 2, $"{compCheck.CompetencyCheckType} signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
-        ReportingTools.PutDataInSheet(_wsMain, rowSign, 3, "Lead Analyst Signature", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
+
+        var analyst = compCheck.EvaluationBy;
+        var secondaryName = compCheck.CompetencyCheckType == CompetencyCheckType.Caregiver ? $"Caregiver {compCheck.Caregiver.CaregiverFullname}" : $"{compCheck.User.Firstname} {compCheck.User.Lastname} - {compCheck.User.LicenseNo}";
+
+        ReportingTools.PutDataInSheet(_wsMain, rowSign, 1, compCheck.Date.ToShortDateString(), ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
+        ReportingTools.PutDataInSheet(_wsMain, rowSign, 2, secondaryName, ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
+        ReportingTools.PutDataInSheet(_wsMain, rowSign, 3, $"{analyst.Firstname} {analyst.Lastname} - {analyst.LicenseNo}", ExcelHorizontalAlignment.Center, ExcelVerticalAlignment.Bottom);
 
         var analystSign = compCheck.EvaluationBy.UserSign.Sign;
 

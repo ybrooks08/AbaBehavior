@@ -51,5 +51,6 @@ namespace AbaBackend.Infrastructure.Utils
     double Compare(string a, string b);
     double CalculateSimilarity(string source, string target);
     Task<List<(string Code, string Description)>> GetClientDiagnosisBySession(int sessionId);
+    Task<List<(string Code, string Description)>> GetClientDiagnosisByDate(DateTime date, int clientId);
   }
 }

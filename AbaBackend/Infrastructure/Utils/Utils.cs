@@ -839,6 +839,18 @@ namespace AbaBackend.Infrastructure.Utils
       return selected;
     }
 
+    public async Task<List<(string Code, string Description)>> GetClientDiagnosisByDate(DateTime date, int clientId)
+    {
+      var sessionDate = date;
+
+      var allDiagnosis = await _dbContext.ClientDiagnostics.Where(w => w.ClientId == clientId).Include(i => i.Diagnosis).ToListAsync();
+      var selected = allDiagnosis.Where(w => (sessionDate >= w.StartDate && sessionDate <= w.EndDate) || (sessionDate >= w.StartDate && w.EndDate == null) || (w.StartDate == null && w.EndDate == null && w.Active))
+      .GroupBy(g => new { g.Diagnosis.Code, g.Diagnosis.Description })
+      .Select(s => (s.Key.Code, s.Key.Description)).ToList();
+
+      return selected;
+    }
+
 
   }
 }
