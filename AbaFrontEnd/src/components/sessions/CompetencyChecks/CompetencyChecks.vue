@@ -185,6 +185,7 @@ export default {
     },
 
     editCompetencyCheck(id) {
+      this.$store.commit("SET_ACTIVE_CLIENT", this.isAdmin ? this.clientId : this.activeClientId);
       this.$router.push(`/competency_checks/new_edit/${id}`);
     },
 

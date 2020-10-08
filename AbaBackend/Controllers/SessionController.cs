@@ -415,7 +415,7 @@ namespace AbaBackend.Controllers
                 s.SessionSupervisionNote.CommentsRelated,
                 s.SessionSupervisionNote.Recommendations,
                 s.SessionSupervisionNote.Validation,
-                s.SessionSupervisionNote.NextScheduledDate
+                s.SessionSupervisionNote.NextScheduledDate,
               }).Value
               : null,
             SessionNote = s.SessionType == SessionType.BA_Service
@@ -442,6 +442,14 @@ namespace AbaBackend.Controllers
                 s.SessionNote.SummaryCommunication,
                 s.SessionNote.SummaryOther,
                 s.SessionNote.SessionResult,
+                s.SessionNote.Supervision1,
+                s.SessionNote.Supervision2,
+                s.SessionNote.Supervision3,
+                s.SessionNote.Supervision4,
+                s.SessionNote.Supervision5,
+                s.SessionNote.Supervision6,
+                s.SessionNote.Supervision7,
+                s.SessionNote.SupervisionOther,
                 Problems = s.SessionProblemNotes.Select(w => new
                 {
                   Problem = w.ProblemBehavior.ProblemBehaviorDescription,
@@ -1595,6 +1603,17 @@ namespace AbaBackend.Controllers
     {
       var sign = await _dbContext.SessionSigns.Where(w => w.SessionId == sessionId).FirstOrDefaultAsync();
       return Ok(sign ?? new SessionSign());
+    }
+
+    [HttpGet("[action]/{sessionId}/{clientId}")]
+    public async Task<IActionResult> RecreateBehaviors(int sessionId, int clientId)
+    {
+      var problems = await _dbContext.SessionProblemNotes.Where(w => w.SessionId == sessionId).Include(i => i.SessionProblemNoteReplacements).ToListAsync();
+      foreach (var p in problems) _dbContext.RemoveRange(p.SessionProblemNoteReplacements);
+      _dbContext.RemoveRange(problems);
+      await _dbContext.SaveChangesAsync();
+      await _utils.AddSessionProblemNotes(sessionId, clientId);
+      return Ok();
     }
   }
 }

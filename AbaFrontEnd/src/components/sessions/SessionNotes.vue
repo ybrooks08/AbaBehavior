@@ -27,6 +27,14 @@
                     <v-list-tile-title>Edit time</v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
+                <v-list-tile @click="recreateBehaviors" v-if="!editDisabled && isAdmin">
+                  <v-list-tile-action>
+                    <v-icon medium>fa-sync</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title>Re-create behaviors</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
                 <v-divider v-if="!editDisabled && isAdmin"></v-divider>
                 <v-list-tile to="/session/session_print">
                   <v-list-tile-action>
@@ -147,6 +155,7 @@
                 <v-tab key="progress">SUMMARY</v-tab>
                 <!--                <v-tab key="feedback">Feedback</v-tab>-->
                 <v-tab v-if="user.rol2 !== 'tech'" key="summary">SERVICES PROVIDED</v-tab>
+                <v-tab v-if="user.rol2 !== 'tech'" key="casesupervision">CASE SUPERVISION</v-tab>
                 <v-tab key="problems">Prob/Replac</v-tab>
                 <v-tab key="sessionresult" v-if="canEditSessionResult">Session Results</v-tab>
               </template>
@@ -557,6 +566,82 @@
                         </v-flex>
                         <v-flex xs12>
                           <v-textarea box hide-details :disabled="loading" label="Other" auto-grow v-model="session.sessionNote.summaryOther" @change="setDirty"></v-textarea>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
+                  </v-card-text>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item v-if="user.rol2 !== 'tech'" key="casesupervision">
+                <v-card flat>
+                  <v-card-text class="pa-2">
+                    <v-container fluid grid-list-sm pa-0>
+                      <v-layout row wrap>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT can describe behavior and environment in observable and measurable terms during the session"
+                            v-model="session.sessionNote.supervision1"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT was able to conduct a preference assessment during the session"
+                            v-model="session.sessionNote.supervision2"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT was able to follow the schedule of reinforcement during the session"
+                            v-model="session.sessionNote.supervision3"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT was able to implement discrete-trial-teaching procedure during the session"
+                            v-model="session.sessionNote.supervision4"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT was able to implement prompt levels of assistance and prompt fading procedures during the session"
+                            v-model="session.sessionNote.supervision5"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT was able to implement intervention and or replacement programs linked to the functional equivalent to the target behavior"
+                            v-model="session.sessionNote.supervision6"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-switch
+                            hide-details
+                            color="primary"
+                            label="The RBT was able to implement Extinction procedures as needed"
+                            v-model="session.sessionNote.supervision7"
+                            @change="setDirty"
+                          ></v-switch>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-textarea box hide-details :disabled="loading" label="Other" auto-grow v-model="session.sessionNote.supervisionOther" @change="setDirty"></v-textarea>
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -1754,7 +1839,6 @@ export default {
         };
         const res = await sessionServicesApi.checkMatchingPercentajeString(obj);
         this.matching = res.percentaje == 0 ? null : res;
-        console.log(this.matching);
       } catch (error) {
         this.$toast.error(error.message || error);
       } finally {
@@ -1781,10 +1865,28 @@ export default {
     async loadSessionSign() {
       try {
         this.sessionSign = await sessionServicesApi.loadSessionSign(this.activeSessionId);
-        console.log(this.sessionSign);
       } catch (error) {
         this.$toast.error(error.message || error);
       }
+    },
+
+    recreateBehaviors() {
+      this.$confirm(
+        "Are you sure you want to recreate all session maladaptive behaviors with the currently active ones? <br><br><small class='red--text'>This action cannot be undone and will remove all data from the Prob/Replac tab only.</small>"
+      ).then(async (res) => {
+        if (res) {
+          try {
+            this.loadingSession = true;
+            await sessionServicesApi.recreateBehaviors(this.activeSessionId, this.activeClientId);
+            await this.loadSessionData();
+            this.tabModel = 7;
+          } catch (error) {
+            this.$toast.error(error);
+          } finally {
+            this.loadingSession = false;
+          }
+        }
+      });
     }
   }
 };

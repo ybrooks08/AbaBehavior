@@ -75,8 +75,17 @@ namespace AbaBackend.DataModel
     public bool SummaryGeneralization { get; set; }
 
     public bool SummaryCommunication { get; set; }
-
     public string SummaryOther { get; set; }
+
+    public bool Supervision1 { get; set; }
+    public bool Supervision2 { get; set; }
+    public bool Supervision3 { get; set; }
+    public bool Supervision4 { get; set; }
+    public bool Supervision5 { get; set; }
+    public bool Supervision6 { get; set; }
+    public bool Supervision7 { get; set; }
+    public string SupervisionOther { get; set; }
+
     public string RejectNotes { get; set; }
     public string SessionResult { get; set; }
   }

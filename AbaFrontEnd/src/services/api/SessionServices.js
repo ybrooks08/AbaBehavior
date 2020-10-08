@@ -551,5 +551,14 @@ export default {
         .then((response) => resolve(response.data))
         .catch((error) => reject(error.response.data || error.message));
     });
+  },
+
+  recreateBehaviors(sessionId, clientId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .get(`api/session/RecreateBehaviors/${sessionId}/${clientId}`)
+        .then((response) => resolve(response.data))
+        .catch((error) => reject(error.response.data || error.message));
+    });
   }
 };

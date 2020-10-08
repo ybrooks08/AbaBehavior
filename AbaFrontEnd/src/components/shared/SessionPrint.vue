@@ -504,6 +504,87 @@
                           </tr>
                         </template>
 
+                        <template
+                          v-if="
+                            sessionPrint.userRolShort != 'tech' &&
+                            (sessionPrint.sessionNote.supervision1 ||
+                              sessionPrint.sessionNote.supervision2 ||
+                              sessionPrint.sessionNote.supervision3 ||
+                              sessionPrint.sessionNote.supervision4 ||
+                              sessionPrint.sessionNote.supervision5 ||
+                              sessionPrint.sessionNote.supervision6 ||
+                              sessionPrint.sessionNote.supervision7 ||
+                              sessionPrint.sessionNote.supervisionOther)
+                          "
+                        >
+                          <tr class="no-page-break grey lighten-3">
+                            <td class="font-weight-medium text-xs-right">CASE SUPERVISION</td>
+                            <td></td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision1">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision1 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT can describe behavior and environment in observable and measurable terms during the session.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision2">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision2 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT was able to conduct a preference assessment during the session.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision3">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision3 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT was able to follow the schedule of reinforcement during the session.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision4">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision4 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT was able to implement discrete-trial-teaching procedure during the session.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision5">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision5 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT was able to implement prompt levels of assistance and prompt fading procedures during the session.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision6">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision6 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT was able to implement intervention and or replacement programs linked to the functional equivalent to the target behavior.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervision7">
+                            <td class="font-weight-medium text-xs-right" width="20%">
+                              <v-icon small>{{ sessionPrint.sessionNote.supervision7 ? "fa-check-circle" : "far fa-circle" }}</v-icon>
+                            </td>
+                            <td class="pl-1">
+                              The RBT was able to implement Extinction procedures as needed.
+                            </td>
+                          </tr>
+                          <tr class="no-page-break" v-if="sessionPrint.sessionNote.supervisionOther">
+                            <td class="font-weight-medium text-xs-right" width="20%" style="vertical-align: top;">
+                              Others:
+                            </td>
+                            <td class="pl-1" v-html="breakLine(sessionPrint.sessionNote.supervisionOther || 'N/A')"></td>
+                          </tr>
+                        </template>
+
                         <tr class="no-page-break grey lighten-3" v-if="!noDataBehaviorCollection || !noDataReplacementCollection">
                           <td class="font-weight-medium text-xs-right">DATA COLLECTION</td>
                           <td></td>

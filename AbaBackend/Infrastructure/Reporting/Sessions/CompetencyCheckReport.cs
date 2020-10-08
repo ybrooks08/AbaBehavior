@@ -48,7 +48,7 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
       FixedCells();
       var row = ParametersCells();
       row = ScoreCell(row);
-      row = SignCell(row);
+      row = await SignCell(row);
       FinalizeReport(row);
 
       if (file != null) _excelPackage.SaveAs(file);
@@ -89,9 +89,9 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         clientCell2.Style.WrapText = true;
         clientCell2.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
         clientCell2.RichText.Add($"Total duration (this month): {compCheck.TotalDuration} hrs\r\n");
-        foreach (var d in dx)
+        foreach (var (Code, Description) in dx)
         {
-          clientCell2.RichText.Add($"{d.Code}-{d.Description}\r\n");
+          clientCell2.RichText.Add($"{Code}-{Description}\r\n");
         }
 
         // ReportingTools.PutDataInSheet(_wsMain, 2, 1, $"Client: {compCheck.Client.Firstname} {compCheck.Client.Lastname}", ExcelHorizontalAlignment.Left, ExcelVerticalAlignment.Center);
@@ -151,7 +151,7 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
         return ++rowScore;
       }
 
-      int SignCell(int rowSign)
+      async Task<int> SignCell(int rowSign)
       {
         ReportingTools.MergeCells(_wsMain, rowSign, 1, rowSign, 3);
         rowSign++;
@@ -166,11 +166,17 @@ namespace AbaBackend.Infrastructure.Reporting.Sessions
 
         var analystSign = compCheck.EvaluationBy.UserSign.Sign;
 
-        var caregiverSign = _dbContext.Sessions.Where(w => w.ClientId == compCheck.ClientId)
-          .Where(s => s.Sign.Sign != null)
-          .OrderByDescending(o => o.SessionStart)
-          .Select(s => s.Sign.Sign)
-          .FirstOrDefault();
+        var caregiverSign = await _dbContext.Sessions
+        .Where(w => w.ClientId == compCheck.ClientId && w.SessionStatus == SessionStatus.Billed)
+        .OrderByDescending(o => o.SessionStart)
+        .Select(s => s.Sign.Sign)
+        .FirstOrDefaultAsync();
+
+        // var caregiverSign = await _dbContext.Sessions.Where(w => w.ClientId == compCheck.ClientId)
+        //   .Where(s => s.Sign.Sign != null)
+        //   .OrderByDescending(o => o.SessionStart)
+        //   .Select(s => s.Sign.Sign)
+        //   .FirstOrDefaultAsync();
         var userSign = compCheck.User?.UserSign?.Sign;
 
         var sign = compCheck.CompetencyCheckType == CompetencyCheckType.Caregiver ? caregiverSign : userSign;
