@@ -145,7 +145,13 @@ namespace AbaBackend.Controllers
 
           session.SessionStart = session.SessionStart.ToUniversalTime();
           session.SessionEnd = session.SessionEnd.ToUniversalTime();
-          session.TotalUnits = Convert.ToInt32((session.SessionEnd - session.SessionStart).TotalMinutes / 15);
+
+          var diff = session.SessionEnd - session.SessionStart;
+          var units = (decimal)diff.TotalMinutes / 15;
+          var unitsTruncate = Decimal.Truncate(units);
+          session.TotalUnits = (int)unitsTruncate;// Convert.ToInt32(diff.TotalMinutes / 15);
+
+          // session.TotalUnits = Convert.ToInt32((session.SessionEnd - session.SessionStart).TotalMinutes / 15);
           session.UserId = user.UserId;
           session.BehaviorAnalysisCodeId = Convert.ToInt32(user.Rol.BehaviorAnalysisCodeId);
           session.SessionAnalystId = analyst;
@@ -1170,7 +1176,9 @@ namespace AbaBackend.Controllers
         session.SessionStart = s.Start.ToUniversalTime();
         session.SessionEnd = s.End.ToUniversalTime();
         var diff = session.SessionEnd - session.SessionStart;
-        session.TotalUnits = Convert.ToInt32(diff.TotalMinutes / 15);
+        var units = (decimal)diff.TotalMinutes / 15;
+        var unitsTruncate = Decimal.Truncate(units);
+        session.TotalUnits = (int)unitsTruncate;// Convert.ToInt32(diff.TotalMinutes / 15);
         await _dbContext.SaveChangesAsync();
         await _utils.NewEntryLog(session.SessionId, "Time", "Session time edited", "fa-clock", "orange");
         return Ok();
