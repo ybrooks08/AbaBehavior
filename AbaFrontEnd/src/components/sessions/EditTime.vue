@@ -20,7 +20,7 @@
                   </v-layout>
                   <v-layout row wrap>
                     <v-flex xs12>
-                      <v-alert type="info" :value="durationMins > 0">Units: {{units}} | Mins: {{durationMins}} | Hrs: {{(durationMins / 60).toFixed(1)}}</v-alert>
+                      <v-alert type="info" :value="durationMins > 0">Units: {{ units }} | Mins: {{ durationMins }} | Hrs: {{ (durationMins / 60).toFixed(1) }}</v-alert>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -30,7 +30,7 @@
         </v-layout>
 
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn :disabled="loading" flat @click="cancel">Cancel</v-btn>
           <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="saveChanges">Save</v-btn>
         </v-card-actions>
@@ -40,56 +40,59 @@
 </template>
 
 <script>
-import sessionServicesApi from '@/services/api/SessionServices';
+import sessionServicesApi from "@/services/api/SessionServices";
 
 export default {
-  name: 'EditTime',
+  name: "EditTime",
 
   props: {
     model: {
       type: Boolean,
       required: true,
-      default: false,
+      default: false
     },
-    sessionId: null,
+    sessionId: null
   },
 
   data() {
     return {
       loading: false,
       validForm: false,
-      required: (value) => !!value || 'This field is required.',
+      required: (value) => !!value || "This field is required.",
       orgTimeStart: null,
       orgTimeEnd: null,
       timeStart: null,
       timeEnd: null,
-      unitsAvailable: 0,
+      unitsAvailable: 0
     };
   },
 
   computed: {
     durationMins() {
-      return this.$moment(this.timeEnd, 'HH:mm').local().diff(this.$moment(this.timeStart, 'HH:mm').local(), 'minutes');
+      return this.$moment(this.timeEnd, "HH:mm").local().diff(this.$moment(this.timeStart, "HH:mm").local(), "minutes");
     },
     units() {
-      return Math.round(this.durationMins / 15);
-    },
+      const units = this.durationMins / 15;
+      const sum1Unit = units % 1 > 0.5 ? 1 : 0;
+      const unitsTruncate = Math.trunc(units) + sum1Unit;
+      return unitsTruncate;
+    }
   },
 
   methods: {
     async saveChanges() {
       this.loading = true;
       try {
-        let s1 = this.$moment(`${this.orgTimeStart.format('MM/DD/YYYY')} ${this.timeStart}`);
-        let s2 = this.$moment(`${this.orgTimeEnd.format('MM/DD/YYYY')} ${this.timeEnd}`);
+        let s1 = this.$moment(`${this.orgTimeStart.format("MM/DD/YYYY")} ${this.timeStart}`);
+        let s2 = this.$moment(`${this.orgTimeEnd.format("MM/DD/YYYY")} ${this.timeEnd}`);
         let data = {
           sessionId: this.sessionId,
           start: s1,
-          end: s2,
+          end: s2
         };
         await sessionServicesApi.editSessionTime(data);
-        this.$toast.success('Session time saved successful.');
-        this.$emit('onSubmit');
+        this.$toast.success("Session time saved successful.");
+        this.$emit("onSubmit");
         this.$refs.form.reset();
       } catch (error) {
         this.$toast.error(error);
@@ -99,12 +102,11 @@ export default {
     },
 
     cancel() {
-      this.$emit('cancel');
+      this.$emit("cancel");
       this.$refs.form.reset();
-    },
-  },
+    }
+  }
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -20,7 +20,19 @@
               <v-layout row wrap>
                 <v-flex sm12>
                   <v-subheader>{{ activeDate | moment("LL") }}</v-subheader>
-                  <v-text-field box required label="Session date" v-model="dateSelected" return-masked-value prepend-icon="fa-calendar" mask="##/##/####" data-vv-name="dateSelected" :rules="errors.collect('dateSelected')" v-validate="'required|date_format:MM/dd/yyyy'" @change="changedDate"/>
+                  <v-text-field
+                    box
+                    required
+                    label="Session date"
+                    v-model="dateSelected"
+                    return-masked-value
+                    prepend-icon="fa-calendar"
+                    mask="##/##/####"
+                    data-vv-name="dateSelected"
+                    :rules="errors.collect('dateSelected')"
+                    v-validate="'required|date_format:MM/dd/yyyy'"
+                    @change="changedDate"
+                  />
                 </v-flex>
                 <v-flex sm12>
                   <v-select box :disabled="loading" label="Pos" v-model="session.pos" required :items="posEnum" prepend-icon="fa-map-marker-alt" :rules="[required]">
@@ -86,7 +98,7 @@ export default {
     return {
       loading: false,
       validForm: false,
-      required: value => !!value || "This field is required.",
+      required: (value) => !!value || "This field is required.",
       posEnum: [],
       timeStart: null,
       timeEnd: null,
@@ -113,7 +125,10 @@ export default {
       return this.$moment(this.timeEnd, "HH:mm").diff(this.$moment(this.timeStart, "HH:mm"), "minutes");
     },
     units() {
-      return Math.round(this.durationMins / 15);
+      const units = this.durationMins / 15;
+      const sum1Unit = units % 1 > 0.5 ? 1 : 0;
+      const unitsTruncate = Math.trunc(units) + sum1Unit;
+      return unitsTruncate;
     }
   },
 
@@ -144,19 +159,19 @@ export default {
         this.$confirm(
           `Are you sure do you want to create a new session in:<br>
           <i>Está seguro de que desea crear una nueva sesión en:</i><br><br>
-                       Pos: <strong class='red--text pulse'>${ this.posEnum.find(s => s.value == this.session.pos).text.toUpperCase() }</strong><br>
-                       Date: ${ this.$moment(this.session.sessionStart).format("LL") }<br>
-                       Time In: ${ this.$moment(this.session.sessionStart).format("LT") }<br>
-                       Time Out: ${ this.$moment(this.session.sessionEnd).format("LT") }<br>
-                       Units: ${ this.session.totalUnits }
+                       Pos: <strong class='red--text pulse'>${this.posEnum.find((s) => s.value == this.session.pos).text.toUpperCase()}</strong><br>
+                       Date: ${this.$moment(this.session.sessionStart).format("LL")}<br>
+                       Time In: ${this.$moment(this.session.sessionStart).format("LT")}<br>
+                       Time Out: ${this.$moment(this.session.sessionEnd).format("LT")}<br>
+                       Units: ${this.session.totalUnits}
                        <br><br>
                        <small>Remember your progress note must be clinically linked at:<br>
                        Recuerde su nota debe estar ajustada clínicamente a:<br>
-                       <strong class='red--text pulse'>${ this.posEnum.find(s => s.value == this.session.pos).text.toUpperCase() }</strong><br>
+                       <strong class='red--text pulse'>${this.posEnum.find((s) => s.value == this.session.pos).text.toUpperCase()}</strong><br>
                        or your notes will be rejected.<br>
                        o sus notas seran rechazadas.</small>`,
           "red"
-        ).then(async res => {
+        ).then(async (res) => {
           if (res) {
             try {
               await sessionServicesApi.addSession(this.session);
