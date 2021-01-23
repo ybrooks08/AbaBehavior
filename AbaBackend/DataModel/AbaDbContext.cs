@@ -334,5 +334,7 @@ namespace AbaBackend.DataModel
     public DbSet<AuthPass> AuthPasses { get; set; }
     public DbSet<ClientProblemChartLine> ClientProblemChartLines { get; set; }
     public DbSet<ClientReplacementChartLine> ClientReplacementChartLines { get; set; }
-  }
+
+    public DbSet<TellusCredential> TellusCredentials { get; set; }
+  }   
 }

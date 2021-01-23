@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using AbaBackend.Auxiliary;
 using AbaBackend.DataModel;
 using AbaBackend.Infrastructure;
 using AbaBackend.Infrastructure.Collection;
@@ -63,6 +64,7 @@ namespace AbaBackend
       services.AddScoped<IUtils, Utils>();
       services.AddScoped<ICollection, Collection>();
       services.AddScoped<IStoProcess, StoProcess>();
+      services.AddScoped<TellusManager, TellusManager>();
       services.AddScoped<ICompetencyCheckReport, CompetencyCheckReport>();
       services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
       services.AddDbContext<AbaDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("AbaDbConnectionString")));

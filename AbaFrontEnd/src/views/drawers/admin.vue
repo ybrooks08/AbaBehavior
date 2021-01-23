@@ -196,6 +196,14 @@
           <v-list-tile-title>System Logs</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/tellus-info">
+        <v-list-tile-action>
+          <v-icon>fa-list-alt</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Tellus Information</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
       <v-subheader>Documents and resources</v-subheader>
       <v-list-tile to="/video_tutorials">
         <v-list-tile-action>
@@ -203,6 +211,15 @@
         </v-list-tile-action>
         <v-list-tile-content>
           <v-list-tile-title>Video tutorials</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-subheader>Settings</v-subheader>
+      <v-list-tile to="/settings/tellus_config">
+        <v-list-tile-action>
+          <v-icon>fa-sliders-h</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title>Tellus configuration</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
     </v-list>

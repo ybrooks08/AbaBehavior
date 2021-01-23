@@ -55,6 +55,15 @@ export default {
     });
   },
 
+  addTellusConfig(user) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .post("api/tellus/add-tellus-config", user)
+        .then(() => resolve())
+        .catch((error) => reject(error.response.data || error.message));
+    });
+  },
+
   getRoles() {
     return new Promise((resolve, reject) => {
       Vue.axios

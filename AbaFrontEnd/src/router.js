@@ -155,6 +155,12 @@ export default new Router({
           meta: { rol: ["analyst", "assistant", "admin"] }
         },
         {
+          path: "/settings/tellus_config",
+          name: "TellusConfiguration",
+          component: () => import( "@/components/configurations/TellusConfiguration"),
+          meta: { rol: ["admin"] }
+        },
+        {
           path: "/reporting/billing_guide",
           name: "BillingGuide",
           component: () => import(/* webpackChunkName: "BillingGuide" */ "@/components/reporting/BillingGuide"),
@@ -206,6 +212,12 @@ export default new Router({
           path: "/system_logs",
           name: "SystemLogs",
           component: () => import(/* webpackChunkName: "SystemLogs" */ "@/views/SystemLogs"),
+          meta: { rol: ["admin"] }
+        },
+        {
+          path: "/tellus-info",
+          name: "TellusInformation",
+          component: () => import(/* webpackChunkName: "SystemLogs" */ "@/components/reporting/TellusInformation"),
           meta: { rol: ["admin"] }
         },
         {

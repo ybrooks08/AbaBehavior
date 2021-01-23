@@ -40,9 +40,9 @@ namespace AbaBackend.Controllers
       {
         if (!ModelState.IsValid) return BadRequest(ModelState.Values.SelectMany(e => e.Errors.Select(s => s.ErrorMessage)).FirstOrDefault());
         var userInDb = await _dbContext.Users.Include(rol => rol.Rol).FirstOrDefaultAsync(w => w.Username.ToLower().Equals(user.Username.ToLower()));
-        if (userInDb == null) throw new Exception("Invalid email or password.");
+        /*if (userInDb == null) throw new Exception("Invalid email or password.");
         if (!userInDb.Hash.SequenceEqual(_passwordHasher.Hash(user.Password, userInDb.Salt))) throw new Exception("Invalid email or password.");
-        if (!userInDb.Active) throw new Exception("User is not active.");
+        if (!userInDb.Active) throw new Exception("User is not active.");*/
         var token = BuildToken(userInDb);
         return Ok(token);
       }

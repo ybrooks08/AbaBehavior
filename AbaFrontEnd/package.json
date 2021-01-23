@@ -27,6 +27,7 @@
     "vue-izitoast": "^1.2.1",
     "vue-moment": "^4.1.0",
     "vue-router": "^3.4.1",
+    "vue-step-wizard": "^0.1.16",
     "vuetify": "^1.5.24",
     "vuex": "^3.5.1"
   },
