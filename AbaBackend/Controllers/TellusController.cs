@@ -171,20 +171,58 @@ namespace AbaBackend.Controllers
         var auth = await _tellusManager.AuthTellus( credentials );
 
         IDictionary<string, JObject> visitsDetails = new Dictionary<string, JObject>();
+        // AGF: Aqui voy a meter los chamas pal tema de comparar los nombres
+        IDictionary<string, JObject> recipients = new Dictionary<string, JObject>();
+        // AGF: contendra los recipients q tienen diferencia en el nombre u otra cosa que se defina en el futuro
+        List<Tuple<JObject, Client>> recipients_with_differences = new List<Tuple<JObject, Client>>();
+        // AGF: contendra los recipients q vienen en la visita y no estan en la bd
+        List<JObject> recipients_not_in_bd = new List<JObject>();
         if ( auth.access_token != null )
         {
           string access_token = auth.access_token;
           var userDetails = _tellusManager.GetAuthenticatedUserDetails( access_token );
           var current_provider_id = userDetails["providers"][0]["providerId"].ToString();
           //*****OJOOOOOO****** CAMBIAR VALORES FIJOS DE TAMAÑO DE PÁGINA Y PÁGINA ACTUAL
-          var tempVisits = _tellusManager.GetVisits( access_token, current_provider_id, fromDate, toDate, null, null, 500 );
+          // AGF: le puse de paginado 10 pa poder probar mas rapido y no esperar a que descargue los 500
+          var tempVisits = _tellusManager.GetVisits( access_token, current_provider_id, fromDate, toDate, null, null, 10 );
           var visits = tempVisits["_embedded"]["visits"];
           
           foreach ( JObject v in visits.OfType<JObject>() )
           {
             string visitId = v["id"].ToString();
-            var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );
+            var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );        
             visitsDetails.Add( visitId, visit_details );
+            // AGF: adiciono los recipients que vienen en la visita al listado de visitas
+            foreach (var recipient in visit_details["recipients"].OfType<JObject>())
+            {
+              String medicaidId = recipient["medicaidId"].ToString();
+              if (!recipients.ContainsKey(medicaidId))
+              {
+                recipients.Add(medicaidId, recipient);
+              }
+            }
+          }
+
+          if (recipients.Count() > 0)
+          {
+            // AGF: busco en bd los recipients q esten en el listado de arriba. lo hago buscando por la columna MemberNo lo que en el recipient de la visita viene en el campo medicaidId
+            var recipients_in_bd = from client in _dbContext.Clients.AsNoTracking() where recipients.Keys.Contains(client.MemberNo) select client;
+            foreach (var item in recipients_in_bd)
+            {
+              var to_compare = recipients[item.MemberNo];
+              if(to_compare["firstName"].ToString().Trim().ToUpper() != item.Firstname.Trim().ToUpper() || to_compare["lastName"].ToString().Trim().ToUpper() != item.Lastname.Trim().ToUpper())
+              {
+                recipients_with_differences.Add(new Tuple<JObject, Client>(recipients[item.MemberNo], item));
+              }
+
+              recipients.Remove(item.MemberNo);
+            }
+          }
+
+          // AGF: si queda algun recipient en este listado es que no esta en la bd...
+          if (recipients.Count() > 0)
+          {
+            recipients_not_in_bd = recipients.Values.ToList();
           }
         }
         else
