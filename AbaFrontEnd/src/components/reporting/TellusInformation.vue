@@ -7,8 +7,8 @@
         </v-toolbar>
         <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
         <v-card-text class="pa-1">
-          <form-wizard>
-            <tab-content title="Date Selecting" :selected="true">
+          <form-wizard @onNextStep="nextStep" @onPreviousStep="previousStep" ref="wizard">
+            <tab-content title="Date Selecting" :selected="true" key="step1" id="step1">
                 <v-form ref="form" autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
@@ -36,7 +36,7 @@
         </v-card-actions>
       </v-card>
     </v-flex>
-    <v-flex xs12 v-if="sessions.length > 0">
+    <v-flex xs12 v-if="tellusData.length > 0">
       <v-card>
         <v-toolbar dense dark class="secondary no-print">
           <v-toolbar-title>Sessions by User</v-toolbar-title>
@@ -46,7 +46,7 @@
           </v-btn>
         </v-toolbar>
         <v-card-text class="pa-0 print-full-width">
-          <table v-if="sessions.length > 0" class="v-datatable v-table theme--light print-font-small">
+          <table v-if="tellusData.length > 0" class="v-datatable v-table theme--light print-font-small">
             <thead>
               <tr>
                 <th class="text-xs-left py-0 px-1">Client/Code</th>
@@ -58,7 +58,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in sessions" :key="('session'+r.sessionId)">
+              <tr v-for="r in tellusData" :key="('session'+r.sessionId)">
                 <td class="px-1 text-truncate">
                   <strong>{{ r.clientFullname }}</strong>
                   <br />
@@ -124,7 +124,8 @@ export default {
         end: this.$moment().subtract(1, "month").endOf("month").format("YYYY-MM-DDTHH:mm")
       },
       users: [],
-      sessions: [],
+      tellusData: [],
+      currentStep: 1
       /*user: null,
       pass: null*/
     };
@@ -137,7 +138,7 @@ export default {
 
   computed: {
     totalUnits() {
-      return this.sessions.map((a) => a.totalUnits).reduce((a, b) => a + b);
+      return this.tellusData.map((a) => a.totalUnits).reduce((a, b) => a + b);
     }
   },
 
@@ -149,6 +150,27 @@ export default {
     dateSelected(range) {
       this.serviceLog.from = range.from;
       this.serviceLog.to = range.to;
+    },
+
+    previousStep: function(){
+        console.log(this.currentStep);
+        this.currentStep--;
+        alert('previousStep');
+    },
+
+    nextStep: function(){
+      switch (this.currentStep) {
+        case 1:
+          console.log(this.currentStep);
+          this.getTellusStepOne();          
+          break;
+      
+        default:
+          break;
+      }
+      this.currentStep++;
+      //console.log(this.);
+       //   alert('nextStep!');
     },
 
     async loadUsers() {
@@ -166,18 +188,19 @@ export default {
     async getTellusStepOne() {
       try {
         this.loading = true;
-        this.sessions = [];
-        let sessions = await tellusApi.GetTellusStepOne(this.datePickerModel.start, this.datePickerModel.end/*, this.user, this.pass*/);
+        this.tellusData = [];
+        let tellusData = await tellusApi.GetTellusStepOne(this.datePickerModel.start, this.datePickerModel.end/*, this.user, this.pass*/);
 
-        if (sessions.length == 0) {
+        if (tellusData.length == 0) {
           this.$toast.info("No data");
           return;
         }
 
-        sessions.forEach((e) => {
-          e.sessionStart = this.$moment(e.sessionStart).local();
-          e.sessionEnd = this.$moment(e.sessionEnd).local();
-          this.sessions.push(e);
+        tellusData.forEach((e) => {
+          /*e.sessionStart = this.$moment(e.sessionStart).local();
+          e.sessionEnd = this.$moment(e.sessionEnd).local();*/
+          console.info(e.uiType);
+          this.tellusData.push(e);
         });
       } catch (error) {
         //this.$toast.error(error.response.data || error.message);
