@@ -110,7 +110,7 @@ export default {
         await tellusApi.addTellusConfig(user);
         ///this.$toast.success(`Tellus ${this.id === 0 ? "added" : "edited"} successful.`);
         this.$toast.success("Tellus credentials added successful.");
-        this.close();
+        //this.close();
       } catch (error) {
         this.$toast.error(error);
       } finally {
