@@ -250,7 +250,9 @@ namespace AbaBackend.Controllers
               visit.Rol = "Rol";
               visit.Edit = false;
               visit.Difference = false;
-              string visitId = v["id"].ToString();
+
+              /*** Working with visit details ***/
+              /*string visitId = v["id"].ToString();
               var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );
               visitsDetails.Add( visitId, visit_details );
               // AGF: adiciono los recipients que vienen en la visita al listado de visitas
@@ -261,12 +263,13 @@ namespace AbaBackend.Controllers
                 {
                   recipients.Add( medicaidId, recipient );
                 }
-              }
+              }*/
               tellusSessions.Add( visit );
             }
 
           }
-          if (recipients.Count() > 0)
+          /*** Working with visit details ***/
+          /*if (recipients.Count() > 0)
           {
             // AGF: busco en bd los recipients q esten en el listado de arriba. lo hago buscando por la columna MemberNo lo que en el recipient de la visita viene en el campo medicaidId
             var recipients_in_bd = from client in _dbContext.Clients.AsNoTracking() where recipients.Keys.Contains( client.MemberNo ) select client;
@@ -290,7 +293,7 @@ namespace AbaBackend.Controllers
           if (recipients.Count() > 0)
           {
             recipients_not_in_bd = recipients.Values.ToList();
-          }
+          }*/
         }
         else
         {
