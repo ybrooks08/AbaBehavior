@@ -56,37 +56,59 @@ namespace AbaBackend.Auxiliary
       }
     }
 
-    public JObject GetVisits( string access_token, string current_user_provider_id, string start, string end, string[] recipient_ids, string user_id, int pagesize )
+    public IDictionary<string, JObject> GetVisits( string access_token, string current_user_provider_id, string start, string end, string[] recipient_ids, string user_id, int pagesize )
     {
       using ( HttpClient client = new HttpClient() )
       {
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", access_token );
         string[] arr = new string[] { };
+
         var contentObj = new
         {
           providerId = current_user_provider_id,
           uiType = "Provider",
           recipientIds = arr,
           states = arr,
-          statuses = arr
+          statuses = arr,
+          start,
+          end
+          //start = "2020-12-01T05:00:00.000Z",
+          //end = "2020-12-31T05:00:00.000Z"
         };
         var content = JsonConvert.SerializeObject( contentObj );
         var httpContent = new StringContent( content, Encoding.UTF8, "application/json" );
-        int page = 1;
-        ///string endpoint = "https://services.4tellus.net/visits/search?size=" + pagesize + "&page=" + 1 + "&sort=scheduledStartTime,asc&projection=visitShortListItem&uiType=Provider";
-        string endpoint = $"https://services.4tellus.net/visits/search?size={pagesize}&page={page}&sort=scheduledStartTime,asc&projection=visitShortListItem&uiType=Provider";
+        int page = 0;
+        bool broughtAny = true;
+        //Objeto para almacenar los elementos de cada página
+        JObject json = null;
+        //Lista de objetos almacenados por página que viene de tellus
+        IDictionary<string, JObject> resultList = new Dictionary<string, JObject>();
 
-        using ( var Response = client.PostAsync( endpoint, httpContent ).Result )
+        //UNCOMMENT WHILE 
+        while ( broughtAny )
         {
-          if ( Response.Content != null )
+          string endpoint = $"https://services.4tellus.net/visits/search?size={pagesize}&page={page}&sort=scheduledStartTime,asc&projection=visitShortListItem&uiType=Provider";
+          using ( var Response = client.PostAsync( endpoint, httpContent ).Result )
           {
-            var gottenContent = Response.Content.ReadAsStringAsync().Result;
-            JObject json = JObject.Parse( gottenContent );
-            return json;
-          }
-          else
-            return new JObject();
+            
+            if ( Response.Content != null )
+            {
+              page++;
+              var gottenContent = Response.Content.ReadAsStringAsync().Result;
+              if ( gottenContent.Contains( "visits" ) )
+              {
+                json = JObject.Parse( gottenContent );
+                resultList.Add( page.ToString(), json );
+              }
+              else
+                broughtAny = false;
+            }
+            else
+              broughtAny = false;
+          } 
         }
+        return resultList;
+
       }
     }
 
