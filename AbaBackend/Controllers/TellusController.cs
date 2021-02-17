@@ -167,15 +167,13 @@ namespace AbaBackend.Controllers
     {
       try
       {
-        DateTime tempDateTo;
-        if ( DateTime.TryParseExact( to, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out tempDateTo ) )
-        {
-          tempDateTo = tempDateTo.Add( new TimeSpan( 23, 59, 59 ) );
-          to = tempDateTo.ToString( "yyyy-MM-ddTHH:mm:ss" );
-        }
+        DateTime tempDateTo = DateTime.ParseExact( to, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture );
+        tempDateTo = tempDateTo.Add( new TimeSpan( 23, 59, 59 ) );          
+        to = tempDateTo.ToString( "yyyy-MM-ddTHH:mm:ss" );  
+
         
         var customFrom = ConvertDateToUTCSumFiveHours( from );
-        var customTo = TimeZoneInfo.ConvertTimeToUtc( tempDateTo ).ToString( "yyyy-MM-ddThh:mm:ss.000Z" );
+        var customTo = TimeZoneInfo.ConvertTimeToUtc( tempDateTo ).ToString( "yyyy-MM-ddTHH:mm:ss.000Z" );
         var credentials = await _dbContext.TellusCredentials.AsNoTracking().FirstOrDefaultAsync();
         var auth = await _tellusManager.AuthTellus( credentials );
 
@@ -200,10 +198,7 @@ namespace AbaBackend.Controllers
           string access_token = auth.access_token;
           var userDetails = _tellusManager.GetAuthenticatedUserDetails( access_token );
           var current_provider_id = userDetails["providers"][0]["providerId"].ToString();
-          //*****OJOOOOOO****** CAMBIAR VALORES FIJOS DE TAMAÑO DE PÁGINA Y PÁGINA ACTUAL
-          // AGF: le puse de paginado 10 pa poder probar mas rapido y no esperar a que descargue los 500
-
-          var tempVisits = _tellusManager.GetVisits( access_token, current_provider_id, customFrom, customTo, null, null, 100 );//CHANGE OPAGE SIZE
+          var tempVisits = _tellusManager.GetVisits( access_token, current_provider_id, customFrom, customTo, null, null, 100 );
 
 
           foreach ( var i in tempVisits )
@@ -211,63 +206,80 @@ namespace AbaBackend.Controllers
             var visits = i.Value["_embedded"]["visits"];
             foreach ( JObject v in visits.OfType<JObject>() )
             {
-              //Visita de tellus a agregar en la lista a devolver
-              var visit = new VisitToMatch();
+              //Validando que la visita esta completada
+              if ( v["status"].ToString() == "COMPLETED" )
+              {
+                //Visita de tellus a agregar en la lista a devolver
+                var visit = new VisitToMatch();
+                //La mejor manera que hay de resolver esto es mediante la zona horaria, mejora pendiente
+                DateTime sessionStart;
 
-              DateTime sessionStart;
-              if ( DateTime.TryParseExact( v["actualStartTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionStart ) )
-              {
-                sessionStart = sessionStart.Add( new TimeSpan( 5, 0, 0 ) );
-                visit.SessionStart = sessionStart.ToString( "u" );
-              }
-              DateTime sessionEnd;
-              if ( DateTime.TryParseExact( v["actualEndTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionEnd ) )
-              {
-                sessionEnd = sessionEnd.Add( new TimeSpan( 5, 0, 0 ) );
-                visit.SessionEnd = sessionEnd.ToString( "u" );
-              }
-              
-              visit.SessionId = v["id"].ToString();
-              visit.UserId = v["user"]["id"].ToString();
-              visit.ClientId = v["visitRecipientServicesInfo"][0]["recipient"]["id"].ToString();
-              visit.ClientFullname = v["visitRecipientServicesInfo"][0]["recipient"]["fullName"].ToString();
-              // Find out
-              visit.Code = "Code";
-              
-              //Find service hours
-              visit.TotalUnits = 0;
-              // Find out SessionType
-              visit.SessionType = "BA Service";
-              visit.SessionStatus = v["status"].ToString();
-              // Find out
-              visit.SessionStatusCode = "SessionStatusCode";
-              // Find out
-              visit.SessionStatusColor = "SessionStatusColor";
-              visit.Pos = "Pos";
-              // Find out
-              visit.PosCode = "Home";
-              visit.UserFullname = v["user"]["fullName"].ToString();
-              visit.Rol = "Rol";
-              visit.Edit = false;
-              visit.Difference = false;
-
-              /*** Working with visit details ***/
-              /*string visitId = v["id"].ToString();
-              var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );
-              visitsDetails.Add( visitId, visit_details );
-              // AGF: adiciono los recipients que vienen en la visita al listado de visitas
-              foreach ( var recipient in visit_details["recipients"].OfType<JObject>() )
-              {
-                String medicaidId = recipient["medicaidId"].ToString();
-                if ( !recipients.ContainsKey( medicaidId ) )
+                if ( DateTime.TryParseExact( v["actualStartTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionStart ) )
                 {
-                  recipients.Add( medicaidId, recipient );
+                  sessionStart = sessionStart.Add( new TimeSpan( 5, 0, 0 ) );
+                  visit.SessionStart = sessionStart.ToString( "u" );
                 }
-              }*/
-              tellusSessions.Add( visit );
+                else
+                {
+                  sessionStart = DateTime.ParseExact( v["actualStartTime"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
+                  visit.SessionStart = sessionStart.ToString( "u" );
+                }
+
+                DateTime sessionEnd;
+                if ( DateTime.TryParseExact( v["actualEndTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionEnd ) )
+                {
+                  sessionEnd = sessionEnd.Add( new TimeSpan( 5, 0, 0 ) );
+                  visit.SessionEnd = sessionEnd.ToString( "u" );
+                }
+                else
+                {
+                  sessionEnd = DateTime.ParseExact( v["actualEndTime"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
+                  visit.SessionEnd = sessionEnd.ToString( "u" );
+                }
+
+                visit.SessionId = v["id"].ToString();
+                visit.UserId = v["user"]["id"].ToString();
+                visit.ClientId = v["visitRecipientServicesInfo"][0]["recipient"]["id"].ToString();
+                visit.ClientFullname = v["visitRecipientServicesInfo"][0]["recipient"]["fullName"].ToString();
+                // Find out
+                visit.Code = "Code";
+
+                //Find service hours
+                visit.TotalUnits = 0;
+                // Find out SessionType
+                visit.SessionType = "BA Service";
+                visit.SessionStatus = v["status"].ToString();
+                // Find out
+                visit.SessionStatusCode = "SessionStatusCode";
+                // Find out
+                visit.SessionStatusColor = "SessionStatusColor";
+                visit.Pos = "Pos";
+                // Find out
+                visit.PosCode = "Home";
+                visit.UserFullname = v["user"]["fullName"].ToString();
+                visit.Rol = "Rol";
+                visit.Edit = false;
+                visit.Difference = false;
+
+                /*** Working with visit details ***/
+                /*string visitId = v["id"].ToString();
+                var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );
+                visitsDetails.Add( visitId, visit_details );
+                // AGF: adiciono los recipients que vienen en la visita al listado de visitas
+                foreach ( var recipient in visit_details["recipients"].OfType<JObject>() )
+                {
+                  String medicaidId = recipient["medicaidId"].ToString();
+                  if ( !recipients.ContainsKey( medicaidId ) )
+                  {
+                    recipients.Add( medicaidId, recipient );
+                  }
+                }*/                
+                tellusSessions.Add( visit ); 
+              }
             }
 
           }
+
           /*** Working with visit details ***/
           /*if (recipients.Count() > 0)
           {
@@ -311,12 +323,12 @@ namespace AbaBackend.Controllers
           {
             var tellusClientName = Regex.Replace( j.ClientFullname.ToLowerInvariant(), @"(^\w)|(\s\w)", m => m.Value.ToUpper() );
             var tellusUserName = Regex.Replace( j.UserFullname.ToLowerInvariant(), @"(^\w)|(\s\w)", m => m.Value.ToUpper() );
-
+            
             if ( i.ClientFullname == tellusClientName && i.UserFullname == tellusUserName )
             {
-              string tellusDateStart = i.SessionStart.Remove( i.SessionStart.Length - 10, 10 );
-              string localDateStart = j.SessionStart.Remove( j.SessionStart.Length - 10, 10 );
-              string tellusDateEnd = i.SessionEnd.Remove( i.SessionEnd.Length - 10, 10 );
+              string tellusDateStart = i.SessionStart.Remove( i.SessionStart.Length - 10, 10 );              
+              string localDateStart = j.SessionStart.Remove( j.SessionStart.Length - 10, 10 );              
+              string tellusDateEnd = i.SessionEnd.Remove( i.SessionEnd.Length - 10, 10 );              
               string localDateEnd = j.SessionEnd.Remove( j.SessionEnd.Length - 10, 10 );
               
               string tellusHourStart = i.SessionStart.Substring( 11, i.SessionStart.Length - 15 );
