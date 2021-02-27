@@ -26,5 +26,8 @@ public class VisitToMatch
     public string Rol { get; set; }
     public bool Edit { get; set; }
     public bool Difference { get; set; }
+    public string MedicaidId { get; set; }
+    //Provider medicaid or provider id
+    public string Mpi { get; set; }
   }
 }

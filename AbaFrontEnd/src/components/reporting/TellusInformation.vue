@@ -128,7 +128,8 @@
                         </thead> -->
                         <tbody>
                           <tr v-for="(k, index) in tellusData" :key="('tellus'+index)">
-                            <div id="div-td" v-if="r.clientFullname === k.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') && r.userFullname === k.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')">
+                            <!-- <div id="div-td" v-if="r.clientFullname === k.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') && r.userFullname === k.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')"> -->
+                            <div id="div-td" v-if="r.medicaidId === k.medicaidId && r.mpi === k.mpi && k.sessionStartDate  === r.sessionStartDate && r.userFullname.includes(k.userFullname)">
                               <td class="px-4 text-truncate">
                                 <strong>{{ k.userFullname }}</strong>                  
                               </td>
@@ -160,14 +161,14 @@
                                 {{ (k.totalUnits / 4).toLocaleString() }}
                               </td> -->
                               <td>
-                                <input
+                                <!-- <input
                                       :id="`id-${index}`"
                                       class="form-check-input"
                                       type="radio"
                                       :name="`tellusData[${index}][clientFullname]`"
                                       v-if="r.clientFullname === k.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') && r.userFullname === k.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')"
                                       value=""                                      
-                                  >
+                                  > -->
 
                                   <label
                                       :for="`id-${index}`"
@@ -242,8 +243,8 @@ export default {
     },
 
     previousStep: function(){
-        this.currentStep--;
-        alert('previousStep');
+        this.processState = 0;
+        this.currentStep--;        
     },
 
     nextStep: function(){
@@ -320,7 +321,9 @@ export default {
         //console.info("this.systemData");
         systemData.forEach((e) => {
           e.sessionStart = this.$moment(e.sessionStart).local();
+          e.sessionStartDate = this.$moment(e.sessionStart).format('MM/DD/YYYY');          
           e.sessionEnd = this.$moment(e.sessionEnd).local();
+          e.sessionEndDate = this.$moment(e.sessionEnd).format('MM/DD/YYYY');
           /*tellusData.forEach((o) => {
           //console.info(e.sessionStart.seconds(0).milliseconds(0).toISOString());
          
@@ -348,7 +351,11 @@ export default {
         tellusData.forEach((e) => {
           //console.info(this.$moment(e.sessionStart).local());
           e.sessionStart = this.$moment(e.sessionStart).local();
+          e.sessionStartDate = this.$moment(e.sessionStart).format('MM/DD/YYYY');
           e.sessionEnd = this.$moment(e.sessionEnd).local();
+          console.info("tellusData");
+          console.info(this.$moment(e.sessionStart).format('MM/DD/YYYY'));
+          e.sessionEndDate = this.$moment(e.sessionEnd).format('MM/DD/YYYY');
           e.clientFullname = e.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
           e.userFullname = e.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
           this.tellusData.push(e);

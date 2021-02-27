@@ -4,3 +4,4 @@ obj/
 .idea/
 UserDocuments
 publish
+appsettings.Development.json

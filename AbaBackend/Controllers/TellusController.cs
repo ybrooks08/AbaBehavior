@@ -167,17 +167,17 @@ namespace AbaBackend.Controllers
     {
       try
       {
+        DateTime tempDateFrom = DateTime.ParseExact( from, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture );
         DateTime tempDateTo = DateTime.ParseExact( to, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture );
-        tempDateTo = tempDateTo.Add( new TimeSpan( 23, 59, 59 ) );          
-        to = tempDateTo.ToString( "yyyy-MM-ddTHH:mm:ss" );  
+        tempDateTo = tempDateTo.Add( new TimeSpan( 23, 59, 59 ) );
+        to = tempDateTo.ToString( "yyyy-MM-ddTHH:mm:ss" );
 
-        
+
         var customFrom = ConvertDateToUTCSumFiveHours( from );
         var customTo = TimeZoneInfo.ConvertTimeToUtc( tempDateTo ).ToString( "yyyy-MM-ddTHH:mm:ss.000Z" );
         var credentials = await _dbContext.TellusCredentials.AsNoTracking().FirstOrDefaultAsync();
         var auth = await _tellusManager.AuthTellus( credentials );
 
-        IDictionary<string, JObject> visitsDetails = new Dictionary<string, JObject>();
         // AGF: Aqui voy a meter los chamas pal tema de comparar los nombres
         IDictionary<string, JObject> recipients = new Dictionary<string, JObject>();
         // AGF: contendra los recipients q tienen diferencia en el nombre u otra cosa que se defina en el futuro
@@ -190,50 +190,83 @@ namespace AbaBackend.Controllers
         List<VisitToMatch> localSessions = new List<VisitToMatch>();
         //YBCH: Almaceno las listas de datos del sistema local y de tellus para después llenar cada una de las listas del front y hacer el macheo
         IDictionary<string, List<VisitToMatch>> gotten_visits = new Dictionary<string, List<VisitToMatch>>();
-        //Lista de visitas de tellus a devolver
-        
+        //Lista de visitas de tellus a devolver 
+
 
         if ( auth.access_token != null )
         {
           string access_token = auth.access_token;
           var userDetails = _tellusManager.GetAuthenticatedUserDetails( access_token );
           var current_provider_id = userDetails["providers"][0]["providerId"].ToString();
-          var tempVisits = _tellusManager.GetVisits( access_token, current_provider_id, customFrom, customTo, null, null, 100 );
+          var payer_id = userDetails["providers"][0]["payerLinks"][0]["payerId"].ToString();
+          var pageSize = 100;
 
+          var tempClaims = _tellusManager.GetClaimsFromWorkList( access_token, current_provider_id, payer_id, pageSize, /*recipient_ids*/null, customFrom, customTo, false );
+          var tempVisits = _tellusManager.GetVisits( access_token, current_provider_id, customFrom, customTo, null, null, pageSize );
 
+          //List to save all claims
+          List<JObject> totalClaims = new List<JObject>();
+          //Parsing claims
+          foreach ( var k in tempClaims )
+          {
+            //var calims = k.Value["_embedded"]["claimInvoices"];
+            var calims = k.Value["_embedded"]["claimInvoices"].OfType<JObject>().ToList();
+            ///if ( calims.Count() > 0)
+            if ( calims.Any() )
+            {
+              totalClaims.AddRange( calims );
+            }
+            /*foreach ( JObject c in calims.OfType<JObject>() )
+            {
+              var lolo = c;
+            }*/
+          }
+
+          //Parsing visits
           foreach ( var i in tempVisits )
           {
             var visits = i.Value["_embedded"]["visits"];
             foreach ( JObject v in visits.OfType<JObject>() )
             {
+              ///var tempDate = Convert.ToDateTime( v["actualStartTime"].ToString() ).Date;
+              var myClaimAsList =
+                ( from p in totalClaims
+                  where (string) p["id"] == v["visitRecipientServicesInfo"][0]["claimId"].ToString()
+                  select p ).Take( 1 ).ToList();
+              //select (string) p["startDatetimeBillable"]).Take( 10 );
+
               //Validando que la visita esta completada
-              if ( v["status"].ToString() == "COMPLETED" )
+              if ( v["status"].ToString() == "COMPLETED" && myClaimAsList.Any() )
               {
+                var myClaim = myClaimAsList.FirstOrDefault();
                 //Visita de tellus a agregar en la lista a devolver
                 var visit = new VisitToMatch();
                 //La mejor manera que hay de resolver esto es mediante la zona horaria, mejora pendiente
                 DateTime sessionStart;
-
-                if ( DateTime.TryParseExact( v["actualStartTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionStart ) )
+                ///if ( DateTime.TryParseExact( v["actualStartTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionStart ) )
+                if ( DateTime.TryParseExact( myClaim["startDatetimeBillable"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionStart ) )
                 {
                   sessionStart = sessionStart.Add( new TimeSpan( 5, 0, 0 ) );
                   visit.SessionStart = sessionStart.ToString( "u" );
                 }
                 else
                 {
-                  sessionStart = DateTime.ParseExact( v["actualStartTime"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
+                  ///sessionStart = DateTime.ParseExact( v["actualStartTime"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
+                  sessionStart = DateTime.ParseExact( myClaim["startDatetimeBillable"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
                   visit.SessionStart = sessionStart.ToString( "u" );
                 }
 
                 DateTime sessionEnd;
-                if ( DateTime.TryParseExact( v["actualEndTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionEnd ) )
+                ///if ( DateTime.TryParseExact( v["actualEndTime"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionEnd ) )
+                if ( DateTime.TryParseExact( myClaim["endDatetimeBillable"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out sessionEnd ) )
                 {
                   sessionEnd = sessionEnd.Add( new TimeSpan( 5, 0, 0 ) );
                   visit.SessionEnd = sessionEnd.ToString( "u" );
                 }
                 else
                 {
-                  sessionEnd = DateTime.ParseExact( v["actualEndTime"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
+                  ///sessionEnd = DateTime.ParseExact( v["actualEndTime"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
+                  sessionEnd = DateTime.ParseExact( myClaim["endDatetimeBillable"].ToString(), "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture );
                   visit.SessionEnd = sessionEnd.ToString( "u" );
                 }
 
@@ -262,19 +295,21 @@ namespace AbaBackend.Controllers
                 visit.Difference = false;
 
                 /*** Working with visit details ***/
-                /*string visitId = v["id"].ToString();
+                string visitId = v["id"].ToString();
                 var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );
-                visitsDetails.Add( visitId, visit_details );
+                visit.MedicaidId = visit_details["recipients"][0]["medicaidId"].ToString();
+                visit.Mpi = v["user"]["medicaidId"].ToString();
+
                 // AGF: adiciono los recipients que vienen en la visita al listado de visitas
-                foreach ( var recipient in visit_details["recipients"].OfType<JObject>() )
+                /*foreach ( var recipient in visit_details["recipients"].OfType<JObject>() )
                 {
                   String medicaidId = recipient["medicaidId"].ToString();
                   if ( !recipients.ContainsKey( medicaidId ) )
                   {
                     recipients.Add( medicaidId, recipient );
                   }
-                }*/                
-                tellusSessions.Add( visit ); 
+                }*/
+                tellusSessions.Add( visit );
               }
             }
 
@@ -312,79 +347,57 @@ namespace AbaBackend.Controllers
           return BadRequest( auth.error_description );
         }
 
-        localSessions = await GetSessionsByDate( from, to );
+        ///localSessions = await GetSessionsByDate( from, to );
+        localSessions = await GetSessionsByDate( tempDateFrom, tempDateTo );
         //YBCH: Aca la lista de los datos de tellus a incluir en el resultado final 
         List<VisitToMatch> tellusSessionsOne = new List<VisitToMatch>();
         //YBCH: Aca la lista de los datos del sistema local a incluir en el resultado final 
         List<VisitToMatch> localSessionsOne = new List<VisitToMatch>();
         foreach ( var i in localSessions )
         {
-          foreach ( var j in tellusSessions )
+          //Lista temporal para almacenar las visitas de un mismo dia para el mismo ninno y el mismo provider
+          var tellusToMatch = tellusSessions.FindAll( x => ( x.MedicaidId == i.MedicaidId ) 
+                                                    && ( x.Mpi == i.Mpi )/* && ( x.SessionStart == i.SessionStart )*/ );
+          //Visitas de tellus del mismo dia que i(visita actual)
+          List<VisitToMatch> sessionsPerDay = new List<VisitToMatch>();
+          if ( tellusToMatch.Any() )
           {
-            var tellusClientName = Regex.Replace( j.ClientFullname.ToLowerInvariant(), @"(^\w)|(\s\w)", m => m.Value.ToUpper() );
-            var tellusUserName = Regex.Replace( j.UserFullname.ToLowerInvariant(), @"(^\w)|(\s\w)", m => m.Value.ToUpper() );
-            
-            if ( i.ClientFullname == tellusClientName && i.UserFullname == tellusUserName )
+            // Se encontro una que coincide exactamente
+            bool matchDone = false;
+            foreach ( var match in tellusToMatch )
             {
-              string tellusDateStart = i.SessionStart.Remove( i.SessionStart.Length - 10, 10 );              
-              string localDateStart = j.SessionStart.Remove( j.SessionStart.Length - 10, 10 );              
-              string tellusDateEnd = i.SessionEnd.Remove( i.SessionEnd.Length - 10, 10 );              
-              string localDateEnd = j.SessionEnd.Remove( j.SessionEnd.Length - 10, 10 );
-              
-              string tellusHourStart = i.SessionStart.Substring( 11, i.SessionStart.Length - 15 );
-              string localHourStart = j.SessionStart.Substring( 11, j.SessionStart.Length - 15 );
-              string tellusHourEnd = i.SessionEnd.Substring( 11, i.SessionEnd.Length - 15 );
-              string localHourEnd = j.SessionEnd.Substring( 11, j.SessionEnd.Length - 15 );
-              if ( tellusDateStart == localDateStart )
-              {
-                if ( tellusHourStart != localHourStart || tellusHourEnd != localHourEnd )
-                {
-                  if ( !localSessionsOne.Any( n => n.SessionId == i.SessionId ) )
-                  {
-                    localSessionsOne.Add( i ); 
-                  }
-                  tellusSessionsOne.Add( j );
-                  /**Visita duplicada a mano para probar***/
-                  /*DateTime lolo;
-                  DateTime lolol1;
-                  if ( DateTime.TryParseExact( j.SessionStart, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out lolo ) )
-                  {
-                    lolo = lolo.Add( new TimeSpan( 1, 0, 0 ) );
-                    ///tempTellus.SessionStart = lolo.ToString( "u" );
-                  }
-                  if ( DateTime.TryParseExact( j.SessionEnd, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out lolol1 ) )
-                  {
-                    lolol1 = lolol1.Add( new TimeSpan( 1, 0, 0 ) );
-                    ///tempTellus.SessionEnd = lolol1.ToString( "u" );
-                  }
-                  var tempTellus = new VisitToMatch
-                  {
-                    SessionId = j.SessionId,
-                    UserId = j.UserId,
-                    ClientId = j.ClientId,
-                    ClientFullname = j.ClientFullname,
-                    Code = j.Code,
-                    SessionStart = lolo.ToString( "u" ),
-                    SessionEnd = lolol1.ToString( "u" ),
-                    TotalUnits = j.TotalUnits,
-                    SessionType = j.SessionType,
-                    SessionStatus = j.SessionStatus,
-                    SessionStatusCode = j.SessionStatusCode,
-                    SessionStatusColor = j.SessionStatusColor,
-                    Pos = j.Pos,
-                    PosCode = j.PosCode,
-                    UserFullname = j.UserFullname,
-                    Rol = j.Rol,
-                    Edit = j.Edit,
-                    Difference = j.Difference
-                  };
-                  tellusSessionsOne.Add( tempTellus );*/
-                  /***/
+              string tellusDateStart = i.SessionStart.Remove( i.SessionStart.Length - 10, 10 );
+              string localDateStart = match.SessionStart.Remove( match.SessionStart.Length - 10, 10 );
+              string tellusDateEnd = i.SessionEnd.Remove( i.SessionEnd.Length - 10, 10 );
+              string localDateEnd = match.SessionEnd.Remove( match.SessionEnd.Length - 10, 10 );
 
-                }
-              } 
+              string tellusHourStart = i.SessionStart.Substring( 11, i.SessionStart.Length - 15 );
+              string localHourStart = match.SessionStart.Substring( 11, match.SessionStart.Length - 15 );
+              string tellusHourEnd = i.SessionEnd.Substring( 11, i.SessionEnd.Length - 15 );
+              string localHourEnd = match.SessionEnd.Substring( 11, match.SessionEnd.Length - 15 );
+
+              if ( tellusDateStart == localDateStart && tellusDateEnd == localDateEnd
+                && tellusHourStart == localHourStart && tellusHourEnd == localHourEnd )
+              {
+                matchDone = true;
+                break;
+              }
+              else if ( tellusDateStart == localDateStart )
+              {
+                sessionsPerDay.Add( match );
+              }
+            }
+            //Aca en esta condicional, se agrega sessionsPerDay para no agregar alas visitas que no estan en tellus  
+            if ( !matchDone && sessionsPerDay.Any() )
+            {
+              if ( !localSessionsOne.Any( n => n.SessionId == i.SessionId ) )
+              {
+                localSessionsOne.Add( i );
+              }
+              tellusSessionsOne.AddRange( sessionsPerDay );
             }
           }
+
         }
         /*** ***/
         gotten_visits.Add( "system_visits", ( localSessionsOne ) );
@@ -397,17 +410,19 @@ namespace AbaBackend.Controllers
       }
     }
 
-    public async Task<List<VisitToMatch>> GetSessionsByDate( string from, string to = null )
+    public async Task<List<VisitToMatch>> GetSessionsByDate( DateTime from, DateTime to )
+    ///public async Task<List<VisitToMatch>> GetSessionsByDate( string from, string to )
     {
       try
       {
-        var fromDate = Convert.ToDateTime( from ).Date;
-        var toDate = ( to != null ) ? Convert.ToDateTime( to ).Date : fromDate;
+        /*var fromDate = Convert.ToDateTime( from ).Date;
+        var toDate = ( to != null ) ? Convert.ToDateTime( to ).Date : fromDate;*/
 
         var sessions = await _dbContext.Sessions
             .AsNoTracking()
-            .Where( w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate )
-            .Where( w => w.SessionStatus == SessionStatus.Billed )
+            ///.Where( w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate )
+            .Where( w => w.SessionStart.Date >= from && w.SessionStart.Date <= to )
+            ///.Where( w => w.SessionStatus == SessionStatus.Billed )
             .OrderBy( w => w.SessionStart )
             .Select( s => new VisitToMatch
             {
@@ -432,7 +447,9 @@ namespace AbaBackend.Controllers
               UserFullname = $"{s.User.Firstname} {s.User.Lastname}",
               Rol = s.User.Rol.RolShortName,
               Edit = false,
-              Difference = false
+              Difference = false,
+              MedicaidId = s.Client.MemberNo,
+              Mpi = s.User.Mpi
             } )
             .OrderBy( o => o.SessionStart )
             .ToListAsync();
