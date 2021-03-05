@@ -1,30 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AbaBackend.Auxiliary;
 using AbaBackend.DataModel;
 using AbaBackend.Infrastructure.Collection;
-using AbaBackend.Infrastructure.Extensions;
-using AbaBackend.Infrastructure.Security;
 using AbaBackend.Infrastructure.Utils;
-using AbaBackend.Model.MasterTables;
 using AbaBackend.Model.Tellus;
-using AbaBackend.Model.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AbaBackend.Controllers
@@ -172,18 +160,17 @@ namespace AbaBackend.Controllers
         tempDateTo = tempDateTo.Add( new TimeSpan( 23, 59, 59 ) );
         to = tempDateTo.ToString( "yyyy-MM-ddTHH:mm:ss" );
 
-
         var customFrom = ConvertDateToUTCSumFiveHours( from );
         var customTo = TimeZoneInfo.ConvertTimeToUtc( tempDateTo ).ToString( "yyyy-MM-ddTHH:mm:ss.000Z" );
         var credentials = await _dbContext.TellusCredentials.AsNoTracking().FirstOrDefaultAsync();
         var auth = await _tellusManager.AuthTellus( credentials );
 
-        // AGF: Aqui voy a meter los chamas pal tema de comparar los nombres
+        /*// AGF: Aqui voy a meter los chamas pal tema de comparar los nombres
         IDictionary<string, JObject> recipients = new Dictionary<string, JObject>();
         // AGF: contendra los recipients q tienen diferencia en el nombre u otra cosa que se defina en el futuro
         List<Tuple<JObject, Client>> recipients_with_differences = new List<Tuple<JObject, Client>>();
         // AGF: contendra los recipients q vienen en la visita y no estan en la bd
-        List<JObject> recipients_not_in_bd = new List<JObject>();
+        List<JObject> recipients_not_in_bd = new List<JObject>();*/
         //YBCH: Aca la lista de los datos de tellus a incluir en el resultado final 
         List<VisitToMatch> tellusSessions = new List<VisitToMatch>();
         //YBCH: Aca la lista de los datos del sistema local a incluir en el resultado final 
@@ -276,9 +263,7 @@ namespace AbaBackend.Controllers
                 visit.ClientFullname = v["visitRecipientServicesInfo"][0]["recipient"]["fullName"].ToString();
                 // Find out
                 visit.Code = "Code";
-
-                //Find service hours
-                visit.TotalUnits = 0;
+                visit.TotalUnits = Convert.ToInt32( myClaim["billableUnits"].ToString() );
                 // Find out SessionType
                 visit.SessionType = "BA Service";
                 visit.SessionStatus = v["status"].ToString();
@@ -292,6 +277,8 @@ namespace AbaBackend.Controllers
                 visit.UserFullname = v["user"]["fullName"].ToString();
                 visit.Rol = "Rol";
                 visit.Edit = false;
+                //Campo usado en el front para saber de las visitas de tellus cual es la seleccionada(radio button)
+                //para enlazar con la del sistema
                 visit.Difference = false;
 
                 /*** Working with visit details ***/
@@ -353,10 +340,14 @@ namespace AbaBackend.Controllers
         List<VisitToMatch> tellusSessionsOne = new List<VisitToMatch>();
         //YBCH: Aca la lista de los datos del sistema local a incluir en el resultado final 
         List<VisitToMatch> localSessionsOne = new List<VisitToMatch>();
+        //Local sessions out of tellus
+        List<VisitToMatch> outOfTellusList = new List<VisitToMatch>();
+        //Tellus sessions out of local system
+        List<VisitToMatch> justInTellusList = new List<VisitToMatch>();
         foreach ( var i in localSessions )
         {
           //Lista temporal para almacenar las visitas de un mismo dia para el mismo ninno y el mismo provider
-          var tellusToMatch = tellusSessions.FindAll( x => ( x.MedicaidId == i.MedicaidId ) 
+          var tellusToMatch = tellusSessions.FindAll( x => ( x.MedicaidId == i.MedicaidId )
                                                     && ( x.Mpi == i.Mpi )/* && ( x.SessionStart == i.SessionStart )*/ );
           //Visitas de tellus del mismo dia que i(visita actual)
           List<VisitToMatch> sessionsPerDay = new List<VisitToMatch>();
@@ -395,13 +386,69 @@ namespace AbaBackend.Controllers
                 localSessionsOne.Add( i );
               }
               tellusSessionsOne.AddRange( sessionsPerDay );
+
+              /**Visita duplicada a mano para probar***/
+              /*foreach ( var item in sessionsPerDay )
+              {
+                DateTime lolo;
+                DateTime lolol1;
+                if ( DateTime.TryParseExact( item.SessionStart, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out lolo ) )
+                {
+                  lolo = lolo.Add( new TimeSpan( 1, 0, 0 ) );
+                }
+                if ( DateTime.TryParseExact( item.SessionEnd, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out lolol1 ) )
+                {
+                  lolol1 = lolol1.Add( new TimeSpan( 1, 0, 0 ) );
+                }
+                var tempTellus = new VisitToMatch
+                {
+                  SessionId = item.SessionId,
+                  UserId = item.UserId,
+                  ClientId = item.ClientId,
+                  ClientFullname = item.ClientFullname,
+                  Code = item.Code,
+                  SessionStart = lolo.ToString( "u" ),
+                  SessionEnd = lolol1.ToString( "u" ),
+                  TotalUnits = item.TotalUnits,
+                  SessionType = item.SessionType,
+                  SessionStatus = item.SessionStatus,
+                  SessionStatusCode = item.SessionStatusCode,
+                  SessionStatusColor = item.SessionStatusColor,
+                  Pos = item.Pos,
+                  PosCode = item.PosCode,
+                  UserFullname = item.UserFullname,
+                  Rol = item.Rol,
+                  Edit = item.Edit,
+                  Difference = item.Difference,
+                  MedicaidId = item.MedicaidId,
+                  Mpi = item.Mpi
+                };
+                tellusSessionsOne.Add( tempTellus );
+              }*/
+              /***/
             }
           }
+          else
+          {
+            outOfTellusList.Add( i );
+          }
 
+        }
+        foreach ( var i in tellusSessions )
+        {
+          var localToMatch = localSessions.FindAll( x => ( x.MedicaidId == i.MedicaidId ) && ( x.Mpi == i.Mpi )
+                                                    && ( x.SessionStart.Remove( x.SessionStart.Length - 10, 10 )
+                                                    == i.SessionStart.Remove( i.SessionStart.Length - 10, 10 ) ) );
+          if ( !localToMatch.Any() )
+          {
+            justInTellusList.Add( i );
+          }
         }
         /*** ***/
         gotten_visits.Add( "system_visits", ( localSessionsOne ) );
         gotten_visits.Add( "tellus_visits", ( tellusSessionsOne ) );
+        gotten_visits.Add( "out_tellus", ( outOfTellusList ) );
+        gotten_visits.Add( "just_tellus", ( justInTellusList ) );
         return Ok( gotten_visits );
       }
       catch ( System.Exception e )
@@ -411,13 +458,9 @@ namespace AbaBackend.Controllers
     }
 
     public async Task<List<VisitToMatch>> GetSessionsByDate( DateTime from, DateTime to )
-    ///public async Task<List<VisitToMatch>> GetSessionsByDate( string from, string to )
     {
       try
       {
-        /*var fromDate = Convert.ToDateTime( from ).Date;
-        var toDate = ( to != null ) ? Convert.ToDateTime( to ).Date : fromDate;*/
-
         var sessions = await _dbContext.Sessions
             .AsNoTracking()
             ///.Where( w => w.SessionStart.Date >= fromDate && w.SessionStart.Date <= toDate )
