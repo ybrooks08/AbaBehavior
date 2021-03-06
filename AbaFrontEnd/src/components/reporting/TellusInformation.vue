@@ -200,6 +200,7 @@
                       </tr>
                       <tr>
                         <!--System -->
+                        <th class="text-xs-left py-0 px-1">Matched</th>
                         <th class="text-xs-left py-0 px-1">User</th>
                         <th class="text-xs-left py-0 px-1">Client/Code</th>
                         <th class="text-xs-left py-0 px-1">Date</th>
@@ -213,6 +214,10 @@
                     <tbody>
                       <tr v-for="(r, indexOut) in outOfTellus" :key="('sysOut'+indexOut)">
                         <!--System -->
+                        <td>
+                          <!-- <v-chip v-if="r.matched" dark label :color='green'>Matched</v-chip> -->
+                          <v-chip label :color="r.matched ? 'green' : 'red'" text-color="white">{{r.matched ? "Matched" : "Not matched"}}</v-chip>
+                        </td>
                         <td class="px-1 text-truncate">
                           <strong>{{ r.userFullname }}</strong>                  
                         </td>
@@ -515,6 +520,7 @@ export default {
             e.clientFullname = e.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
             e.userFullname = e.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
             this.tellusData.push(e);
+            console.info(e);
           });
         }
         
@@ -576,7 +582,7 @@ export default {
               start: s1,
               end: s2
             };
-            await sessionServicesApi.editSessionTime(data);
+            await sessionServicesApi.matchingSessionTellus(data);
             this.removeElement(this.systemData[index], this.systemData);
           }
         }

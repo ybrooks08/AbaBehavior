@@ -286,6 +286,7 @@ namespace AbaBackend.Controllers
                 var visit_details = _tellusManager.GetVisitDetails( access_token, visitId );
                 visit.MedicaidId = visit_details["recipients"][0]["medicaidId"].ToString();
                 visit.Mpi = v["user"]["medicaidId"].ToString();
+                visit.Matched = false;
 
                 // AGF: adiciono los recipients que vienen en la visita al listado de visitas
                 /*foreach ( var recipient in visit_details["recipients"].OfType<JObject>() )
@@ -347,8 +348,9 @@ namespace AbaBackend.Controllers
         foreach ( var i in localSessions )
         {
           //Lista temporal para almacenar las visitas de un mismo dia para el mismo ninno y el mismo provider
-          var tellusToMatch = tellusSessions.FindAll( x => ( x.MedicaidId == i.MedicaidId )
-                                                    && ( x.Mpi == i.Mpi )/* && ( x.SessionStart == i.SessionStart )*/ );
+          var tellusToMatch = tellusSessions.FindAll( x => ( x.MedicaidId == i.MedicaidId ) && ( x.Mpi == i.Mpi ) 
+                                                      && ( x.SessionStart.Remove( x.SessionStart.Length - 10, 10 )
+                                                      == i.SessionStart.Remove( i.SessionStart.Length - 10, 10 ) ) );
           //Visitas de tellus del mismo dia que i(visita actual)
           List<VisitToMatch> sessionsPerDay = new List<VisitToMatch>();
           if ( tellusToMatch.Any() )
@@ -492,7 +494,8 @@ namespace AbaBackend.Controllers
               Edit = false,
               Difference = false,
               MedicaidId = s.Client.MemberNo,
-              Mpi = s.User.Mpi
+              Mpi = s.User.Mpi,
+              Matched = s.Matched
             } )
             .OrderBy( o => o.SessionStart )
             .ToListAsync();

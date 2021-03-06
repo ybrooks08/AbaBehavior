@@ -1191,6 +1191,33 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpPut( "[action]" )]
+    public async Task<IActionResult> MatchingSessionTellus( [FromBody] MatchingSessionTellus s )
+    {
+      try
+      {
+        var session = await _dbContext.Sessions.FirstOrDefaultAsync( w => w.SessionId == s.SessionId );
+        if ( session == null )
+          throw new Exception( "Session not found" );
+
+        session.SessionStart = s.Start.ToUniversalTime();
+        session.SessionEnd = s.End.ToUniversalTime();
+        session.Matched = true;
+        var diff = session.SessionEnd - session.SessionStart;
+        var units = diff.TotalMinutes / 15;
+        var sum1Unit = ( units % 1 ) > 0.5 ? 1 : 0;
+        var unitsTruncate = Decimal.Truncate( (decimal) units ) + sum1Unit;
+        session.TotalUnits = (int) unitsTruncate;
+        await _dbContext.SaveChangesAsync();
+        await _utils.NewEntryLog( session.SessionId, "Time", "Session time edited", "fa-clock", "orange" );
+        return Ok();
+      }
+      catch ( Exception e )
+      {
+        return BadRequest( e.InnerException?.Message ?? e.Message );
+      }
+    }
+
     [HttpPut("[action]")]
     public async Task<IActionResult> EditSessionPos([FromBody] ClassIdInt s)
     {

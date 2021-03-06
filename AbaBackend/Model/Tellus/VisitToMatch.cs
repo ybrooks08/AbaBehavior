@@ -1,5 +1,4 @@
 ﻿
-using AbaBackend.DataModel;
 
 namespace AbaBackend.Model.Tellus
 {
@@ -29,5 +28,6 @@ public class VisitToMatch
     public string MedicaidId { get; set; }
     //Provider medicaid or provider id
     public string Mpi { get; set; }
+    public bool Matched { get; set; }
   }
 }
