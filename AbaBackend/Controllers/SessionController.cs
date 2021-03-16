@@ -1199,9 +1199,14 @@ namespace AbaBackend.Controllers
         var session = await _dbContext.Sessions.FirstOrDefaultAsync( w => w.SessionId == s.SessionId );
         if ( session == null )
           throw new Exception( "Session not found" );
-
-        session.SessionStart = s.Start.ToUniversalTime();
-        session.SessionEnd = s.End.ToUniversalTime();
+        bool timeChanged = false;
+        DateTime dt = DateTime.ParseExact( "01/01/0001 0:00:00", "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture );
+        if ( s.Start != dt && s.End != dt )
+        {
+          session.SessionStart = s.Start.ToUniversalTime();
+          session.SessionEnd = s.End.ToUniversalTime();
+          timeChanged = true;
+        }
         session.Matched = true;
         var diff = session.SessionEnd - session.SessionStart;
         var units = diff.TotalMinutes / 15;
@@ -1209,7 +1214,14 @@ namespace AbaBackend.Controllers
         var unitsTruncate = Decimal.Truncate( (decimal) units ) + sum1Unit;
         session.TotalUnits = (int) unitsTruncate;
         await _dbContext.SaveChangesAsync();
-        await _utils.NewEntryLog( session.SessionId, "Time", "Session time edited", "fa-clock", "orange" );
+        if ( timeChanged )
+        {
+          await _utils.NewEntryLog( session.SessionId, "Time", "Session time edited and marked as matched", "fa-clock", "orange" );
+        }
+        else
+        {
+          await _utils.NewEntryLog( session.SessionId, "Time", "Session marked as matched", "fa-clock", "orange" );
+        }
         return Ok();
       }
       catch ( Exception e )

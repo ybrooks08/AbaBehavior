@@ -172,7 +172,8 @@
                         </td>
                         <td class="text-xs-center px-0">
                           <v-tooltip top>
-                            <v-btn slot="activator" icon class="mx-0" @click="removeElement(systemData[indexOne], systemData)">
+                            <!-- <v-btn slot="activator" icon class="mx-0" @click="removeElement(systemData[indexOne], systemData)"> -->
+                            <v-btn slot="activator" icon class="mx-0" @click="dismissAndMacth(indexOne, systemData)">
                               <v-icon color="error" small>fa-times-circle</v-icon>
                             </v-btn>
                             <span>Dismiss</span>
@@ -207,7 +208,8 @@
                         <th class="text-xs-left py-0 px-1">Start / End</th>
                         <th class="text-xs-left py-0 px-1">Type</th>
                         <th class="text-xs-left py-0 px-1">Pos</th>
-                        <th class="text-xs-left py-0 px-1">Units</th> 
+                        <th class="text-xs-left py-0 px-1">Units</th>
+                        <th class="text-xs-left py-0 px-1">Select All <br/><input type="checkbox" @click="selectAll" v-model="allSelected" title="Select all to mark as matched"></th> 
                         <th class="text-xs-left py-0 px-1"></th> 
                       </tr>            
                     </thead>
@@ -264,6 +266,15 @@
                           <input type="text" v-model="r.totalUnits" v-show="r.edit">
                           {{ (r.totalUnits / 4).toLocaleString() }}
                         </td>
+                        <td class="px-1"><input type="checkbox" v-model="selectedIndexs" :value="indexOut" :disabled="(r.matched)" title="Marking as matched" @change="check(indexOut)"></td>
+                        <td class="text-xs-center px-0">
+                          <v-tooltip top  v-if="!r.matched">
+                            <v-btn slot="activator" icon class="mx-0" @click="markAsMatched(indexOut, outOfTellus)">
+                              <v-icon color="green" small>fa-check</v-icon>
+                            </v-btn>
+                            <span>Mark as matched</span>
+                          </v-tooltip>
+                        </td> 
                         <td class="text-xs-center px-0">
                           <v-tooltip top>
                             <v-btn slot="activator" icon class="mx-0" @click="deleteSession(r.sessionId, indexOut)">
@@ -280,7 +291,7 @@
                             </v-btn>
                             <span>Dismiss</span>
                           </v-tooltip>
-                        </td>                       
+                        </td>                  
                         <!-- <td class="hidden-sm-and-down px-1">
                             <button v-on:click="removeElement(outOfTellus[indexOut], outOfTellus)">Dismiss</button>                    
                         </td>                 -->
@@ -412,7 +423,10 @@ export default {
       justTellus: [],
       dataBySession: [],
       //processState: 0,
-      changed: false
+      changed: false,
+      allSelected: false,
+      selectedIndexs: [],
+      markingMatched: false,
     };
   },
 
@@ -463,11 +477,46 @@ export default {
     },
     updateItemHour () {
       this.changed = true;
+      if (this.markingMatched) {
+        this.markingMatched = false;
+      }
     },
     updateRadioValue(row){
       this.changed = true;
       var objIndex = this.tellusData.findIndex((obj => obj.sessionId == row.sessionId));
       this.tellusData[objIndex].difference = true;
+      if (this.markingMatched) {
+        this.markingMatched = false;
+      }
+    },
+
+    selectAll: function() {      
+        this.selectedIndexs = [];
+
+        if (!this.allSelected) {            
+          if (this.outOfTellus.length != 0) {
+            for (let index = 0; index < this.outOfTellus.length; index++) {
+                if (!this.outOfTellus[index].matched) {
+                  this.selectedIndexs.push(index);
+                }
+            }
+            /*this.outOfTellus.forEach((e) => {
+              this.selectedIndexs.push(e.sessionId);
+            });*/
+          }
+          this.changed = true;
+          this.markingMatched = true;
+        }
+    },
+
+    check(index){
+      this.selectedIndexs.push(index);
+      if (!this.markingMatched) {
+        this.markingMatched = true;
+      }
+      if (!this.changed) {
+         this.changed = true;
+      }
     },
 
     async loadUsers() {
@@ -490,6 +539,7 @@ export default {
         this.tellusData = [];
         this.outOfTellus = [];
         this.justTellus = [];
+        this.markingMatched = false;
         let gottenData = await tellusApi.GetTellusStepOne(this.datePickerModel.start, this.datePickerModel.end/*, this.user, this.pass*/);
         let systemData = gottenData["system_visits"];
         let tellusData = gottenData["tellus_visits"];
@@ -520,7 +570,6 @@ export default {
             e.clientFullname = e.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
             e.userFullname = e.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
             this.tellusData.push(e);
-            console.info(e);
           });
         }
         
@@ -546,65 +595,97 @@ export default {
         this.loading = false;
       }
     },
-
+    async markingAsMachedAux(){
+      this.selectedIndexs.forEach(async (e) => {
+        let data = {
+        sessionId: this.outOfTellus[e].sessionId
+        };
+        await sessionServicesApi.matchingSessionTellus(data);
+        this.outOfTellus[e].matched = true;
+      });
+      return true;
+    },
     async saveData() {      
       this.loading = true;
       try {
-        //Visits to update
-        for (let index = 0; index < this.systemData.length; index++) {
-          let s1 = null;
-          let s2 = null;
-          let haschanged = false;
-          if(this.systemData[index].edit){
-              s1 = this.$moment(this.systemData[index].sessionStart).local();
-              s2 = this.$moment(this.systemData[index].sessionEnd).local();
-              haschanged = true;
-          }
-          else { 
-            for (let ind = 0; ind < this.tellusData.length; ind++) {
-              //Se toma el primero que 
-              //r.medicaidId === k.medicaidId && r.mpi === k.mpi && k.sessionStartDate  === r.sessionStartDate
-              if(this.tellusData[ind].medicaidId === this.systemData[index].medicaidId && this.tellusData[ind].mpi === this.systemData[index].mpi 
-                      && this.tellusData[ind].sessionStartDate === this.systemData[index].sessionStartDate && this.tellusData[ind].difference)
-              {
-                //let s1 = this.$moment(`${this.orgTimeStart.format("MM/DD/YYYY")} ${this.timeStart}`);              
-                //let s2 = this.$moment(`${this.orgTimeEnd.format("MM/DD/YYYY")} ${this.timeEnd}`);
-                s1 = this.tellusData[ind].sessionStart;
-                s2 = this.tellusData[ind].sessionEnd;
+        if(this.markingMatched){
+          this.$confirm("This can't be undone. Do you really want to mark these as matched?").then(async (res) => {
+            if (res) {
+              try {
+                await this.markingAsMachedAux();
+                /*this.markingAsMachedAux().then(() =>{
+                  this.loading = false;
+                  this.$toast.success("Sessions marked as matched.");
+                  
+                }); */
+                                                            
+              } catch (error) {
+                this.$toast.error(error.message || error);
+              }finally {
+                this.loading = false;
+                this.$toast.success("Sessions marked as matched.");
+              }
+            }
+          });
+        }
+        else {
+          //Visits to update
+          for (let index = 0; index < this.systemData.length; index++) {
+            let s1 = null;
+            let s2 = null;
+            let haschanged = false;
+            if(this.systemData[index].edit){
+                s1 = this.$moment(this.systemData[index].sessionStart).local();
+                s2 = this.$moment(this.systemData[index].sessionEnd).local();
                 haschanged = true;
-                break;
-              }         
+            }
+            else { 
+              for (let ind = 0; ind < this.tellusData.length; ind++) {
+                //Se toma el primero que 
+                //r.medicaidId === k.medicaidId && r.mpi === k.mpi && k.sessionStartDate  === r.sessionStartDate
+                if(this.tellusData[ind].medicaidId === this.systemData[index].medicaidId && this.tellusData[ind].mpi === this.systemData[index].mpi 
+                        && this.tellusData[ind].sessionStartDate === this.systemData[index].sessionStartDate && this.tellusData[ind].difference)
+                {
+                  //let s1 = this.$moment(`${this.orgTimeStart.format("MM/DD/YYYY")} ${this.timeStart}`);              
+                  //let s2 = this.$moment(`${this.orgTimeEnd.format("MM/DD/YYYY")} ${this.timeEnd}`);
+                  s1 = this.tellusData[ind].sessionStart;
+                  s2 = this.tellusData[ind].sessionEnd;
+                  haschanged = true;
+                  break;
+                }         
+              }
+            }
+            if (haschanged) {
+              let data = {
+                sessionId: this.systemData[index].sessionId,
+                start: s1,
+                end: s2
+              };
+              await sessionServicesApi.matchingSessionTellus(data);
+              this.removeElement(this.systemData[index], this.systemData);
             }
           }
-          if (haschanged) {
-            let data = {
-              sessionId: this.systemData[index].sessionId,
+          //Visits not present in Tellus
+          for (let index = 0; index < this.outOfTellus.length; index++) {
+            let s1 = null;
+            let s2 = null;
+            if(this.outOfTellus[index].edit){
+              s1 = this.$moment(this.outOfTellus[index].sessionStart).local();
+              s2 = this.$moment(this.outOfTellus[index].sessionEnd).local();
+  
+              let data = {
+              sessionId: this.outOfTellus[index].sessionId,
               start: s1,
               end: s2
-            };
-            await sessionServicesApi.matchingSessionTellus(data);
-            this.removeElement(this.systemData[index], this.systemData);
+              };
+              await sessionServicesApi.matchingSessionTellus(data);
+              this.removeElement(this.outOfTellus[index], this.outOfTellus);
+              this.removeElement(this.outOfTellus[index], this.outOfTellus);
+            }      
           }
+          this.$toast.success("Sessions saved successful.");
+          this.changed = false;
         }
-        //Visits not present in Tellus
-        for (let index = 0; index < this.outOfTellus.length; index++) {
-          let s1 = null;
-          let s2 = null;
-          if(this.outOfTellus[index].edit){
-            s1 = this.$moment(this.outOfTellus[index].sessionStart).local();
-            s2 = this.$moment(this.outOfTellus[index].sessionEnd).local();
-
-            let data = {
-            sessionId: this.outOfTellus[index].sessionId,
-            start: s1,
-            end: s2
-            };
-            await sessionServicesApi.editSessionTime(data);
-            this.removeElement(this.outOfTellus[index], this.outOfTellus);
-          }      
-        }
-        this.$toast.success("Sessions saved successful.");
-        this.changed = false;
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -629,6 +710,39 @@ export default {
           }
         }
       });
+    },
+
+    async markAsMatched( index, array, dismissing = false ) {
+      
+      this.$confirm("This can't be undone. Do you really want to mark this as matched?").then(async (res) => {
+        if (res) {
+          this.loading = true; 
+          try {
+            if (array[index] == null) return;
+            let data = {
+            sessionId: array[index].sessionId
+            };
+            await sessionServicesApi.matchingSessionTellus(data);
+            //this.removeElement(obj, array);
+            //array[obj].$set(array[obj], 'matched', true)
+            array[index].matched = true;
+            if(dismissing){
+              this.removeElement(array[index], array);  
+            }
+            this.$toast.success("Session marked as matched successfully.");
+            return true;
+          } catch (error) {
+            this.$toast.error(error.message || error);
+            return false;
+          }finally {
+            this.loading = false;
+          }
+        }
+      });
+    },
+
+    async dismissAndMacth(index, array){      
+      this.markAsMatched(index, array, true); 
     },
 
     print() {

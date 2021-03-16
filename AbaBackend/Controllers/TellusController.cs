@@ -159,9 +159,11 @@ namespace AbaBackend.Controllers
         DateTime tempDateTo = DateTime.ParseExact( to, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture );
         tempDateTo = tempDateTo.Add( new TimeSpan( 23, 59, 59 ) );
         to = tempDateTo.ToString( "yyyy-MM-ddTHH:mm:ss" );
-
+        
         var customFrom = ConvertDateToUTCSumFiveHours( from );
-        var customTo = TimeZoneInfo.ConvertTimeToUtc( tempDateTo ).ToString( "yyyy-MM-ddTHH:mm:ss.000Z" );
+        //var customTo = TimeZoneInfo.ConvertTimeToUtc( tempDateTo ).ToString( "yyyy-MM-ddTHH:mm:ss.000Z" );
+        var customTo = tempDateTo.Add( new TimeSpan( 5, 0, 0 ) ).ToString( "yyyy-MM-ddTHH:mm:ss.000Z" );
+        //return BadRequest( "customTo " + customTo.ToString() + "customFrom " + customFrom.ToString() );
         var credentials = await _dbContext.TellusCredentials.AsNoTracking().FirstOrDefaultAsync();
         var auth = await _tellusManager.AuthTellus( credentials );
 
@@ -369,12 +371,13 @@ namespace AbaBackend.Controllers
               string tellusHourEnd = i.SessionEnd.Substring( 11, i.SessionEnd.Length - 15 );
               string localHourEnd = match.SessionEnd.Substring( 11, match.SessionEnd.Length - 15 );
 
-              if ( tellusDateStart == localDateStart && tellusDateEnd == localDateEnd
-                && tellusHourStart == localHourStart && tellusHourEnd == localHourEnd )
+              if ( (tellusDateStart == localDateStart && tellusDateEnd == localDateEnd
+                && tellusHourStart == localHourStart && tellusHourEnd == localHourEnd) || 
+                ( tellusDateStart == localDateStart && i.Matched ) )
               {
                 matchDone = true;
                 break;
-              }
+              }              
               else if ( tellusDateStart == localDateStart )
               {
                 sessionsPerDay.Add( match );
