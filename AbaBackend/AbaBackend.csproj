@@ -4,6 +4,10 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Migrations\20210305222107_AddingSessionMatchingField.cs" />
+    <Compile Remove="Migrations\20210305222107_AddingSessionMatchingField.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>

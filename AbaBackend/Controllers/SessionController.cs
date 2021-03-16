@@ -1191,6 +1191,45 @@ namespace AbaBackend.Controllers
       }
     }
 
+    [HttpPut( "[action]" )]
+    public async Task<IActionResult> MatchingSessionTellus( [FromBody] MatchingSessionTellus s )
+    {
+      try
+      {
+        var session = await _dbContext.Sessions.FirstOrDefaultAsync( w => w.SessionId == s.SessionId );
+        if ( session == null )
+          throw new Exception( "Session not found" );
+        bool timeChanged = false;
+        DateTime dt = DateTime.ParseExact( "01/01/0001 0:00:00", "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture );
+        if ( s.Start != dt && s.End != dt )
+        {
+          session.SessionStart = s.Start.ToUniversalTime();
+          session.SessionEnd = s.End.ToUniversalTime();
+          timeChanged = true;
+        }
+        session.Matched = true;
+        var diff = session.SessionEnd - session.SessionStart;
+        var units = diff.TotalMinutes / 15;
+        var sum1Unit = ( units % 1 ) > 0.5 ? 1 : 0;
+        var unitsTruncate = Decimal.Truncate( (decimal) units ) + sum1Unit;
+        session.TotalUnits = (int) unitsTruncate;
+        await _dbContext.SaveChangesAsync();
+        if ( timeChanged )
+        {
+          await _utils.NewEntryLog( session.SessionId, "Time", "Session time edited and marked as matched", "fa-clock", "orange" );
+        }
+        else
+        {
+          await _utils.NewEntryLog( session.SessionId, "Time", "Session marked as matched", "fa-clock", "orange" );
+        }
+        return Ok();
+      }
+      catch ( Exception e )
+      {
+        return BadRequest( e.InnerException?.Message ?? e.Message );
+      }
+    }
+
     [HttpPut("[action]")]
     public async Task<IActionResult> EditSessionPos([FromBody] ClassIdInt s)
     {

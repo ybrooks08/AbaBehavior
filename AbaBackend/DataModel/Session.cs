@@ -82,7 +82,10 @@ namespace AbaBackend.DataModel
     public int? SessionAnalystId { get; set; }
     [ForeignKey("SessionAnalystId")]
     public User SessionAnalyst { get; set; }
-    
+    /// <summary>
+    /// Tellus matched property
+    /// </summary>
+    public bool Matched { get; set; } = false;
 
   }
 }

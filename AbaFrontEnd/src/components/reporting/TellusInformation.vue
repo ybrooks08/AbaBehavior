@@ -7,197 +7,404 @@
         </v-toolbar>
         <v-progress-linear style="position: absolute;" v-show="loading" :indeterminate="true" class="ma-0"></v-progress-linear>
         <v-card-text class="pa-1">
-          <form-wizard @onNextStep="nextStep" @onPreviousStep="previousStep" ref="wizard" :disabled="loading || !validForm" :loading="loading">
-            <tab-content title="Date Selecting" :selected="true" key="step1" id="step1">
-                <v-form ref="form" autocomplete="off" v-model="validForm">
+          <v-form ref="form" autocomplete="off" v-model="validForm">
             <v-layout row wrap>
               <v-flex xs12>
-                <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel" />
-              </v-flex>
-              <v-flex md12>                
+                <br/>
+                <date-picker-menu :isLarge="true" :isDark="false" :btnColor="'primary'" :disabled="loading" v-model="datePickerModel"/>
               </v-flex>
             </v-layout>
           </v-form>
-            </tab-content>
-            <tab-content title="Visits to Update"> 
-                <p>Matching results among tellus and local sessions</p>
-            </tab-content>
-            <tab-content title="Finishing Up">
-                <p>Done.</p>                  
-            </tab-content>  
-          </form-wizard>
-          
         </v-card-text>
         <v-card-actions>
-          <small class="pl-4 grey--text">* Tellus credentials used are defined in settings section.</small>
+          <small class="pl-4 grey--text">* Tellus credentials used are defined in "Tellus configuration" settings section.</small>
           <v-spacer />
-          <!-- <v-btn :disabled="loading || !validForm" :loading="loading" color="primary" @click="getTellusStepOne">Generate</v-btn> -->
+          <v-btn v-if="!changed" :disabled="loading || !validForm" :loading="loading" color="primary" @click="getTellusStepOne">Search</v-btn>
+          <v-btn v-if="changed" :disabled="!changed || !validForm" :loading="loading" color="primary" @click="saveData">Apply changes</v-btn>
         </v-card-actions>
       </v-card>
     </v-flex>
-    <v-flex xs12 v-if="systemData.length > 0" class="no-print">
-      <v-card>
-        <v-toolbar dense dark class="secondary no-print">
-          <v-toolbar-title>Visits to Update</v-toolbar-title>
-          <!-- <v-spacer />
-          <v-btn dark icon @click="print">
-            <v-icon>fa-print</v-icon>
-          </v-btn> -->
-        </v-toolbar>
-        <v-card-text class="pa-0 print-full-width">
-          <table v-if="systemData.length > 0" class="v-datatable v-table theme--light print-font-small">
-            <thead>
-              <tr>
-                <th class="text-xs-center py-0 px-1" colspan="7" style="border-right: 1px solid rgba(0,0,0,.12);">System Sessions</th>
-                <th class="text-xs-center py-0 px-1" colspan="7">Tellus Sessions</th>
-              </tr>
-              <tr>
-                <!--System -->
-                <th class="text-xs-left py-0 px-1">User</th>
-                <th class="text-xs-left py-0 px-1">Client/Code</th>
-                <th class="text-xs-left py-0 px-1">Date</th>
-                <th class="text-xs-left py-0 px-1">Start / End</th>
-                <th class="text-xs-left py-0 px-1">Type</th>
-                <th class="text-xs-left py-0 px-1">Pos</th>
-                <th class="text-xs-left py-0 px-1" style="border-right: 1px solid rgba(0,0,0,.12);">Units</th> 
-              </tr>            
-            </thead>
-            <tbody>
-              <tr v-for="(r, indexOne) in systemData" :key="('system'+indexOne)">
-                 <!--System -->
-                <td class="px-1 text-truncate">
-                  <strong>{{ r.userFullname }}</strong>                  
-                </td>
-                <td class="px-1 text-truncate">
-                  <strong>{{ r.clientFullname }}</strong>
-                  <br />
-                  {{ r.code }}
-                </td>
-                <td class="px-1">{{ r.sessionStart | moment("MM/DD/YYYY") }}</td>
-                <!-- <td class="px-1">{{ r.sessionStart }}</td> -->
-                <td class="hidden-sm-and-down px-1 text-truncate">
-                  <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                  <!-- {{ r.sessionStart | moment("LT") }} -->
-                  <span v-show = "r.edit !== 'sessionStart'">
-                    <label @dblclick = "r.edit = 'sessionStart'"> {{ r.sessionStart | moment("LT") }}</label>
-                  </span>
-                    <input name="sessionStart" 
-                        v-show = "r.edit == 'sessionStart'" 
-                        v-model = "r.sessionStart" 
-                        v-on:blur= "updateItemHour" 
-                        @keyup.enter = "r.edit=true">
-                  <br />
-                  <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                  <!-- {{ r.sessionEnd | moment("LT") }} -->
-                  <span v-show = "r.edit !== 'sessionEnd'">
-                    <label @dblclick = "r.edit = 'sessionEnd'"> {{ r.sessionEnd | moment("LT") }}</label>
-                  </span>
-                    <input name="sessionEnd" 
-                        v-show = "r.edit == 'sessionEnd'" 
-                        v-model = "r.sessionEnd" 
-                        v-on:blur= "updateItemHour" 
-                        @keyup.enter = "r.edit=true">
-                </td>
-                <td class="hidden-sm-and-down px-1">{{ r.sessionType }}</td>
-                <td class="hidden-sm-and-down px-1">{{ r.pos }}</td>
-                <td class="px-1" style="border-right: 1px solid rgba(0,0,0,.12);">
-                  <strong>
-                    <v-icon small>fa-star</v-icon>
-                    {{ r.totalUnits.toLocaleString() }}
-                  </strong>
-                  <br />
-                  <v-icon small>fa-clock</v-icon>
-                  <span v-show="!r.edit">{{(r.totalUnits / 4).toLocaleString()}}</span>
-                  <input type="text" v-model="r.totalUnits" v-show="r.edit">
-                  {{ (r.totalUnits / 4).toLocaleString() }}
-                </td>
-                <!--Tellus -->
-                <td class="px-4" style="padding: 0!important;margin: 0!important;">
-                    <table v-if="tellusData.length > 0" class="v-datatable v-table theme--light print-font-small">
-                        <!-- <thead>              
-                          <tr>                           
-                            <th class="text-xs-left py-0 px-1">User</th>
-                            <th class="text-xs-left py-0 px-1">Client/Code</th>
-                            <th class="text-xs-left py-0 px-1">Date</th>
-                            <th class="text-xs-left py-0 px-1">Start / End</th>
-                            <th class="text-xs-left py-0 px-1">Type</th>
-                            <th class="text-xs-left py-0 px-1">Pos</th>
-                            <th class="text-xs-left py-0 px-1">Units</th>                               
-                            <th class="text-xs-left py-0 px-1">Edit</th>                               
-                          </tr>            
-                        </thead> -->
-                        <tbody>
-                          <tr v-for="(k, index) in tellusData" :key="('tellus'+index)">
-                            <div id="div-td" v-if="r.clientFullname === k.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') && r.userFullname === k.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')">
-                              <td class="px-4 text-truncate">
-                                <strong>{{ k.userFullname }}</strong>                  
-                              </td>
-                              <td class="px-4 text-truncate">
-                                <strong>{{ k.clientFullname }}</strong>
-                                <!-- <br />
-                                {{ k.code }} -->
-                              </td>
-                              <td>{{ k.sessionStart | moment("MM/DD/YYYY") }}</td>
-                              <!-- <td>{{ k.sessionStart }}</td> -->
-                              <td>
-                                <v-icon color="green" small>fa-sign-in-alt</v-icon>
-                                <!-- <span v-show="r.sessionStart.seconds(0).milliseconds(0).toISOString()==k.sessionStart.seconds(0).milliseconds(0).toISOString()">{{ k.sessionStart | moment("LT") }}</span>
-                                <span v-show="r.sessionStart.seconds(0).milliseconds(0).toISOString()!=k.sessionStart.seconds(0).milliseconds(0).toISOString()" style="color: red;">{{ k.sessionStart | moment("LT") }}</span> -->
-                                {{ k.sessionStart | moment("LT") }}
-                                <br />
-                                <v-icon color="red" small>fa-sign-out-alt</v-icon>
-                                {{ k.sessionEnd | moment("LT") }}
-                              </td>
-                              <td>{{ k.sessionType }}</td>
-                              <!-- <td>{{ k.pos }}</td> -->
-                              <!-- <td>
-                                <strong>
-                                  <v-icon small>fa-star</v-icon>
-                                  {{ k.totalUnits.toLocaleString() }}
-                                </strong>
-                                <br />
-                                <v-icon small>fa-clock</v-icon>
-                                {{ (k.totalUnits / 4).toLocaleString() }}
-                              </td> -->
-                              <td>
-                                <input
-                                      :id="`id-${index}`"
-                                      class="form-check-input"
-                                      type="radio"
-                                      :name="`tellusData[${index}][clientFullname]`"
-                                      v-if="r.clientFullname === k.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') && r.userFullname === k.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')"
-                                      value=""                                      
-                                  >
-
-                                  <label
-                                      :for="`id-${index}`"
-                                      class="form-check-label"
-                                  ></label>                              
-                              </td>                                            
-                            </div>
-                          </tr>
-                        </tbody>
-                    </table>                
-                </td>
-                <td class="hidden-sm-and-down px-1">
-                    <button v-on:click="removeElement(systemData[indexOne])">Remove</button>                    
-               </td>                
-              </tr>
-            </tbody>            
-          </table>
-        </v-card-text>
-      </v-card>
+    <v-flex xs12 v-if="systemData.length > 0  || outOfTellus.length > 0 || justTellus.length > 0" class="no-print">
+      <v-card no-body>
+          <v-tabs card>
+            <v-tab>Visits to Update</v-tab>
+            <v-tab>Visits not present in Tellus</v-tab>
+            <v-tab>Visits only present in Tellus</v-tab>
+            <v-tab-item>
+              <v-card>
+                <v-toolbar dense dark class="secondary no-print">
+                  <v-toolbar-title>Visits to Update</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text class="pa-0 print-full-width">
+                  <table v-if="systemData.length > 0" class="v-datatable v-table theme--light print-font-small">
+                    <thead>
+                      <tr>
+                        <th class="text-xs-center py-0 px-1" colspan="7" style="border-right: 1px solid rgba(0,0,0,.12);">System Sessions</th>
+                        <th class="text-xs-center py-0 px-1" colspan="7">Tellus Sessions</th>
+                      </tr>
+                      <tr>
+                        <!--System -->
+                        <th class="text-xs-left py-0 px-1">User</th>
+                        <th class="text-xs-left py-0 px-1">Client/Code</th>
+                        <th class="text-xs-left py-0 px-1">Date</th>
+                        <th class="text-xs-left py-0 px-1">Start / End</th>
+                        <th class="text-xs-left py-0 px-1">Type</th>
+                        <th class="text-xs-left py-0 px-1">Pos</th>
+                        <th class="text-xs-left py-0 px-1" style="border-right: 1px solid rgba(0,0,0,.12);">Units</th> 
+                      </tr>            
+                    </thead>
+                    <tbody>
+                      <tr v-for="(r, indexOne) in systemData" :key="('system'+indexOne)">
+                        <!--System -->
+                        <td class="px-1 text-truncate">
+                          <strong>{{ r.userFullname }}</strong>                  
+                        </td>
+                        <td class="px-1 text-truncate">
+                          <strong>{{ r.clientFullname }}</strong>
+                          <br />
+                          {{ r.code }}
+                        </td>
+                        <td class="px-1">{{ r.sessionStart | moment("MM/DD/YYYY") }}</td>
+                        <!-- <td class="px-1">{{ r.sessionStart }}</td> -->
+                        <td class="hidden-sm-and-down px-1 text-truncate">
+                          <v-icon color="green" small>fa-sign-in-alt</v-icon>
+                          <!-- {{ r.sessionStart | moment("LT") }} -->
+                          <span v-show = "r.edit !== 'sessionStart'">
+                            <label @dblclick = "r.edit = 'sessionStart'"> {{ r.sessionStart | moment("LT") }}</label>
+                          </span>
+                            <input name="sessionStart" 
+                                v-show = "r.edit == 'sessionStart'" 
+                                v-model = "r.sessionStart" 
+                                v-on:blur= "updateItemHour" 
+                                @keyup.enter = "r.edit=true">
+                          <br />
+                          <v-icon color="red" small>fa-sign-out-alt</v-icon>
+                          <!-- {{ r.sessionEnd | moment("LT") }} -->
+                          <span v-show = "r.edit !== 'sessionEnd'">
+                            <label @dblclick = "r.edit = 'sessionEnd'"> {{ r.sessionEnd | moment("LT") }}</label>
+                          </span>
+                            <input name="sessionEnd" 
+                                v-show = "r.edit == 'sessionEnd'" 
+                                v-model = "r.sessionEnd" 
+                                v-on:blur= "updateItemHour" 
+                                @keyup.enter = "r.edit=true">
+                        </td>
+                        <td class="hidden-sm-and-down px-1">{{ r.sessionType }}</td>
+                        <td class="hidden-sm-and-down px-1">{{ r.pos }}</td>
+                        <td class="px-1" style="border-right: 1px solid rgba(0,0,0,.12);">
+                          <strong>
+                            <v-icon small>fa-star</v-icon>
+                            {{ r.totalUnits.toLocaleString() }}
+                          </strong>
+                          <br />
+                          <v-icon small>fa-clock</v-icon>
+                          <span v-show="!r.edit">{{(r.totalUnits / 4).toLocaleString()}}</span>
+                          <input type="text" v-model="r.totalUnits" v-show="r.edit">
+                          {{ (r.totalUnits / 4).toLocaleString() }}
+                        </td>
+                        <!--Tellus -->
+                        <td class="px-4" style="padding: 0!important;margin: 0!important;">
+                            <table v-if="tellusData.length > 0" class="v-datatable v-table theme--light print-font-small">
+                                <!-- <thead>              
+                                  <tr>                           
+                                    <th class="text-xs-left py-0 px-1">User</th>
+                                    <th class="text-xs-left py-0 px-1">Client/Code</th>
+                                    <th class="text-xs-left py-0 px-1">Date</th>
+                                    <th class="text-xs-left py-0 px-1">Start / End</th>
+                                    <th class="text-xs-left py-0 px-1">Type</th>
+                                    <th class="text-xs-left py-0 px-1">Pos</th>
+                                    <th class="text-xs-left py-0 px-1">Units</th>                               
+                                    <th class="text-xs-left py-0 px-1">Edit</th>                               
+                                  </tr>            
+                                </thead> -->
+                                <tbody>
+                                  <tr v-for="(k, index) in tellusData" :key="('tellus'+index)">
+                                    <!-- <div id="div-td" v-if="r.clientFullname === k.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') && r.userFullname === k.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')"> -->
+                                    <div id="div-td" v-if="r.medicaidId === k.medicaidId && r.mpi === k.mpi && k.sessionStartDate  === r.sessionStartDate/* && r.userFullname.includes(k.userFullname)*/">
+                                      <td class="px-4 text-truncate">
+                                        <strong>{{ k.userFullname }}</strong>                  
+                                      </td>
+                                      <td class="px-4 text-truncate">
+                                        <strong>{{ k.clientFullname }}</strong>
+                                        <!-- <br />
+                                        {{ k.code }} -->
+                                      </td>
+                                      <td>{{ k.sessionStart | moment("MM/DD/YYYY") }}</td>
+                                      <!-- <td>{{ k.sessionStart }}</td> -->
+                                      <td>
+                                        <v-icon color="green" small>fa-sign-in-alt</v-icon>
+                                        <!-- <span v-show="r.sessionStart.seconds(0).milliseconds(0).toISOString()==k.sessionStart.seconds(0).milliseconds(0).toISOString()">{{ k.sessionStart | moment("LT") }}</span>
+                                        <span v-show="r.sessionStart.seconds(0).milliseconds(0).toISOString()!=k.sessionStart.seconds(0).milliseconds(0).toISOString()" style="color: red;">{{ k.sessionStart | moment("LT") }}</span> -->
+                                        {{ k.sessionStart | moment("LT") }}
+                                        <br />
+                                        <v-icon color="red" small>fa-sign-out-alt</v-icon>
+                                        {{ k.sessionEnd | moment("LT") }}
+                                      </td>
+                                      <td>{{ k.sessionType }}</td>
+                                      <!-- <td>{{ k.pos }}</td> -->
+                                      <!-- <td>
+                                        <strong>
+                                          <v-icon small>fa-star</v-icon>
+                                          {{ k.totalUnits.toLocaleString() }}
+                                        </strong>
+                                        <br />
+                                        <v-icon small>fa-clock</v-icon>
+                                        {{ (k.totalUnits / 4).toLocaleString() }}
+                                      </td> -->
+                                      <td>
+                                        <br/>
+                                        <input
+                                          :id="`id-${index}`"
+                                          :name="k.medicaidId"
+                                          type="radio"
+                                          :value="k.sessionId"                                  
+                                          @change="updateRadioValue(k)"
+                                        />
+                                        <!-- <label
+                                              :for="`id-${index}`"
+                                              class="form-check-label"
+                                          ></label>                               -->
+                                      </td>                                            
+                                    </div>
+                                  </tr>
+                                </tbody>
+                            </table>                
+                        </td>
+                        <td class="text-xs-center px-0">
+                          <v-tooltip top>
+                            <!-- <v-btn slot="activator" icon class="mx-0" @click="removeElement(systemData[indexOne], systemData)"> -->
+                            <v-btn slot="activator" icon class="mx-0" @click="dismissAndMacth(indexOne, systemData)">
+                              <v-icon color="error" small>fa-times-circle</v-icon>
+                            </v-btn>
+                            <span>Dismiss</span>
+                          </v-tooltip>
+                        </td>
+                        <!-- <td class="hidden-sm-and-down px-1">
+                            <button v-on:click="removeElement(systemData[indexOne], systemData)">Dismiss</button>                    
+                      </td>                 -->
+                      </tr>
+                    </tbody>            
+                  </table>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+            <v-tab-item>
+              <v-card>
+                <v-toolbar dense dark class="secondary no-print">
+                  <v-toolbar-title>Visits not present in Tellus</v-toolbar-title>                  
+                </v-toolbar>
+                <v-card-text class="pa-0 print-full-width">
+                  <table v-if="outOfTellus.length > 0" class="v-datatable v-table theme--light print-font-small">
+                    <thead>
+                      <tr>
+                        <th class="text-xs-center py-0 px-1" colspan="7">System Sessions</th>                        
+                      </tr>
+                      <tr>
+                        <!--System -->
+                        <th class="text-xs-left py-0 px-1">Matched</th>
+                        <th class="text-xs-left py-0 px-1">User</th>
+                        <th class="text-xs-left py-0 px-1">Client/Code</th>
+                        <th class="text-xs-left py-0 px-1">Date</th>
+                        <th class="text-xs-left py-0 px-1">Start / End</th>
+                        <th class="text-xs-left py-0 px-1">Type</th>
+                        <th class="text-xs-left py-0 px-1">Pos</th>
+                        <th class="text-xs-left py-0 px-1">Units</th>
+                        <th class="text-xs-left py-0 px-1">Select All <br/><input type="checkbox" @click="selectAll" v-model="allSelected" title="Select all to mark as matched"></th> 
+                        <th class="text-xs-left py-0 px-1"></th> 
+                      </tr>            
+                    </thead>
+                    <tbody>
+                      <tr v-for="(r, indexOut) in outOfTellus" :key="('sysOut'+indexOut)">
+                        <!--System -->
+                        <td>
+                          <!-- <v-chip v-if="r.matched" dark label :color='green'>Matched</v-chip> -->
+                          <v-chip label :color="r.matched ? 'green' : 'red'" text-color="white">{{r.matched ? "Matched" : "Not matched"}}</v-chip>
+                        </td>
+                        <td class="px-1 text-truncate">
+                          <strong>{{ r.userFullname }}</strong>                  
+                        </td>
+                        <td class="px-1 text-truncate">
+                          <strong>{{ r.clientFullname }}</strong>
+                          <br />
+                          {{ r.code }}
+                        </td>
+                        <td class="px-1">{{ r.sessionStart | moment("MM/DD/YYYY") }}</td>
+                        <!-- <td class="px-1">{{ r.sessionStart }}</td> -->
+                        <td class="hidden-sm-and-down px-1 text-truncate">
+                          <v-icon color="green" small>fa-sign-in-alt</v-icon>
+                          <!-- {{ r.sessionStart | moment("LT") }} -->
+                          <span v-show = "r.edit !== 'sessionStart'">
+                            <label @dblclick = "r.edit = 'sessionStart'"> {{ r.sessionStart | moment("LT") }}</label>
+                          </span>
+                            <input name="sessionStart" 
+                                v-show = "r.edit == 'sessionStart'" 
+                                v-model = "r.sessionStart" 
+                                v-on:blur= "updateItemHour" 
+                                @keyup.enter = "r.edit=true">
+                          <br />
+                          <v-icon color="red" small>fa-sign-out-alt</v-icon>
+                          <!-- {{ r.sessionEnd | moment("LT") }} -->
+                          <span v-show = "r.edit !== 'sessionEnd'">
+                            <label @dblclick = "r.edit = 'sessionEnd'"> {{ r.sessionEnd | moment("LT") }}</label>
+                          </span>
+                            <input name="sessionEnd" 
+                                v-show = "r.edit == 'sessionEnd'" 
+                                v-model = "r.sessionEnd" 
+                                v-on:blur= "updateItemHour" 
+                                @keyup.enter = "r.edit=true">
+                        </td>
+                        <td class="hidden-sm-and-down px-1">{{ r.sessionType }}</td>
+                        <td class="hidden-sm-and-down px-1">{{ r.pos }}</td>
+                        <td class="px-1">
+                          <strong>
+                            <v-icon small>fa-star</v-icon>
+                            {{ r.totalUnits.toLocaleString() }}
+                          </strong>
+                          <br />
+                          <v-icon small>fa-clock</v-icon>
+                          <span v-show="!r.edit">{{(r.totalUnits / 4).toLocaleString()}}</span>
+                          <input type="text" v-model="r.totalUnits" v-show="r.edit">
+                          {{ (r.totalUnits / 4).toLocaleString() }}
+                        </td>
+                        <td class="px-1"><input type="checkbox" v-model="selectedIndexs" :value="indexOut" :disabled="(r.matched)" title="Marking as matched" @change="check(indexOut)"></td>
+                        <td class="text-xs-center px-0">
+                          <v-tooltip top  v-if="!r.matched">
+                            <v-btn slot="activator" icon class="mx-0" @click="markAsMatched(indexOut, outOfTellus)">
+                              <v-icon color="green" small>fa-check</v-icon>
+                            </v-btn>
+                            <span>Mark as matched</span>
+                          </v-tooltip>
+                        </td> 
+                        <td class="text-xs-center px-0">
+                          <v-tooltip top>
+                            <v-btn slot="activator" icon class="mx-0" @click="deleteSession(r.sessionId, indexOut)">
+                            <!-- <v-btn slot="activator" icon class="mx-0" @click="deleteSession(r)"> -->
+                              <v-icon color="grey" small>fa-trash</v-icon>
+                            </v-btn>
+                            <span>Delete this visit</span>
+                          </v-tooltip>
+                        </td> 
+                        <td class="text-xs-center px-0">
+                          <v-tooltip top>
+                            <v-btn slot="activator" icon class="mx-0" @click="removeElement(outOfTellus[indexOut], outOfTellus)">
+                              <v-icon color="error" small>fa-times-circle</v-icon>
+                            </v-btn>
+                            <span>Dismiss</span>
+                          </v-tooltip>
+                        </td>                  
+                        <!-- <td class="hidden-sm-and-down px-1">
+                            <button v-on:click="removeElement(outOfTellus[indexOut], outOfTellus)">Dismiss</button>                    
+                        </td>                 -->
+                      </tr>
+                    </tbody>            
+                  </table>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+            <v-tab-item>
+              <v-card>
+                <v-toolbar dense dark class="secondary no-print">
+                  <v-toolbar-title>Visits only present in Tellus</v-toolbar-title>                  
+                </v-toolbar>
+                <v-card-text class="pa-0 print-full-width">
+                  <table v-if="justTellus.length > 0" class="v-datatable v-table theme--light print-font-small">
+                    <thead>
+                      <tr>
+                        <th class="text-xs-center py-0 px-1" colspan="7">Tellus Sessions</th>                        
+                      </tr>
+                      <tr>
+                        <!--System -->
+                        <th class="text-xs-left py-0 px-1">User</th>
+                        <th class="text-xs-left py-0 px-1">Client/Code</th>
+                        <th class="text-xs-left py-0 px-1">Date</th>
+                        <th class="text-xs-left py-0 px-1">Start / End</th>
+                        <th class="text-xs-left py-0 px-1">Type</th>
+                        <th class="text-xs-left py-0 px-1">Pos</th>
+                        <th class="text-xs-left py-0 px-1">Units</th> 
+                        <th class="text-xs-left py-0 px-1"></th> 
+                      </tr>            
+                    </thead>
+                    <tbody>
+                      <tr v-for="(r, indexOut) in justTellus" :key="('tellus'+indexOut)">
+                        <!--System -->
+                        <td class="px-1 text-truncate">
+                          <strong>{{ r.userFullname }}</strong>                  
+                        </td>
+                        <td class="px-1 text-truncate">
+                          <strong>{{ r.clientFullname }}</strong>
+                          <br />
+                          {{ r.code }}
+                        </td>
+                        <td class="px-1">{{ r.sessionStart | moment("MM/DD/YYYY") }}</td>
+                        <!-- <td class="px-1">{{ r.sessionStart }}</td> -->
+                        <td class="hidden-sm-and-down px-1 text-truncate">
+                          <v-icon color="green" small>fa-sign-in-alt</v-icon>
+                          {{ r.sessionStart | moment("LT") }}
+                          <!-- <span v-show = "r.edit !== 'sessionStart'">
+                            <label @dblclick = "r.edit = 'sessionStart'"> {{ r.sessionStart | moment("LT") }}</label>
+                          </span>
+                            <input name="sessionStart" 
+                                v-show = "r.edit == 'sessionStart'" 
+                                v-model = "r.sessionStart" 
+                                v-on:blur= "updateItemHour" 
+                                @keyup.enter = "r.edit=true"> -->
+                          <br />
+                          <v-icon color="red" small>fa-sign-out-alt</v-icon>
+                          {{ r.sessionEnd | moment("LT") }}
+                          <!-- <span v-show = "r.edit !== 'sessionEnd'">
+                            <label @dblclick = "r.edit = 'sessionEnd'"> {{ r.sessionEnd | moment("LT") }}</label>
+                          </span>
+                            <input name="sessionEnd" 
+                                v-show = "r.edit == 'sessionEnd'" 
+                                v-model = "r.sessionEnd" 
+                                v-on:blur= "updateItemHour" 
+                                @keyup.enter = "r.edit=true"> -->
+                        </td>
+                        <td class="hidden-sm-and-down px-1">{{ r.sessionType }}</td>
+                        <td class="hidden-sm-and-down px-1">{{ r.pos }}</td>
+                        <td class="px-1">
+                          <strong>
+                            <v-icon small>fa-star</v-icon>
+                            {{ r.totalUnits.toLocaleString() }}
+                          </strong>
+                          <br />
+                          <v-icon small>fa-clock</v-icon>
+                          <span v-show="!r.edit">{{(r.totalUnits / 4).toLocaleString()}}</span>
+                          <input type="text" v-model="r.totalUnits" v-show="r.edit">
+                          {{ (r.totalUnits / 4).toLocaleString() }}
+                        </td>
+                        <!-- <td class="text-xs-center px-0">
+                          <v-tooltip top>
+                            <v-btn slot="activator" icon class="mx-0" @click="deleteSession(r.sessionId, indexOut)">
+                              <v-icon color="grey" small>fa-trash</v-icon>
+                            </v-btn>
+                            <span>Delete this visit</span>
+                          </v-tooltip>
+                        </td>  -->
+                        <!-- <td class="text-xs-center px-0">
+                          <v-tooltip top>
+                            <v-btn slot="activator" icon class="mx-0" @click="removeElement(justTellus[indexOut], justTellus)">
+                              <v-icon color="error" small>fa-times-circle</v-icon>
+                            </v-btn>
+                            <span>Dismiss</span>
+                          </v-tooltip>
+                        </td>                       -->
+                      </tr>
+                    </tbody>            
+                  </table>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+          </v-tabs>
+        </v-card>
     </v-flex>    
   </v-layout>
 </template>
 
 <script>
 import userApi from "@/services/api/UserServices";
-// import clientApi from '@/services/api/ClientServices';
 import tellusApi from "@/services/api/TellusServices";
 import sessionServicesApi from "@/services/api/SessionServices";
-import {FormWizard, TabContent} from 'vue-step-wizard'
-import 'vue-step-wizard/dist/vue-step-wizard.css'
 
 export default {
   data() {
@@ -212,18 +419,32 @@ export default {
       users: [],
       systemData: [],
       tellusData: [],
+      outOfTellus: [],
+      justTellus: [],
       dataBySession: [],
-      currentStep: 1,
-      userId: null,
-      actualClientName: null,
-      processState: 0
+      //processState: 0,
+      changed: false,
+      allSelected: false,
+      selectedIndexs: [],
+      markingMatched: false,
     };
   },
 
-  components: {
+  watch:{
+    'datePickerModel.start' (val) {      
+      if (val) {
+        this.systemData = [];
+        this.outOfTellus = [];
+        this.justTellus = [];
+        this.changed = false;
+      }
+    }
+  },
+
+  /*components: {
   FormWizard,
   TabContent
-  },
+  },*/
 
   computed: {
     totalUnits() {
@@ -233,37 +454,12 @@ export default {
 
   mounted() {
     this.loadUsers();
-  },
+  },  
 
   methods: {
     dateSelected(range) {
       this.serviceLog.from = range.from;
       this.serviceLog.to = range.to;
-    },
-
-    previousStep: function(){
-        this.currentStep--;
-        alert('previousStep');
-    },
-
-    nextStep: function(){
-      let buttons = document.querySelector(".step-footer");
-      buttons.style.display = "none";
-      switch (this.currentStep) {
-        case 1:
-          this.getTellusStepOne(); 
-          //buttons.style.display = "block";         
-          break;
-        case 2:
-          if(this.processState == 1){
-            this.saveData();
-            //buttons.style.display = "block"; 
-          }          
-          break;
-        default:
-          break;
-      }
-      this.currentStep++;
     },
 
     editPerson: function(person){
@@ -275,20 +471,52 @@ export default {
           Object.assign(person, this._originalPerson);
           person.edit = false;
     },
-    removeElement: function (value) {
-      var index = this.systemData.indexOf(value);
-      this.systemData.splice(index, 1);
+    removeElement: function (value, array) {
+      var index = array.indexOf(value);
+      array.splice(index, 1);
     },
-    updateItemHour (e) {
-      console.info(e.target.value);
-      console.info(this.systemData);
-      /*this.dataBySession = [];
-      this.tellusData.forEach((e) => { 
-        if(e.clientFullname == clientFullname){
-           this.dataBySession.push(e);
-        }       
-      });
-      return this.dataBySession;*/
+    updateItemHour () {
+      this.changed = true;
+      if (this.markingMatched) {
+        this.markingMatched = false;
+      }
+    },
+    updateRadioValue(row){
+      this.changed = true;
+      var objIndex = this.tellusData.findIndex((obj => obj.sessionId == row.sessionId));
+      this.tellusData[objIndex].difference = true;
+      if (this.markingMatched) {
+        this.markingMatched = false;
+      }
+    },
+
+    selectAll: function() {      
+        this.selectedIndexs = [];
+
+        if (!this.allSelected) {            
+          if (this.outOfTellus.length != 0) {
+            for (let index = 0; index < this.outOfTellus.length; index++) {
+                if (!this.outOfTellus[index].matched) {
+                  this.selectedIndexs.push(index);
+                }
+            }
+            /*this.outOfTellus.forEach((e) => {
+              this.selectedIndexs.push(e.sessionId);
+            });*/
+          }
+          this.changed = true;
+          this.markingMatched = true;
+        }
+    },
+
+    check(index){
+      this.selectedIndexs.push(index);
+      if (!this.markingMatched) {
+        this.markingMatched = true;
+      }
+      if (!this.changed) {
+         this.changed = true;
+      }
     },
 
     async loadUsers() {
@@ -309,54 +537,57 @@ export default {
         this.gottenData = [];
         this.systemData = [];
         this.tellusData = [];
+        this.outOfTellus = [];
+        this.justTellus = [];
+        this.markingMatched = false;
         let gottenData = await tellusApi.GetTellusStepOne(this.datePickerModel.start, this.datePickerModel.end/*, this.user, this.pass*/);
         let systemData = gottenData["system_visits"];
         let tellusData = gottenData["tellus_visits"];
-        ///console.info(gottenData["system_visits"]);
-        if (systemData.length == 0) {
+        let outOfTellus = gottenData["out_tellus"];
+        let justTellus = gottenData["just_tellus"];
+        if (systemData.length == 0 && outOfTellus.length == 0 && justTellus.length == 0) {
           this.$toast.info("No data");        
           return;
         }
         //console.info("this.systemData");
-        systemData.forEach((e) => {
-          e.sessionStart = this.$moment(e.sessionStart).local();
-          e.sessionEnd = this.$moment(e.sessionEnd).local();
-          /*tellusData.forEach((o) => {
-          //console.info(e.sessionStart.seconds(0).milliseconds(0).toISOString());
-         
-          
-          if((e.clientFullname === o.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')) && (e.userFullname === o.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))){
-            o.sessionStart = this.$moment(o.sessionStart).local();
-            o.sessionEnd = this.$moment(o.sessionEnd).local();
-            // console.info("iguales y con diferencia de hora");
-            // console.info(e.clientFullname);
-            // console.info(o.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '));
-            // console.info(e.userFullname);
-            // console.info(o.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '));
+        if (systemData.length != 0) {
+          systemData.forEach((e) => {
+            e.sessionStart = this.$moment(e.sessionStart).local();
+            e.sessionStartDate = this.$moment(e.sessionStart).format('MM/DD/YYYY');          
+            e.sessionEnd = this.$moment(e.sessionEnd).local();
+            e.sessionEndDate = this.$moment(e.sessionEnd).format('MM/DD/YYYY');
+            this.systemData.push(e);
+            //console.info(e.sessionStart.seconds(0).milliseconds(0).toISOString());
+            
+          });
+
+          tellusData.forEach((e) => {
+            //console.info(this.$moment(e.sessionStart).local());
+            e.sessionStart = this.$moment(e.sessionStart).local();
+            e.sessionStartDate = this.$moment(e.sessionStart).format('MM/DD/YYYY');
+            e.sessionEnd = this.$moment(e.sessionEnd).local();
+            e.sessionEndDate = this.$moment(e.sessionEnd).format('MM/DD/YYYY');
+            e.clientFullname = e.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
+            e.userFullname = e.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
+            this.tellusData.push(e);
+          });
+        }
+        
+        if (outOfTellus.length != 0) {
+          outOfTellus.forEach((e) => {
             e.sessionStart = this.$moment(e.sessionStart).local();
             e.sessionEnd = this.$moment(e.sessionEnd).local();
-            o.clientFullname = o.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
-            o.userFullname = o.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');            
-            //this.tellusData.push(o);
-          }
-          });*/
-          this.systemData.push(e);
-          //console.info(e.sessionStart.seconds(0).milliseconds(0).toISOString());
-          
-        });
+            this.outOfTellus.push(e);
+          });
+        }
         
-        tellusData.forEach((e) => {
-          //console.info(this.$moment(e.sessionStart).local());
-          e.sessionStart = this.$moment(e.sessionStart).local();
-          e.sessionEnd = this.$moment(e.sessionEnd).local();
-          e.clientFullname = e.clientFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
-          e.userFullname = e.userFullname.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
-          this.tellusData.push(e);
-        });
-        this.processState = 1;
-        let buttons = document.querySelector(".step-footer");
-        buttons.style.display = "block";
-        //console.info(this.tellusData);
+        if (justTellus.length != 0) {
+          justTellus.forEach((e) => {
+            e.sessionStart = this.$moment(e.sessionStart).local();
+            e.sessionEnd = this.$moment(e.sessionEnd).local();
+            this.justTellus.push(e);
+          });
+        }
       } catch (error) {
         //this.$toast.error(error.response.data || error.message);
         this.$toast.error(error);
@@ -364,40 +595,97 @@ export default {
         this.loading = false;
       }
     },
-
+    async markingAsMachedAux(){
+      this.selectedIndexs.forEach(async (e) => {
+        let data = {
+        sessionId: this.outOfTellus[e].sessionId
+        };
+        await sessionServicesApi.matchingSessionTellus(data);
+        this.outOfTellus[e].matched = true;
+      });
+      return true;
+    },
     async saveData() {      
       this.loading = true;
       try {
-        for (let index = 0; index < this.systemData.length; index++) {
-          let s1 = null;
-          let s2 = null; 
-          for (let ind = 0; ind < this.tellusData.length; ind++) {
-            if(this.systemData[index].edit){
-              s1 = this.$moment(this.systemData[index].sessionStart).local();
-              s2 = this.$moment(this.systemData[index].sessionEnd).local();
+        if(this.markingMatched){
+          this.$confirm("This can't be undone. Do you really want to mark these as matched?").then(async (res) => {
+            if (res) {
+              try {
+                await this.markingAsMachedAux();
+                /*this.markingAsMachedAux().then(() =>{
+                  this.loading = false;
+                  this.$toast.success("Sessions marked as matched.");
+                  
+                }); */
+                                                            
+              } catch (error) {
+                this.$toast.error(error.message || error);
+              }finally {
+                this.loading = false;
+                this.$toast.success("Sessions marked as matched.");
+              }
             }
-            //Se toma el primero que 
-            else if(this.tellusData[ind].clientFullname === this.systemData[index].clientFullname && this.tellusData[ind].userFullname === this.systemData[index].userFullname)
-            {
-              //let s1 = this.$moment(`${this.orgTimeStart.format("MM/DD/YYYY")} ${this.timeStart}`);              
-              //let s2 = this.$moment(`${this.orgTimeEnd.format("MM/DD/YYYY")} ${this.timeEnd}`);
-              s1 = this.tellusData[ind].sessionStart;
-              s2 = this.tellusData[ind].sessionEnd;
-              break;
-            }         
-          }
-          console.info("s1");
-          console.info(s1);
-          let data = {
-            sessionId: this.systemData[index].sessionId,
-            start: s1,
-            end: s2
-          };
-          await sessionServicesApi.editSessionTime(data);
-          this.removeElement(this.systemData[index]);
+          });
         }
-        this.$toast.success("Sessions saved successful.");
-        
+        else {
+          //Visits to update
+          for (let index = 0; index < this.systemData.length; index++) {
+            let s1 = null;
+            let s2 = null;
+            let haschanged = false;
+            if(this.systemData[index].edit){
+                s1 = this.$moment(this.systemData[index].sessionStart).local();
+                s2 = this.$moment(this.systemData[index].sessionEnd).local();
+                haschanged = true;
+            }
+            else { 
+              for (let ind = 0; ind < this.tellusData.length; ind++) {
+                //Se toma el primero que 
+                //r.medicaidId === k.medicaidId && r.mpi === k.mpi && k.sessionStartDate  === r.sessionStartDate
+                if(this.tellusData[ind].medicaidId === this.systemData[index].medicaidId && this.tellusData[ind].mpi === this.systemData[index].mpi 
+                        && this.tellusData[ind].sessionStartDate === this.systemData[index].sessionStartDate && this.tellusData[ind].difference)
+                {
+                  //let s1 = this.$moment(`${this.orgTimeStart.format("MM/DD/YYYY")} ${this.timeStart}`);              
+                  //let s2 = this.$moment(`${this.orgTimeEnd.format("MM/DD/YYYY")} ${this.timeEnd}`);
+                  s1 = this.tellusData[ind].sessionStart;
+                  s2 = this.tellusData[ind].sessionEnd;
+                  haschanged = true;
+                  break;
+                }         
+              }
+            }
+            if (haschanged) {
+              let data = {
+                sessionId: this.systemData[index].sessionId,
+                start: s1,
+                end: s2
+              };
+              await sessionServicesApi.matchingSessionTellus(data);
+              this.removeElement(this.systemData[index], this.systemData);
+            }
+          }
+          //Visits not present in Tellus
+          for (let index = 0; index < this.outOfTellus.length; index++) {
+            let s1 = null;
+            let s2 = null;
+            if(this.outOfTellus[index].edit){
+              s1 = this.$moment(this.outOfTellus[index].sessionStart).local();
+              s2 = this.$moment(this.outOfTellus[index].sessionEnd).local();
+  
+              let data = {
+              sessionId: this.outOfTellus[index].sessionId,
+              start: s1,
+              end: s2
+              };
+              await sessionServicesApi.matchingSessionTellus(data);
+              this.removeElement(this.outOfTellus[index], this.outOfTellus);
+              this.removeElement(this.outOfTellus[index], this.outOfTellus);
+            }      
+          }
+          this.$toast.success("Sessions saved successful.");
+          this.changed = false;
+        }
       } catch (error) {
         this.$toast.error(error);
       } finally {
@@ -405,9 +693,62 @@ export default {
       }
     },
 
+    async deleteSession( sessionId, index ) {
+      
+      this.$confirm("This can't be undone. Do you really want to delete this Session?").then(async (res) => {
+        if (res) {
+          this.loading = true;          
+          try {
+            if (sessionId == null) return;
+            await sessionServicesApi.deleteSession(sessionId);
+            this.removeElement(this.outOfTellus[index], this.outOfTellus);
+            this.$toast.success("Session removed successful.");
+          } catch (error) {
+            this.$toast.error(error.message || error);
+          }finally {
+            this.loading = false;
+          }
+        }
+      });
+    },
+
+    async markAsMatched( index, array, dismissing = false ) {
+      
+      this.$confirm("This can't be undone. Do you really want to mark this as matched?").then(async (res) => {
+        if (res) {
+          this.loading = true; 
+          try {
+            if (array[index] == null) return;
+            let data = {
+            sessionId: array[index].sessionId
+            };
+            await sessionServicesApi.matchingSessionTellus(data);
+            //this.removeElement(obj, array);
+            //array[obj].$set(array[obj], 'matched', true)
+            array[index].matched = true;
+            if(dismissing){
+              this.removeElement(array[index], array);  
+            }
+            this.$toast.success("Session marked as matched successfully.");
+            return true;
+          } catch (error) {
+            this.$toast.error(error.message || error);
+            return false;
+          }finally {
+            this.loading = false;
+          }
+        }
+      });
+    },
+
+    async dismissAndMacth(index, array){      
+      this.markAsMatched(index, array, true); 
+    },
+
     print() {
       window.print();
     }
   }
+
 };
 </script>

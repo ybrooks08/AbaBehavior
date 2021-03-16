@@ -382,6 +382,15 @@ export default {
     });
   },
 
+  matchingSessionTellus(data) {
+    return new Promise((resolve, reject) => {
+      Vue.axios
+        .put("api/session/MatchingSessionTellus", data)
+        .then(() => resolve())
+        .catch((error) => reject(error.response.data || error.message));
+    });
+  },
+
   editSessionPos(data) {
     return new Promise((resolve, reject) => {
       Vue.axios
